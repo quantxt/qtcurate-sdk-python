@@ -23,3 +23,6 @@ class QTArgumentError(Exception):
 
 class QTDictionaryError(Exception):
     pass
+
+class QTTaggingError(Exception):
+    pass
