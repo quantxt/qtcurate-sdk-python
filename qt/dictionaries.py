@@ -16,7 +16,7 @@ class Dictionary:
         self.d['name'] = None
         self.url = BASE_URL + "dictionaries/"
 
-    def name(self, name):
+    def name(self, name: str):
         """Create a new name for dictionary"""
         self.d['name'] = name
 
@@ -26,6 +26,10 @@ class Dictionary:
             self.d['entries'].append(entries)
         else:
             raise QTArgumentError("Expected dictionary")
+
+    def clear(self):
+        self.d['entries'] = []
+        self.d['name'] = None
 
     def add_entry(self, key, value):
         """Create dictionary data"""
@@ -59,6 +63,8 @@ class Dictionary:
                                  f"{f.status_code}")
         elif f.status_code == 404:
             raise QTDictionaryIdError("Operation not succesfull. Resource not found")
+        elif f.status_code not in [200, 201]:
+            raise QTRestApiError("Unknown error.")
 
         return f.json()
 
@@ -92,7 +98,7 @@ class Dictionary:
         if created.status_code not in [200, 201]:
             raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error "
                                  f"{created.status_code}")
-        return created.ok
+        return created.json()
 
     def update(self, dict_id: str) -> bool:
         """Update existing dictionary"""
@@ -110,17 +116,18 @@ class Dictionary:
                                  f" {updated.status_code}")
         return updated.ok
 
-    def upload(self, file: str):
+    def upload(self, file: str, name: str):
         """Upload dictionary data from TSV files"""
         extension = os.path.splitext(file)[1].lower()
         try:
-            if extension != "tsv":
+            if extension != ".tsv":
                 raise QTFileTypeError("File Type Error. Allowed only tsv files")
             if not os.path.exists(file):
                 raise QTFileTypeError("File Not Exist. Please check your path")
-            files = {'file': open(file, 'rb')}
-            self.headers['Content-Type'] = 'application/x-www-form-urlencoded'
-            self.headers['content-type'] = 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW'
+            files = {
+                'name': (None, name),
+                'file': open(file, 'rb')
+            }
             res = self.s.post(self.url+"upload", headers=self.headers, files=files)
         except requests.exceptions.RequestException as e:
             raise e

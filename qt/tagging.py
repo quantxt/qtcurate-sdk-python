@@ -22,15 +22,14 @@ class Tagging:
         self.headers = {"X-API-Key": api_key}
         self.d = dict()
         self.d['files'] = []
-        self.d['dictionaries'] = []
         self.d['urls'] = []
         self.d['title'] = None
         self.d['index'] = None
         self.d['autotag'] = None
-        self.d['max_token_per_utt'] = None
-        self.d['min_token_per_utt'] = None
+        self.d['maxTokenPerUtt'] = None
+        self.d['minTokenPerUtt'] = None
         self.d['exclude_utt_without_entities'] = None
-        self.d['vocabPath'] = None
+        self.d['searchDictionaries'] = []
 
 
     def title(self, value: str):
@@ -82,12 +81,6 @@ class Tagging:
         else:
             raise QTArgumentError("Expected list")
 
-    def vocab_path(self, path: str):
-        if isinstance(path, str):
-            self.d['vocabPath'] = path
-        else:
-            raise QTArgumentError("Expected string")
-
     def urls(self, list_of_urls: list):
         """Create a list of existing files"""
         if isinstance(list_of_urls, list):
@@ -95,12 +88,23 @@ class Tagging:
         else:
             raise QTArgumentError("Expected list")
 
-    def dictionaries(self, list_of_dictionaries: list):
-        """Create a list of existing dictionary"""
-        if isinstance(list_of_dictionaries, list):
-            self.d['dictionaries'] = list_of_dictionaries
-        else:
-            raise QTArgumentError("Expected list")
+    def search_rule(self, dictionary_path: str, vocal_value_type: DictionaryType):
+        vocab_dict = dict()
+        vocab_dict["vocabPath"] = dictionary_path
+        vocab_dict["vocabValueType"] = vocal_value_type.value
+        self.d['searchDictionaries'].append(vocab_dict)
+
+    def clear(self):
+        self.d['files'] = []
+        self.d['urls'] = []
+        self.d['title'] = None
+        self.d['index'] = None
+        self.d['autotag'] = None
+        self.d['maxTokenPerUtt'] = None
+        self.d['minTokenPerUtt'] = None
+        self.d['exclude_utt_without_entities'] = None
+        self.d['searchDictionaries'] = []
+
 
     def upload(self, file: str):
         """Upload files for data mining"""
@@ -111,8 +115,6 @@ class Tagging:
             if not os.path.exists(file):
                 raise QTFileTypeError("File Not Exist. Please check your path")
             files = {'file': open(file, 'rb')}
-            self.headers['Content-Type'] = 'application/x-www-form-urlencoded'
-            self.headers['content-type'] = 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW'
             res = self.s.post(url+"file", headers=self.headers, files=files)
         except requests.exceptions.RequestException as e:
             raise e
@@ -121,13 +123,13 @@ class Tagging:
                                  f"{res.status_code}")
         return res.json()
 
-    def tagging_files(self) -> bool:
+    def tagging_files(self):
         """Mine data via dictionaries"""
         if len(self.d['files']) == 0:
             raise QTTaggingError("You must add files. Use files function to add new file in list of files")
-        if len(self.d['dictionaries']) == 0:
+        if len(self.d['searchDictionaries']) == 0:
             raise QTTaggingError("You must add dictionaries. Use dictionaries function to add new dictionary")
-        data = {'files': self.d['files'], 'dictionaries': self.d['dictionaries']}
+        data = {'files': self.d['files'], 'searchDictionaries': self.d['searchDictionaries']}
         if self.d['title'] is not None:
             data['title'] = self.d['title']
         if self.d['index'] is not None:
@@ -148,7 +150,7 @@ class Tagging:
         if res.status_code not in [200, 201]:
             raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error "
                                  f"{res.status_code}")
-        return res.ok
+        return res.json()
 
     def delete(self, tag_id: str) -> bool:
         """Delete data container"""
@@ -161,11 +163,13 @@ class Tagging:
                                  f"{res.status_code}")
         return res.ok
 
-    def minning_url(self):
+    def minning_url(self) -> dict:
         """Minning data on URLs"""
         if len(self.d['urls']) == 0:
             raise QTTaggingError("You must add urls. Use urls() function to add list of url")
-        data = {'urls': self.d['urls']}
+        if len(self.d['searchDictionaries']) == 0:
+            raise QTTaggingError("You must add dictionaries. Use dictionaries function to add new dictionary")
+        data = {'urls': self.d['urls'], 'searchDictionaries': self.d['searchDictionaries']}
 
         if self.d['title'] is not None:
             data['title'] = self.d['title']
@@ -179,38 +183,23 @@ class Tagging:
             data['minTokenPerUtt'] = self.d['minTokenPerUtt']
         if self.d['exclude_utt_without_entities'] is not None:
             data['exclude_utt_without_entities'] = self.d['exclude_utt_without_entities']
-
         try:
+            print(url + "new")
             res = self.s.post(url + "new", data=json.dumps(data), headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201]:
             raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error "
                                  f"{res.status_code}")
-        return res.ok
+        return res.json()
 
-    def extracting(self, dictionary_type=None):
-        data = {'files': self.d['files']}
-        if dictionary_type is not None:
-            data['vocabPath'] = self.d['vocabPath']
-            data['vocabValueType'] = dictionary_type
-        else:
-            data['vocabPath'] = self.d['vocabPath']
-        if self.d['title'] is not None:
-            data['title'] = self.d['title']
-
-        try:
-            res = self.s.post(url + "new", headers=self.headers, data=json.dumps(data))
-        except requests.exceptions.RequestException as e:
-            raise QTConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201]:
-            raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error "
-                                 f"{res.status_code}")
-
-    def progress(self):
+    def progress(self, index=None):
         """Show progress for submitted data minining job"""
+        url_path = "progress"
+        if index is not None:
+            url_path = url_path + "/" + index
         try:
-            status = self.s.get(url + "progress", headers=self.headers)
+            status = self.s.get(url + url_path, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if status.status_code not in [200, 201]:
