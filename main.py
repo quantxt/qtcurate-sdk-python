@@ -83,7 +83,12 @@ t.search_rule(loss_dictionary['key'], DictionaryType.NUMBER)
 t.search_rule(revenue_dictionary['key'], DictionaryType.NUMBER)
 t.search_rule(usstocks_dictionary['key'], DictionaryType.STRING)
 t.urls(get_links())
-url_process = t.minning_url()
-print(url_process)
+try:
+    url_process = t.minning_url()
+except Exception as e:
+    print(e)
 wait_for_completion(url_process['index'])
-t.report_to_xslx(url_process['index'], "report.xslx")
+try:
+    t.report_to_json(url_process['index'], "report.json")
+except Exception as e:
+    print(e)
