@@ -110,7 +110,7 @@ class Tagging:
         """Upload files for data mining"""
         extension = os.path.splitext(file)[1].lower()
         try:
-            if extension not in ["pdf", "txt", "html"]:
+            if extension not in [".pdf", ".txt", ".html"]:
                 raise QTFileTypeError("File Type Error. Allowed PDF, TXT and HTML files")
             if not os.path.exists(file):
                 raise QTFileTypeError("File Not Exist. Please check your path")
@@ -125,11 +125,17 @@ class Tagging:
 
     def tagging_files(self):
         """Mine data via dictionaries"""
+
+        self.headers["Content-Type"] = "application/json"
         if len(self.d['files']) == 0:
             raise QTTaggingError("You must add files. Use files function to add new file in list of files")
         if len(self.d['searchDictionaries']) == 0:
             raise QTTaggingError("You must add dictionaries. Use dictionaries function to add new dictionary")
-        data = {'files': self.d['files'], 'searchDictionaries': self.d['searchDictionaries']}
+
+        data = {'files': self.d['files']}
+
+        if len(self.d['searchDictionaries']) != 0:
+            data['searchDictionaries'] = self.d['searchDictionaries']
         if self.d['title'] is not None:
             data['title'] = self.d['title']
         if self.d['index'] is not None:
@@ -165,12 +171,12 @@ class Tagging:
 
     def minning_url(self) -> dict:
         """Minning data on URLs"""
+        self.headers["Content-Type"] = "application/json"
         if len(self.d['urls']) == 0:
             raise QTTaggingError("You must add urls. Use urls() function to add list of url")
-        if len(self.d['searchDictionaries']) == 0:
-            raise QTTaggingError("You must add dictionaries. Use dictionaries function to add new dictionary")
-        data = {'urls': self.d['urls'], 'searchDictionaries': self.d['searchDictionaries']}
-
+        data = {'urls': self.d['urls']}
+        if len(self.d['searchDictionaries']) != 0:
+            data['searchDictionaries'] = self.d['searchDictionaries']
         if self.d['title'] is not None:
             data['title'] = self.d['title']
         if self.d['index'] is not None:
@@ -184,7 +190,7 @@ class Tagging:
         if self.d['exclude_utt_without_entities'] is not None:
             data['exclude_utt_without_entities'] = self.d['exclude_utt_without_entities']
         try:
-            print(url + "new")
+
             res = self.s.post(url + "new", data=json.dumps(data), headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
