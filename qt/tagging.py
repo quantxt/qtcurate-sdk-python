@@ -254,7 +254,7 @@ class Tagging:
         try:
             report = self.s.get(BASE_URL + "reports/" + element + "/json", headers=self.headers)
             with open(path, "w") as json_file:
-                json_file.write(report.content)
+                json.dump(report.json(), json_file)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         except QTFileTypeError as e:
