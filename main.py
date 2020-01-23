@@ -74,7 +74,6 @@ try:
     usstocks_dictionary = d.create()
 except Exception as e:
     print(e)
-print(loss_dictionary['key'])
 t = Tagging(api_key=API_KEY)
 t.title("Test Large SDK with URLS")
 t.exclude_utt_without_entities(False)
