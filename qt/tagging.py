@@ -41,7 +41,7 @@ class Tagging:
 
     def index(self, value: str):
         """Create index for mining data, this is optional parameter"""
-        if isinstance(value, str):
+        if isinstance(value, (str, int)):
             self.d['index'] = value
         else:
             raise QTArgumentError("Expected string")
@@ -60,7 +60,7 @@ class Tagging:
         else:
             raise QTArgumentError("Expected integer")
 
-    def set_min_token_per_utt(self, value: int):
+    def min_token_per_utt(self, value: int):
         """Create min token per utt for mining data, this is optional parameter"""
         if isinstance(value, int):
             self.d['minTokenPerUtt'] = value
@@ -88,10 +88,17 @@ class Tagging:
         else:
             raise QTArgumentError("Expected list")
 
-    def search_rule(self, dictionary_path: str, vocal_value_type: DictionaryType):
+    def search_rule(self, dictionary_path: str, vocab_value_type: DictionaryType):
         vocab_dict = dict()
-        vocab_dict["vocabPath"] = dictionary_path
-        vocab_dict["vocabValueType"] = vocal_value_type.value
+        if isinstance(dictionary_path, str):
+            vocab_dict["vocabPath"] = dictionary_path
+        else:
+            raise QTArgumentError("Expected string")
+        if isinstance(vocab_value_type, DictionaryType):
+            vocab_dict["vocabValueType"] = vocab_value_type.value
+        else:
+            raise QTArgumentError("Expected object of DictionaryType class")
+
         self.d['searchDictionaries'].append(vocab_dict)
 
     def clear(self):
@@ -108,6 +115,9 @@ class Tagging:
 
     def upload(self, file: str):
         """Upload files for data mining"""
+        if not isinstance(file, str):
+            raise QTArgumentError("Expected path as string")
+
         extension = os.path.splitext(file)[1].lower()
         try:
             if extension not in [".pdf", ".txt", ".html"]:
@@ -117,7 +127,7 @@ class Tagging:
             files = {'file': open(file, 'rb')}
             res = self.s.post(url+"file", headers=self.headers, files=files)
         except requests.exceptions.RequestException as e:
-            raise e
+            raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201]:
             raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error "
                                  f"{res.status_code}")
@@ -130,9 +140,9 @@ class Tagging:
         if len(self.d['files']) == 0:
             raise QTTaggingError("You must add files. Use files function to add new file in list of files")
         if len(self.d['searchDictionaries']) == 0:
-            raise QTTaggingError("You must add dictionaries. Use dictionaries function to add new dictionary")
+            raise QTTaggingError("You must add dictionaries. Use search dictionaries function to add new dictionary")
 
-        data = {'files': self.d['files']}
+        data = {'files': self.d['files'], 'searchDictionaries': self.d['searchDictionaries']}
 
         if len(self.d['searchDictionaries']) != 0:
             data['searchDictionaries'] = self.d['searchDictionaries']
@@ -160,10 +170,12 @@ class Tagging:
 
     def delete(self, tag_id: str) -> bool:
         """Delete data container"""
+        if not isinstance(tag_id, str):
+            raise QTArgumentError("Expected string")
         try:
             res = self.s.delete(url+tag_id, headers=self.headers)
         except requests.exceptions.RequestException as e:
-            raise e
+            raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201]:
             raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error "
                                  f"{res.status_code}")
@@ -174,9 +186,11 @@ class Tagging:
         self.headers["Content-Type"] = "application/json"
         if len(self.d['urls']) == 0:
             raise QTTaggingError("You must add urls. Use urls() function to add list of url")
-        data = {'urls': self.d['urls']}
-        if len(self.d['searchDictionaries']) != 0:
-            data['searchDictionaries'] = self.d['searchDictionaries']
+        if len(self.d['searchDictionaries']) == 0:
+            raise QTTaggingError("You must add dictionaries. Use dictionaries function to add new dictionary")
+
+        data = {'urls': self.d['urls'], 'searchDictionaries': self.d['searchDictionaries']}
+
         if self.d['title'] is not None:
             data['title'] = self.d['title']
         if self.d['index'] is not None:
@@ -190,7 +204,6 @@ class Tagging:
         if self.d['exclude_utt_without_entities'] is not None:
             data['exclude_utt_without_entities'] = self.d['exclude_utt_without_entities']
         try:
-
             res = self.s.post(url + "new", data=json.dumps(data), headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
@@ -228,7 +241,7 @@ class Tagging:
                 raise QTArgumentError("Filter parameters must be used in pairs")
             res = self.s.get(url + string, headers=self.headers, params=parameters)
         except requests.exceptions.RequestException as e:
-            raise e
+            raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201]:
             raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error "
                                  f"{res.status_code}")
@@ -238,28 +251,26 @@ class Tagging:
         """Exporting in Excel format"""
         try:
             report = self.s.get(BASE_URL + "reports/" + element + "/xlsx", headers=self.headers)
-            with open(path, 'wb') as excel_file:
-                excel_file.write(report.content)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        except Exception as e:
-            raise QTFileTypeError(e)
         if report.status_code not in [200, 201]:
             raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error"
                                  f"{report.status_code}")
+        with open(path, 'wb') as excel_file:
+            excel_file.write(report.content)
+
+
         return report.ok
 
     def report_to_json(self, element: str, path: str) -> bool:
         """Exporting in Excel format"""
         try:
             report = self.s.get(BASE_URL + "reports/" + element + "/json", headers=self.headers)
-            with open(path, "w") as json_file:
-                json.dump(report.json(), json_file)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        except QTFileTypeError as e:
-            raise QTFileTypeError(e)
         if report.status_code not in [200, 201]:
             raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error"
                                  f"{report.status_code}")
+        with open(path, "w") as json_file:
+            json.dump(report.json(), json_file)
         return report.ok

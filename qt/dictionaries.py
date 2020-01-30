@@ -18,7 +18,10 @@ class Dictionary:
 
     def name(self, name: str):
         """Create a new name for dictionary"""
-        self.d['name'] = name
+        if isinstance(name, str)
+            self.d['name'] = name
+        else:
+            raise QTArgumentError("Expected string")
 
     def entries(self, entries: Dict):
         """Create dictionary data"""
@@ -83,7 +86,7 @@ class Dictionary:
             raise QTDictionaryIdError("Operation not succesfull. Resource not found")
         return res.ok
 
-    def create(self) -> bool:
+    def create(self) -> Dict:
         """Create dictionary data"""
         if self.d['name'] is None:
             raise QTDictionaryError("Name must be defined")
@@ -96,6 +99,7 @@ class Dictionary:
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if created.status_code not in [200, 201]:
+            print(f"Created some string{created}")
             raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error "
                                  f"{created.status_code}")
         return created.json()
@@ -130,7 +134,7 @@ class Dictionary:
             }
             res = self.s.post(self.url+"upload", headers=self.headers, files=files)
         except requests.exceptions.RequestException as e:
-            raise e
+            raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201]:
             raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error "
                                  f"{res.status_code}")

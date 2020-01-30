@@ -74,6 +74,7 @@ try:
     usstocks_dictionary = d.create()
 except Exception as e:
     print(e)
+print(loss_dictionary['key'])
 t = Tagging(api_key=API_KEY)
 t.title("Test Large SDK with URLS")
 t.exclude_utt_without_entities(False)
@@ -82,12 +83,6 @@ t.search_rule(loss_dictionary['key'], DictionaryType.NUMBER)
 t.search_rule(revenue_dictionary['key'], DictionaryType.NUMBER)
 t.search_rule(usstocks_dictionary['key'], DictionaryType.STRING)
 t.urls(get_links())
-try:
-    url_process = t.minning_url()
-except Exception as e:
-    print(e)
+url_process = t.minning_url()
 wait_for_completion(url_process['index'])
-try:
-    t.report_to_json(url_process['index'], "report.json")
-except Exception as e:
-    print(e)
+t.report_to_json(url_process['index'], "report.json")
