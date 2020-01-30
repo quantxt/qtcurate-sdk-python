@@ -3,8 +3,7 @@ import requests
 import json
 import os.path
 from typing import Dict
-from qt.exceptions import QTFileTypeError, QTArgumentError, QTDictionaryError, QTConnectionError, QTRestApiError, \
-    QTDictionaryIdError
+from qt.exceptions import QTArgumentError, QTDictionaryError, QTConnectionError, QTRestApiError
 
 
 class Dictionary:
@@ -18,127 +17,133 @@ class Dictionary:
 
     def name(self, name: str):
         """Create a new name for dictionary"""
-        if isinstance(name, str)
+
+        if isinstance(name, str):
             self.d['name'] = name
         else:
-            raise QTArgumentError("Expected string")
+            raise QTArgumentError("Argument type error: String is expected as name")
 
-    def entries(self, entries: Dict):
+    def entries(self, entry: Dict):
         """Create dictionary data"""
-        if isinstance(entries, Dict):
-            self.d['entries'].append(entries)
+
+        if isinstance(entry, Dict):
+            self.d['entries'].append(entry)
         else:
-            raise QTArgumentError("Expected dictionary")
+            raise QTArgumentError("Argument type error: Dictionary is expected as entry")
 
     def clear(self):
+        """Set default values"""
+
         self.d['entries'] = []
         self.d['name'] = None
 
     def add_entry(self, key, value):
         """Create dictionary data"""
+
         if not isinstance(key, (str, int, float)):
-            raise QTArgumentError("Unexpected key type")
+            raise QTArgumentError("Argument type error: String, integer or float are expected as key")
         elif not isinstance(value, (str, int, float)):
-            raise QTArgumentError("Unexpected value type")
+            raise QTArgumentError("Argument type error: String, integer or float is expected as value")
         self.d['entries'].append({'key': key, 'value': value})
 
     def list(self) -> Dict:
         """List all dictionaries"""
+
         try:
             listed = self.s.get(self.url,  headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if listed.status_code not in [200, 201]:
-            raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error"
-                                 f"{listed.status_code}")
+        if listed.status_code not in [200, 201, 202]:
+            raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {listed.status_code}")
         return listed.json()
 
-    def fetch(self, dict_id: str):
+    def fetch(self, index: str):
         """Fetch dictionary by ID"""
-        if not isinstance(dict_id, str):
-            raise QTArgumentError("Expected string")
+
+        if not isinstance(index, str):
+            raise QTArgumentError("Argument type error: String is expected as index")
         try:
-            f = self.s.get(self.url+dict_id, headers=self.headers)
+            f = self.s.get(self.url + index, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if f.status_code == 401:
-            raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error"
-                                 f"{f.status_code}")
-        elif f.status_code == 404:
-            raise QTDictionaryIdError("Operation not succesfull. Resource not found")
-        elif f.status_code not in [200, 201]:
-            raise QTRestApiError("Unknown error.")
-
+        if f.status_code not in [200, 201, 202]:
+            raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {f.status_code}")
         return f.json()
 
-    def delete(self, dict_id: str) -> bool:
+    def delete(self, index: str) -> bool:
         """Delete existing dictionary"""
-        if not isinstance(dict_id, str):
-            raise QTArgumentError("Expected string")
+
+        if not isinstance(index, str):
+            raise QTArgumentError("Argument type error: String is expected as index")
         try:
-            res = self.s.delete(self.url+dict_id, headers=self.headers)
+            res = self.s.delete(self.url + index, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if res.status_code == 401:
-            raise QTRestApiError(
-                f"Error: Full authentification is required to access this resource. HTTP Error {res.status_code}")
-        elif res.status_code == 404:
-            raise QTDictionaryIdError("Operation not succesfull. Resource not found")
+        if res.status_code not in [200, 201, 202]:
+            raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {res.status_code}")
         return res.ok
 
     def create(self) -> Dict:
         """Create dictionary data"""
+
         if self.d['name'] is None:
-            raise QTDictionaryError("Name must be defined")
+            raise QTDictionaryError("Dictionary error: Please add name using name function")
         if len(self.d['entries']) == 0:
-            raise QTDictionaryError("You must add entries. Use add_entry or entries functions")
+            raise QTDictionaryError("Dictionary error: Please add dictionary using add_entry function")
         data = {'name': self.d['name'], 'entries': self.d['entries']}
         self.headers['Content-Type'] = 'application/json'
         try:
             created = self.s.post(self.url, headers=self.headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if created.status_code not in [200, 201]:
-            print(f"Created some string{created}")
-            raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error "
-                                 f"{created.status_code}")
+        if created.status_code not in [200, 201, 202]:
+            raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {created.status_code}")
         return created.json()
 
-    def update(self, dict_id: str) -> bool:
+    def update(self, index: str) -> bool:
         """Update existing dictionary"""
+
+        if not isinstance(index, str):
+            raise QTArgumentError("Argument type error: String is expected as index")
         if self.d['name'] is None:
-            raise QTDictionaryError("Name must be defined")
+            raise QTDictionaryError("Dictionary error: Please add name using name function")
         if len(self.d['entries']) == 0:
-            raise QTDictionaryError("You must add entries. Use add_entry or entries functions")
+            raise QTDictionaryError("Dictionary error: Please add dictionary using add_entry function")
         data = {'name': self.d['name'], 'entries': self.d['entries']}
         try:
-            updated = self.s.put(self.url+dict_id, headers=self.headers, data=json.dumps(data))
+            updated = self.s.put(self.url + index, headers=self.headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if updated.status_code not in [200, 201]:
-            raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error"
-                                 f" {updated.status_code}")
+        if updated.status_code not in [200, 201, 202]:
+            raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {updated.status_code}")
         return updated.ok
 
     def upload(self, file: str, name: str):
         """Upload dictionary data from TSV files"""
+
+        if not isinstance(file, str):
+            raise QTArgumentError("Argument type error: String is expected as file")
+        if not isinstance(name, str):
+            raise QTArgumentError("Argument type error: String is expected as name")
         extension = os.path.splitext(file)[1].lower()
+        if extension != ".tsv":
+            raise QTArgumentError("Argument type error: TSV file expected")
+        if not os.path.exists(file):
+            raise QTArgumentError(f"Argument error: File {file} does not exist")
+        files = {
+            'name': (None, name),
+            'file': open(file, 'rb')
+        }
         try:
-            if extension != ".tsv":
-                raise QTFileTypeError("File Type Error. Allowed only tsv files")
-            if not os.path.exists(file):
-                raise QTFileTypeError("File Not Exist. Please check your path")
-            files = {
-                'name': (None, name),
-                'file': open(file, 'rb')
-            }
             res = self.s.post(self.url+"upload", headers=self.headers, files=files)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201]:
-            raise QTRestApiError(f"Error: Full authentification is required to access this resource. HTTP Error "
-                                 f"{res.status_code}")
+        if res.status_code not in [200, 201, 202]:
+            raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {res.status_code}")
         return res.json()
-
-    def __repr__(self):
-        return str({'name': self.d['name'], 'entries': self.d['entries']})

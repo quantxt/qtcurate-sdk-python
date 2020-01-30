@@ -146,13 +146,13 @@ class TestTagging(TestCase):
     def test_upload_file_type(self):
         file = "path"
         tag = Tagging('123456')
-        with self.assertRaises(QTFileTypeError):
+        with self.assertRaises(QTArgumentError):
             tag.upload(file)
 
     def test_upload_file_exists(self):
         file = "path.txt"
         tag = Tagging('123456')
-        with self.assertRaises(QTFileTypeError):
+        with self.assertRaises(QTArgumentError):
             tag.upload(file)
 
     @patch("qt.tagging.requests.Session")
@@ -311,6 +311,12 @@ class TestTagging(TestCase):
 
         self.assertRaises(QTConnectionError, tag.minning_url)
 
+    def test_progress_arg_error(self):
+        index = 123
+        tag = Tagging('123456')
+        with self.assertRaises(QTArgumentError):
+            tag.progress(index)
+
     @patch("qt.tagging.requests.Session")
     def test_progress_not_authorized(self, session):
         mock = Mock()
@@ -333,6 +339,44 @@ class TestTagging(TestCase):
         tag = Tagging('123456')
 
         self.assertRaises(QTConnectionError, tag.progress)
+
+    def test_search_index_arg(self):
+        index = 123
+        tag = Tagging('123456')
+        with self.assertRaises(QTArgumentError):
+            tag.search(index)
+
+    def test_search_param_from_arg(self):
+        index = "test"
+        param_from = "test"
+        tag = Tagging('123456')
+        with self.assertRaises(QTArgumentError):
+            tag.search(index, param_from)
+
+    def test_search_size_range_arg(self):
+        index = "test"
+        param_from = 5
+        size = 201
+        tag = Tagging('123456')
+        with self.assertRaises(QTArgumentError):
+            tag.search(index, param_from, size)
+
+    def test_search_size_not_int_arg(self):
+        index = "test"
+        param_from = 5
+        size = "test"
+        tag = Tagging('123456')
+        with self.assertRaises(QTArgumentError):
+            tag.search(index, param_from, size)
+
+    def test_search_pairs_arg(self):
+        index = "test"
+        param_from = 5
+        size = 100
+        tag = Tagging('123456')
+        f1 = "string"
+        with self.assertRaises(QTArgumentError):
+            tag.search(index, param_from, size, f1)
 
     @patch("qt.tagging.requests.Session")
     def test_search_not_authorized(self, session):
@@ -361,6 +405,34 @@ class TestTagging(TestCase):
         with self.assertRaises(QTConnectionError):
             tag.search(string)
 
+    def test_xlsx_index_arg(self):
+        index = 123
+        path = "path"
+        tag = Tagging('123456')
+        with self.assertRaises(QTArgumentError):
+            tag.report_to_xlsx(index, path)
+
+    def test_xlsx_path_str_arg(self):
+        index = "index"
+        path = 132
+        tag = Tagging('123456')
+        with self.assertRaises(QTArgumentError):
+            tag.report_to_xlsx(index, path)
+
+    def test_xlsx_path_permission(self):
+        index = "index"
+        path = "/usr/bin/path.txt"
+        tag = Tagging('123456')
+        with self.assertRaises(QTArgumentError):
+            tag.report_to_xlsx(index, path)
+
+    def test_xlsx_extension(self):
+        index = "index"
+        path = "path.txt"
+        tag = Tagging('123456')
+        with self.assertRaises(QTFileTypeError):
+            tag.report_to_xlsx(index, path)
+
     @patch("qt.tagging.requests.Session")
     def test_xlsx_report_not_authorized(self, session):
         mock = Mock()
@@ -375,10 +447,10 @@ class TestTagging(TestCase):
         path = "test.xlsx"
 
         with self.assertRaises(QTRestApiError):
-            tag.report_to_xslx(element, path)
+            tag.report_to_xlsx(element, path)
 
     @patch("qt.tagging.requests.Session")
-    def test_xslx_report_connection_exception(self, session):
+    def test_xlsx_report_connection_exception(self, session):
         mock = Mock()
         mock.get.side_effect = requests.exceptions.ConnectionError("Connection error")
         session.return_value = mock
@@ -388,7 +460,7 @@ class TestTagging(TestCase):
         path = "test.xlsx"
 
         with self.assertRaises(QTConnectionError):
-            tag.report_to_xslx(element, path)
+            tag.report_to_xlsx(element, path)
 
     @patch("qt.tagging.requests.Session")
     def test_json_report_not_authorized(self, session):
@@ -418,3 +490,31 @@ class TestTagging(TestCase):
 
         with self.assertRaises(QTConnectionError):
             tag.report_to_json(element, path)
+
+    def test_json_index_arg(self):
+        index = 123
+        path = "path"
+        tag = Tagging('123456')
+        with self.assertRaises(QTArgumentError):
+            tag.report_to_json(index, path)
+
+    def test_json_path_str_arg(self):
+        index = "index"
+        path = 132
+        tag = Tagging('123456')
+        with self.assertRaises(QTArgumentError):
+            tag.report_to_json(index, path)
+
+    def test_json_path_permission(self):
+        index = "index"
+        path = "/usr/bin/path.txt"
+        tag = Tagging('123456')
+        with self.assertRaises(QTArgumentError):
+            tag.report_to_json(index, path)
+
+    def test_json_extension(self):
+        index = "index"
+        path = "path.txt"
+        tag = Tagging('123456')
+        with self.assertRaises(QTFileTypeError):
+            tag.report_to_json(index, path)
