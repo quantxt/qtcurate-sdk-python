@@ -26,10 +26,18 @@ class Dictionary:
     def entries(self, entry: Dict):
         """Create dictionary data"""
 
-        if isinstance(entry, Dict):
-            self.d['entries'].append(entry)
-        else:
+        if not isinstance(entry, Dict):
             raise QTArgumentError("Argument type error: Dictionary is expected as entry")
+        elif len(entry) != 2:
+            raise QTArgumentError("Argument error: Dictionary must have 2 element where keys are 'key' and 'value'."
+                                  "Example {'key': 'some key', 'value': 'some value'} ")
+        elif "key" not in entry.keys() or "value" not in entry.keys():
+            raise QTArgumentError("Argument error: Dictionary must have 2 element where keys are 'key' and 'value'."
+                                  "Example {'key': 'some key', 'value': 'some value'} ")
+        else:
+            self.d['entries'].append(entry)
+
+
 
     def clear(self):
         """Set default values"""

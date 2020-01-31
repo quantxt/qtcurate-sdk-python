@@ -26,6 +26,18 @@ class TestDictionaries(TestCase):
         with self.assertRaises(QTArgumentError):
             dic.entries(test_dict)
 
+    def test_entries_dict_len(self):
+        test_dict = {"key": "key"}
+        dic = Dictionary('123456')
+        with self.assertRaises(QTArgumentError):
+            dic.entries(test_dict)
+
+    def test_entries_dict_content(self):
+        test_dict = {"key": "key", "test": "value"}
+        dic = Dictionary('123456')
+        with self.assertRaises(QTArgumentError):
+            dic.entries(test_dict)
+
     def test_entries(self):
         test_dict = {"key": "key", "value": "value"}
         dic = Dictionary('1234567')
