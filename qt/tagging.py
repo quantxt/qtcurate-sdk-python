@@ -2,10 +2,21 @@ from config import BASE_URL
 import requests
 import json
 from enum import Enum
+from typing import Dict, List
 import os.path
 from qt.exceptions import QTFileTypeError, QTArgumentError, QTConnectionError, QTRestApiError, QTTaggingError
 
 url = BASE_URL + "search/"
+
+tag_files = "files"
+tag_urls = "urls"
+tag_title = "title"
+tag_index = "index"
+tag_autotag = "autotag"
+tag_max_token = "maxTokenPerUtt"
+tag_min_token = "minTokenPerUtt"
+tag_exclude_utt = "exclude_utt_without_entities"
+tag_search_dict = "searchDictionaries"
 
 
 class DictionaryType(Enum):
@@ -18,76 +29,86 @@ class DictionaryType(Enum):
 class Tagging:
 
     def __init__(self, api_key):
-        self.s = requests.Session()
+        self.session = requests.Session()
         self.headers = {"X-API-Key": api_key}
-        self.d = dict()
-        self.d['files'] = []
-        self.d['urls'] = []
-        self.d['title'] = None
-        self.d['index'] = None
-        self.d['autotag'] = None
-        self.d['maxTokenPerUtt'] = None
-        self.d['minTokenPerUtt'] = None
-        self.d['exclude_utt_without_entities'] = None
-        self.d['searchDictionaries'] = []
+        self.temp_dict = dict()
+        self.temp_dict[tag_files] = []
+        self.temp_dict[tag_urls] = []
+        self.temp_dict[tag_title] = None
+        self.temp_dict[tag_index] = None
+        self.temp_dict[tag_autotag] = None
+        self.temp_dict[tag_max_token] = None
+        self.temp_dict[tag_min_token] = None
+        self.temp_dict[tag_exclude_utt] = None
+        self.temp_dict[tag_search_dict] = []
 
-    def title(self, value: str):
+    def title(self, value: str) -> None:
         """Create title for mining data"""
+
         if isinstance(value, str):
-            self.d['title'] = value
+            self.temp_dict[tag_title] = value
         else:
             raise QTArgumentError("Argument type error: String is expected as title")
 
-    def index(self, value: str):
+    def index(self, value: str) -> None:
         """Create index for mining data, this is optional parameter"""
+
         if isinstance(value, (str, int)):
-            self.d['index'] = value
+            self.temp_dict[tag_index] = value
         else:
             raise QTArgumentError("Argument type error: String is expected as index")
 
-    def autotag(self, value: bool):
+    def autotag(self, value: bool) -> None:
         """Set autotag for mining data, this is optional parameter"""
+
         if isinstance(value, bool):
-            self.d['autotag'] = value
+            self.temp_dict[tag_autotag] = value
         else:
             raise QTArgumentError("Argument type error: Boolean is expected as autotag")
 
-    def max_token_per_utt(self, value: int):
+    def max_token_per_utt(self, value: int) -> None:
         """Create  max token per utt for mining data, this is optional parameter"""
+
         if isinstance(value, int):
-            self.d['maxTokenPerUtt'] = value
+            self.temp_dict[tag_max_token] = value
         else:
             raise QTArgumentError("Argument type error: Integer is expected as max token per utt")
 
-    def min_token_per_utt(self, value: int):
+    def min_token_per_utt(self, value: int) -> None:
         """Create min token per utt for mining data, this is optional parameter"""
+
         if isinstance(value, int):
-            self.d['minTokenPerUtt'] = value
+            self.temp_dict[tag_min_token] = value
         else:
             raise QTArgumentError("Argument type error: Integer is expected as min token per utt")
 
-    def exclude_utt_without_entities(self, value: bool):
+    def exclude_utt_without_entities(self, value: bool) -> None:
         """Set exclude utt for mining data, this is optional parameter"""
+
         if isinstance(value, bool):
-            self.d['exclude_utt_without_entities'] = value
+            self.temp_dict[tag_exclude_utt] = value
         else:
             raise QTArgumentError("Argument type error: Boolean is expected as exclude utt without entities")
 
-    def files(self, list_of_files: list):
+    def files(self, list_of_files: list) -> None:
         """Create a list of existing files"""
+
         if isinstance(list_of_files, list):
-            self.d['files'] = list_of_files
+            self.temp_dict[tag_files] = list_of_files
         else:
             raise QTArgumentError("Argument type error: Expected list of file indexes")
 
-    def urls(self, list_of_urls: list):
+    def urls(self, list_of_urls: list) -> None:
         """Create a list of existing files"""
+
         if isinstance(list_of_urls, list):
-            self.d['urls'] = list_of_urls
+            self.temp_dict[tag_urls] = list_of_urls
         else:
             raise QTArgumentError("Argument type error: Expected list of urls")
 
-    def search_rule(self, dictionary_path: str, vocab_value_type: DictionaryType):
+    def search_rule(self, dictionary_path: str, vocab_value_type: DictionaryType) -> None:
+        """Prepare dictionary for searching"""
+
         vocab_dict = dict()
         if isinstance(dictionary_path, str):
             vocab_dict["vocabPath"] = dictionary_path
@@ -98,20 +119,22 @@ class Tagging:
         else:
             raise QTArgumentError("Argument type error: DictionaryType object is expected as vocab_value_type")
 
-        self.d['searchDictionaries'].append(vocab_dict)
+        self.temp_dict[tag_search_dict].append(vocab_dict)
 
-    def clear(self):
-        self.d['files'] = []
-        self.d['urls'] = []
-        self.d['title'] = None
-        self.d['index'] = None
-        self.d['autotag'] = None
-        self.d['maxTokenPerUtt'] = None
-        self.d['minTokenPerUtt'] = None
-        self.d['exclude_utt_without_entities'] = None
-        self.d['searchDictionaries'] = []
+    def clear(self) -> None:
+        """Remove all temporary data"""
 
-    def upload(self, file: str):
+        self.temp_dict[tag_files] = []
+        self.temp_dict[tag_urls] = []
+        self.temp_dict[tag_title] = None
+        self.temp_dict[tag_index] = None
+        self.temp_dict[tag_autotag] = None
+        self.temp_dict[tag_max_token] = None
+        self.temp_dict[tag_min_token] = None
+        self.temp_dict[tag_exclude_utt] = None
+        self.temp_dict[tag_search_dict] = []
+
+    def upload(self, file: str) -> Dict:
         """Upload files for data mining"""
 
         if not isinstance(file, str):
@@ -124,7 +147,7 @@ class Tagging:
             raise QTArgumentError(f"Argument error: File {file} does not exist")
         files = {'file': open(file, 'rb')}
         try:
-            res = self.s.post(url+"file", headers=self.headers, files=files)
+            res = self.session.post(url + "file", headers=self.headers, files=files)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -132,31 +155,31 @@ class Tagging:
                                  f"HTTP status code: {res.status_code}")
         return res.json()
 
-    def tagging_files(self):
+    def tagging_files(self) -> Dict:
         """Mine data via dictionaries"""
 
         self.headers["Content-Type"] = "application/json"
-        if len(self.d['files']) == 0:
+        if len(self.temp_dict[tag_files]) == 0:
             raise QTTaggingError("Tagging error: Please add files using files function")
-        if len(self.d['searchDictionaries']) == 0:
+        if len(self.temp_dict[tag_search_dict]) == 0:
             raise QTTaggingError("Tagging error: Please add URLs using search_url function")
-        data = {'files': self.d['files'], 'searchDictionaries': self.d['searchDictionaries']}
-        if len(self.d['searchDictionaries']) != 0:
-            data['searchDictionaries'] = self.d['searchDictionaries']
-        if self.d['title'] is not None:
-            data['title'] = self.d['title']
-        if self.d['index'] is not None:
-            data['index'] = self.d['index']
-        if self.d['autotag'] is not None:
-            data['autotag'] = self.d['autotag']
-        if self.d['maxTokenPerUtt'] is not None:
-            data['maxTokenPerUtt'] = self.d['maxTokenPerUtt']
-        if self.d['minTokenPerUtt'] is not None:
-            data['minTokenPerUtt'] = self.d['minTokenPerUtt']
-        if self.d['exclude_utt_without_entities'] is not None:
-            data['exclude_utt_without_entities'] = self.d['exclude_utt_without_entities']
+        data = {'files': self.temp_dict[tag_files], 'searchDictionaries': self.temp_dict[tag_search_dict]}
+        if len(self.temp_dict[tag_search_dict]) != 0:
+            data['searchDictionaries'] = self.temp_dict[tag_search_dict]
+        if self.temp_dict[tag_title] is not None:
+            data['title'] = self.temp_dict[tag_title]
+        if self.temp_dict[tag_index] is not None:
+            data['index'] = self.temp_dict[tag_index]
+        if self.temp_dict[tag_autotag] is not None:
+            data['autotag'] = self.temp_dict[tag_autotag]
+        if self.temp_dict[tag_max_token] is not None:
+            data['maxTokenPerUtt'] = self.temp_dict[tag_max_token]
+        if self.temp_dict[tag_min_token] is not None:
+            data['minTokenPerUtt'] = self.temp_dict[tag_min_token]
+        if self.temp_dict[tag_exclude_utt] is not None:
+            data['exclude_utt_without_entities'] = self.temp_dict[tag_exclude_utt]
         try:
-            res = self.s.post(url+"new", headers=self.headers, data=json.dumps(data))
+            res = self.session.post(url + "new", headers=self.headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -170,37 +193,37 @@ class Tagging:
         if not isinstance(index, str):
             raise QTArgumentError("Argument type error: String is expected as index")
         try:
-            res = self.s.delete(url + index, headers=self.headers)
+            res = self.session.delete(url + index, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
+        if res.status_code not in [200, 201, 202, 204]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
                                  f"HTTP status code: {res.status_code}")
         return res.ok
 
-    def minning_url(self) -> dict:
-        """Minning data on URLs"""
+    def mining_url(self) -> dict:
+        """Mining data on URLs"""
 
         self.headers["Content-Type"] = "application/json"
-        if len(self.d['urls']) == 0:
+        if len(self.temp_dict[tag_urls]) == 0:
             raise QTTaggingError("Tagging error: Please add urls using files function")
-        if len(self.d['searchDictionaries']) == 0:
+        if len(self.temp_dict[tag_search_dict]) == 0:
             raise QTTaggingError("Tagging error: Please add dictionary using search_url function")
-        data = {'urls': self.d['urls'], 'searchDictionaries': self.d['searchDictionaries']}
-        if self.d['title'] is not None:
-            data['title'] = self.d['title']
-        if self.d['index'] is not None:
-            data['index'] = self.d['index']
-        if self.d['autotag'] is not None:
-            data['autotag'] = self.d['autotag']
-        if self.d['maxTokenPerUtt'] is not None:
-            data['maxTokenPerUtt'] = self.d['maxTokenPerUtt']
-        if self.d['minTokenPerUtt'] is not None:
-            data['minTokenPerUtt'] = self.d['minTokenPerUtt']
-        if self.d['exclude_utt_without_entities'] is not None:
-            data['exclude_utt_without_entities'] = self.d['exclude_utt_without_entities']
+        data = {'urls': self.temp_dict[tag_urls], 'searchDictionaries': self.temp_dict[tag_search_dict]}
+        if self.temp_dict[tag_title] is not None:
+            data['title'] = self.temp_dict[tag_title]
+        if self.temp_dict[tag_index] is not None:
+            data['index'] = self.temp_dict[tag_index]
+        if self.temp_dict[tag_autotag] is not None:
+            data['autotag'] = self.temp_dict[tag_autotag]
+        if self.temp_dict[tag_max_token] is not None:
+            data['maxTokenPerUtt'] = self.temp_dict[tag_max_token]
+        if self.temp_dict[tag_min_token] is not None:
+            data['minTokenPerUtt'] = self.temp_dict[tag_min_token]
+        if self.temp_dict[tag_exclude_utt] is not None:
+            data['exclude_utt_without_entities'] = self.temp_dict[tag_exclude_utt]
         try:
-            res = self.s.post(url + "new", data=json.dumps(data), headers=self.headers)
+            res = self.session.post(url + "new", data=json.dumps(data), headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -208,8 +231,8 @@ class Tagging:
                                  f"HTTP status code: {res.status_code}")
         return res.json()
 
-    def progress(self, index=None):
-        """Show progress for submitted data minining job"""
+    def progress(self, index=None) -> Dict:
+        """Show progress for submitted data mining job"""
 
         url_path = "progress"
         if index is not None:
@@ -218,7 +241,7 @@ class Tagging:
             else:
                 raise QTArgumentError("Expected string")
         try:
-            status = self.s.get(url + url_path, headers=self.headers)
+            status = self.session.get(url + url_path, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if status.status_code not in [200, 201, 202]:
@@ -226,7 +249,7 @@ class Tagging:
                                  f"HTTP status code: {status.status_code}")
         return status.json()
 
-    def search(self, index: str, param_from=0, size=None, f1=None, f2=None):
+    def search(self, index: str, param_from=0, size=None, f1=None, f2=None) -> Dict:
         """Search full-text and faceted search"""
 
         if not isinstance(index, str):
@@ -248,7 +271,7 @@ class Tagging:
         else:
             raise QTArgumentError("Argument error: Query filters must be used in pairs")
         try:
-            res = self.s.get(url + index, headers=self.headers, params=parameters)
+            res = self.session.get(url + index, headers=self.headers, params=parameters)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -256,7 +279,7 @@ class Tagging:
                                  f"HTTP status code: {res.status_code}")
         return res.json()
 
-    def report_to_xlsx(self, index: str, path: str):
+    def report_to_xlsx(self, index: str, path: str) -> bool:
         """Exporting in Excel format"""
 
         if not isinstance(index, str):
@@ -272,7 +295,7 @@ class Tagging:
         if extension != ".xlsx":
             raise QTFileTypeError("File type error: Please use xlsx extension saving file")
         try:
-            report = self.s.get(BASE_URL + "reports/" + index + "/xlsx", headers=self.headers)
+            report = self.session.get(BASE_URL + "reports/" + index + "/xlsx", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if report.status_code not in [200, 201, 202]:
@@ -298,7 +321,7 @@ class Tagging:
         if extension != ".json":
             raise QTFileTypeError("File type error: Please use json extension saving file")
         try:
-            report = self.s.get(BASE_URL + "reports/" + index + "/json", headers=self.headers)
+            report = self.session.get(BASE_URL + "reports/" + index + "/json", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if report.status_code not in [200, 201, 202]:

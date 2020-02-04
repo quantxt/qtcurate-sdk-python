@@ -2,28 +2,31 @@ from config import BASE_URL
 import requests
 import json
 import os.path
-from typing import Dict
+from typing import Dict, List
 from qt.exceptions import QTArgumentError, QTDictionaryError, QTConnectionError, QTRestApiError
+
+dic_entries = "entries"
+dic_name = "name" 
 
 
 class Dictionary:
     def __init__(self, api_key):
-        self.s = requests.Session()
+        self.session = requests.Session()
         self.headers = {"X-API-Key": api_key}
-        self.d = dict()
-        self.d['entries'] = []
-        self.d['name'] = None
+        self.temp_dict = dict()
+        self.temp_dict[dic_entries] = []
+        self.temp_dict[dic_name] = None
         self.url = BASE_URL + "dictionaries/"
 
-    def name(self, name: str):
+    def name(self, name: str) -> None:
         """Create a new name for dictionary"""
 
         if isinstance(name, str):
-            self.d['name'] = name
+            self.temp_dict[dic_name] = name
         else:
             raise QTArgumentError("Argument type error: String is expected as name")
 
-    def entries(self, entry: Dict):
+    def entries(self, entry: Dict) -> None:
         """Create dictionary data"""
 
         if not isinstance(entry, Dict):
@@ -35,30 +38,28 @@ class Dictionary:
             raise QTArgumentError("Argument error: Dictionary must have 2 element where keys are 'key' and 'value'."
                                   "Example {'key': 'some key', 'value': 'some value'} ")
         else:
-            self.d['entries'].append(entry)
+            self.temp_dict[dic_entries].append(entry)
 
+    def clear(self) -> None:
+        """Remove all temporary data"""
 
+        self.temp_dict[dic_entries] = []
+        self.temp_dict[dic_name] = None
 
-    def clear(self):
-        """Set default values"""
-
-        self.d['entries'] = []
-        self.d['name'] = None
-
-    def add_entry(self, key, value):
+    def add_entry(self, key, value) -> None:
         """Create dictionary data"""
 
         if not isinstance(key, (str, int, float)):
             raise QTArgumentError("Argument type error: String, integer or float are expected as key")
         elif not isinstance(value, (str, int, float)):
             raise QTArgumentError("Argument type error: String, integer or float is expected as value")
-        self.d['entries'].append({'key': key, 'value': value})
+        self.temp_dict[dic_entries].append({'key': key, 'value': value})
 
-    def list(self) -> Dict:
+    def list(self) -> List:
         """List all dictionaries"""
 
         try:
-            listed = self.s.get(self.url,  headers=self.headers)
+            listed = self.session.get(self.url, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if listed.status_code not in [200, 201, 202]:
@@ -66,13 +67,13 @@ class Dictionary:
                                  f"HTTP status code: {listed.status_code}")
         return listed.json()
 
-    def fetch(self, index: str):
+    def fetch(self, index: str) -> Dict:
         """Fetch dictionary by ID"""
 
         if not isinstance(index, str):
             raise QTArgumentError("Argument type error: String is expected as index")
         try:
-            f = self.s.get(self.url + index, headers=self.headers)
+            f = self.session.get(self.url + index, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if f.status_code not in [200, 201, 202]:
@@ -86,10 +87,10 @@ class Dictionary:
         if not isinstance(index, str):
             raise QTArgumentError("Argument type error: String is expected as index")
         try:
-            res = self.s.delete(self.url + index, headers=self.headers)
+            res = self.session.delete(self.url + index, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
+        if res.status_code not in [200, 201, 202, 204]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
                                  f"HTTP status code: {res.status_code}")
         return res.ok
@@ -97,14 +98,14 @@ class Dictionary:
     def create(self) -> Dict:
         """Create dictionary data"""
 
-        if self.d['name'] is None:
+        if self.temp_dict[dic_name] is None:
             raise QTDictionaryError("Dictionary error: Please add name using name function")
-        if len(self.d['entries']) == 0:
+        if len(self.temp_dict[dic_entries]) == 0:
             raise QTDictionaryError("Dictionary error: Please add dictionary using add_entry function")
-        data = {'name': self.d['name'], 'entries': self.d['entries']}
+        data = {'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]}
         self.headers['Content-Type'] = 'application/json'
         try:
-            created = self.s.post(self.url, headers=self.headers, data=json.dumps(data))
+            created = self.session.post(self.url, headers=self.headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if created.status_code not in [200, 201, 202]:
@@ -117,13 +118,13 @@ class Dictionary:
 
         if not isinstance(index, str):
             raise QTArgumentError("Argument type error: String is expected as index")
-        if self.d['name'] is None:
+        if self.temp_dict[dic_name] is None:
             raise QTDictionaryError("Dictionary error: Please add name using name function")
-        if len(self.d['entries']) == 0:
+        if len(self.temp_dict[dic_entries]) == 0:
             raise QTDictionaryError("Dictionary error: Please add dictionary using add_entry function")
-        data = {'name': self.d['name'], 'entries': self.d['entries']}
+        data = {'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]}
         try:
-            updated = self.s.put(self.url + index, headers=self.headers, data=json.dumps(data))
+            updated = self.session.put(self.url + index, headers=self.headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if updated.status_code not in [200, 201, 202]:
@@ -131,7 +132,7 @@ class Dictionary:
                                  f"HTTP status code: {updated.status_code}")
         return updated.ok
 
-    def upload(self, file: str, name: str):
+    def upload(self, file: str, name: str) -> Dict:
         """Upload dictionary data from TSV files"""
 
         if not isinstance(file, str):
@@ -148,7 +149,7 @@ class Dictionary:
             'file': open(file, 'rb')
         }
         try:
-            res = self.s.post(self.url+"upload", headers=self.headers, files=files)
+            res = self.session.post(self.url + "upload", headers=self.headers, files=files)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:

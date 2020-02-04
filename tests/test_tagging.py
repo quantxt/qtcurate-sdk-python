@@ -12,7 +12,7 @@ class TestTagging(TestCase):
         title = "some title"
         tag = Tagging('123456')
         tag.title(title)
-        self.assertEqual(title, tag.d["title"])
+        self.assertEqual(title, tag.temp_dict["title"])
 
     def test_title_arg_error(self):
         title = 12
@@ -24,7 +24,7 @@ class TestTagging(TestCase):
         index = "some index"
         tag = Tagging('123456')
         tag.index(index)
-        self.assertEqual(index, tag.d["index"])
+        self.assertEqual(index, tag.temp_dict["index"])
 
     def test_index_arg_error(self):
         index = [123]
@@ -36,7 +36,7 @@ class TestTagging(TestCase):
         value = True
         tag = Tagging('123456')
         tag.autotag(value)
-        self.assertEqual(value, tag.d["autotag"])
+        self.assertEqual(value, tag.temp_dict["autotag"])
 
     def test_autotag_arg_error(self):
         value = 12
@@ -48,7 +48,7 @@ class TestTagging(TestCase):
         value = 1
         tag = Tagging('123456')
         tag.max_token_per_utt(value)
-        self.assertEqual(value, tag.d["maxTokenPerUtt"])
+        self.assertEqual(value, tag.temp_dict["maxTokenPerUtt"])
 
     def test_max_token_arg_error(self):
         value = "text"
@@ -61,7 +61,7 @@ class TestTagging(TestCase):
         value = 1
         tag = Tagging('123456')
         tag.min_token_per_utt(value)
-        self.assertEqual(value, tag.d["minTokenPerUtt"])
+        self.assertEqual(value, tag.temp_dict["minTokenPerUtt"])
 
     def test_min_token_arg_error(self):
         value = "text"
@@ -74,7 +74,7 @@ class TestTagging(TestCase):
         value = True
         tag = Tagging('123456')
         tag.exclude_utt_without_entities(value)
-        self.assertEqual(value, tag.d["exclude_utt_without_entities"])
+        self.assertEqual(value, tag.temp_dict["exclude_utt_without_entities"])
 
     def test_exclude_utt_arg_error(self):
         value = 12
@@ -86,7 +86,7 @@ class TestTagging(TestCase):
         list_files = ["file1", "file2"]
         tag = Tagging('123456')
         tag.files(list_files)
-        self.assertEqual(list_files, tag.d['files'])
+        self.assertEqual(list_files, tag.temp_dict['files'])
 
     def test_files_arg_error(self):
         list_files = "string"
@@ -98,7 +98,7 @@ class TestTagging(TestCase):
         list_urls = ["www.url1.com", "www.url2.com"]
         tag = Tagging('123456')
         tag.urls(list_urls)
-        self.assertEqual(list_urls, tag.d['urls'])
+        self.assertEqual(list_urls, tag.temp_dict['urls'])
 
     def test_urls_arg_error(self):
         list_urls = "string"
@@ -115,7 +115,7 @@ class TestTagging(TestCase):
         search_dict = [dic]
         tag = Tagging('123456')
         tag.search_rule(path, vocab)
-        self.assertEqual(search_dict, tag.d['searchDictionaries'])
+        self.assertEqual(search_dict, tag.temp_dict['searchDictionaries'])
 
     def test_search_path_arg_error(self):
         dic = dict()
@@ -270,13 +270,13 @@ class TestTagging(TestCase):
         dic["vocabValueType"] = vocab.value
         tag = Tagging('123456')
         tag.search_rule(path, vocab)
-        self.assertRaises(QTTaggingError, tag.minning_url)
+        self.assertRaises(QTTaggingError, tag.mining_url)
 
     def test_tagging_empty_dictionary(self):
         urls = ["www.url.com"]
         tag = Tagging('123456')
         tag.urls(urls)
-        self.assertRaises(QTTaggingError, tag.minning_url)
+        self.assertRaises(QTTaggingError, tag.mining_url)
 
     @patch("qt.tagging.requests.Session")
     def test_mining_url_not_authorized(self, session):
@@ -294,7 +294,7 @@ class TestTagging(TestCase):
         tag.urls(list_urls)
         tag.search_rule(dict_path, vocal_value_type)
 
-        self.assertRaises(QTRestApiError, tag.minning_url)
+        self.assertRaises(QTRestApiError, tag.mining_url)
 
     @patch("qt.tagging.requests.Session")
     def test_mining_url_connection_exception(self, session):
@@ -309,7 +309,7 @@ class TestTagging(TestCase):
         tag.urls(list_urls)
         tag.search_rule(dict_path, vocal_value_type)
 
-        self.assertRaises(QTConnectionError, tag.minning_url)
+        self.assertRaises(QTConnectionError, tag.mining_url)
 
     def test_progress_arg_error(self):
         index = 123

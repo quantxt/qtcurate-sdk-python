@@ -1,7 +1,6 @@
 from unittest import TestCase
 import requests
 from unittest.mock import patch, Mock
-
 from qt.dictionaries import Dictionary
 from qt.exceptions import *
 
@@ -12,7 +11,7 @@ class TestDictionaries(TestCase):
         name = "some name"
         dic = Dictionary('123456')
         dic.name(name)
-        self.assertEqual(name, dic.d["name"])
+        self.assertEqual(name, dic.temp_dict["name"])
 
     def test_name_type(self):
         name = 12345
@@ -42,7 +41,7 @@ class TestDictionaries(TestCase):
         test_dict = {"key": "key", "value": "value"}
         dic = Dictionary('1234567')
         dic.entries(test_dict)
-        self.assertEqual([test_dict], dic.d['entries'])
+        self.assertEqual([test_dict], dic.temp_dict['entries'])
 
     def test_add_entry(self):
         key = "New York"
@@ -50,7 +49,7 @@ class TestDictionaries(TestCase):
         list_entries = [{"key": key, "value": value}]
         dic = Dictionary('123456')
         dic.add_entry(key, value)
-        self.assertEqual(list_entries, dic.d['entries'])
+        self.assertEqual(list_entries, dic.temp_dict['entries'])
 
     def test_add_entry_key_type(self):
         key = ["test"]
