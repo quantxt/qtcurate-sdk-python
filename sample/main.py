@@ -1,9 +1,16 @@
+# import sys
+# import os
+#
+# sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
+
 from qtcurate.tagging import Tagging, DictionaryType
 from qtcurate.dictionaries import Dictionary
 from typing import List
 from time import sleep
 
-API_KEY = '123456'
+
+
+API_KEY = 'YOUR_API_KEY'
 
 
 def get_dictionary_entries(file_name: str) -> List:

@@ -1,4 +1,4 @@
-from config import BASE_URL
+from qtcurate.config import BASE_URL
 import requests
 import json
 import os.path

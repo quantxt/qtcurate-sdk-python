@@ -1,25 +1,21 @@
 from setuptools import setup
-import io
 
 
-def long_description():
-    with io.open('README.md', 'r', encoding='utf-8') as f:
-        readme = f.read()
-    return readme
-
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 setup(
     name="qtcurate",
-    version="1.1.0",
+    version="1.1.1",
     description="Theia SDK Search and Data Extraction",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/quantxt/qtcurate-sdk-python",
     author="Milojko Bjelanovic",
-    author_email="mbjelanovic@gmail.com",
-    license="Apache 2.0",
+    author_email="mbjelanovic@quantxt.com",
+    license="Apache License 2.0",
     classifiers=[
-        "License :: OSI Approved :: Apache License",
+        "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
@@ -29,10 +25,5 @@ setup(
     packages=["qtcurate"],
     include_package_data=True,
     install_requires=["requests"],
-    python_requires=">=3.5",
-    project_urls={
-        'Bug Reports': 'support@quantxt.com',
-        'Say Thanks!': 'http://quantxt.com',
-        'Source': 'https://github.com/quantxt/qtcurate-sdk-python',
-    }
+    python_requires='>=3.5'
 )
