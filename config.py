@@ -1,4 +1,1 @@
-BASE_URL = 'http://test.api.quantxt.com/'
-USERNAME = 'mbjelanovic@gmail.com'
-PASSWORD = '1234567'
-
+BASE_URL = 'http://search.api.quantxt.com/'

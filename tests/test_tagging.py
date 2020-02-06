@@ -2,8 +2,8 @@ from unittest import TestCase
 import requests
 from unittest.mock import patch, Mock
 
-from qt.tagging import Tagging, DictionaryType
-from qt.exceptions import *
+from qtcurate.tagging import Tagging, DictionaryType
+from qtcurate.exceptions import *
 
 
 class TestTagging(TestCase):
@@ -155,7 +155,7 @@ class TestTagging(TestCase):
         with self.assertRaises(QTArgumentError):
             tag.upload(file)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_upload_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -169,7 +169,7 @@ class TestTagging(TestCase):
         with self.assertRaises(QTRestApiError):
             tag.upload(file_path)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_upload_connection_exception(self, session):
         mock = Mock()
         mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -197,7 +197,7 @@ class TestTagging(TestCase):
         tag.files(path)
         self.assertRaises(QTTaggingError, tag.tagging_files)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_tagging_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -215,7 +215,7 @@ class TestTagging(TestCase):
 
         self.assertRaises(QTRestApiError, tag.tagging_files)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_tagging_connection_exception(self, session):
         mock = Mock()
         mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -236,7 +236,7 @@ class TestTagging(TestCase):
         with self.assertRaises(QTArgumentError):
             tag.delete(value)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_delete_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -250,7 +250,7 @@ class TestTagging(TestCase):
         with self.assertRaises(QTRestApiError):
             tag.delete(tag_id)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_delete_connection_exception(self, session):
         mock = Mock()
         mock.delete.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -278,7 +278,7 @@ class TestTagging(TestCase):
         tag.urls(urls)
         self.assertRaises(QTTaggingError, tag.mining_url)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_mining_url_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -296,7 +296,7 @@ class TestTagging(TestCase):
 
         self.assertRaises(QTRestApiError, tag.mining_url)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_mining_url_connection_exception(self, session):
         mock = Mock()
         mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -317,7 +317,7 @@ class TestTagging(TestCase):
         with self.assertRaises(QTArgumentError):
             tag.progress(index)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_progress_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -330,7 +330,7 @@ class TestTagging(TestCase):
 
         self.assertRaises(QTRestApiError, tag.progress)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_progress_connection_exception(self, session):
         mock = Mock()
         mock.get.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -378,7 +378,7 @@ class TestTagging(TestCase):
         with self.assertRaises(QTArgumentError):
             tag.search(index, param_from, size, f1)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_search_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -393,7 +393,7 @@ class TestTagging(TestCase):
         with self.assertRaises(QTRestApiError):
             tag.search(string)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_search_connection_exception(self, session):
         mock = Mock()
         mock.get.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -433,7 +433,7 @@ class TestTagging(TestCase):
         with self.assertRaises(QTFileTypeError):
             tag.report_to_xlsx(index, path)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_xlsx_report_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -449,7 +449,7 @@ class TestTagging(TestCase):
         with self.assertRaises(QTRestApiError):
             tag.report_to_xlsx(element, path)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_xlsx_report_connection_exception(self, session):
         mock = Mock()
         mock.get.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -462,7 +462,7 @@ class TestTagging(TestCase):
         with self.assertRaises(QTConnectionError):
             tag.report_to_xlsx(element, path)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_json_report_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -478,7 +478,7 @@ class TestTagging(TestCase):
         with self.assertRaises(QTRestApiError):
             tag.report_to_json(element, path)
 
-    @patch("qt.tagging.requests.Session")
+    @patch("qtcurate.tagging.requests.Session")
     def test_json_report_connection_exception(self, session):
         mock = Mock()
         mock.get.side_effect = requests.exceptions.ConnectionError("Connection error")

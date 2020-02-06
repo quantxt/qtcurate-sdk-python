@@ -1,10 +1,9 @@
-from qt.tagging import Tagging, DictionaryType
-from qt.dictionaries import Dictionary
+from qtcurate.tagging import Tagging, DictionaryType
+from qtcurate.dictionaries import Dictionary
 from typing import List
 from time import sleep
 
-
-API_KEY = '1234567'
+API_KEY = '123456'
 
 
 def get_dictionary_entries(file_name: str) -> List:
@@ -51,6 +50,7 @@ for entry in loss_entries:
 try:
     loss_dictionary = d.create()
 except Exception as e:
+    print("mima")
     print(e)
 
 d.clear()
