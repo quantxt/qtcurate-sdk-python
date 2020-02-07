@@ -1,16 +1,17 @@
-from config import BASE_URL
+from qtcurate.config import BASE_URL
 import requests
 import json
 from enum import Enum
 from typing import Dict, List
 import os.path
-from qt.exceptions import QTFileTypeError, QTArgumentError, QTConnectionError, QTRestApiError, QTTaggingError
+from qtcurate.exceptions import QTFileTypeError, QTArgumentError, QTConnectionError, QTRestApiError, QTTaggingError
 
 url = BASE_URL + "search/"
 
 tag_files = "files"
 tag_urls = "urls"
 tag_title = "title"
+tag_stitle = "stitle"
 tag_index = "index"
 tag_autotag = "autotag"
 tag_max_token = "maxTokenPerUtt"
@@ -47,6 +48,14 @@ class Tagging:
 
         if isinstance(value, str):
             self.temp_dict[tag_title] = value
+        else:
+            raise QTArgumentError("Argument type error: String is expected as title")
+
+    def stitle(self, value: str) -> None:
+        """Create title for mining data"""
+
+        if isinstance(value, str):
+            self.temp_dict[tag_stitle] = value
         else:
             raise QTArgumentError("Argument type error: String is expected as title")
 
@@ -152,7 +161,7 @@ class Tagging:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}")
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.json()
 
     def tagging_files(self) -> Dict:
@@ -184,7 +193,7 @@ class Tagging:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}")
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.json()
 
     def delete(self, index: str) -> bool:
@@ -198,7 +207,7 @@ class Tagging:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202, 204]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}")
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.ok
 
     def mining_url(self) -> dict:
@@ -228,7 +237,7 @@ class Tagging:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}")
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.json()
 
     def progress(self, index=None) -> Dict:
@@ -241,13 +250,13 @@ class Tagging:
             else:
                 raise QTArgumentError("Expected string")
         try:
-            status = self.session.get(url + url_path, headers=self.headers)
+            res = self.session.get(url + url_path, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if status.status_code not in [200, 201, 202]:
+        if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {status.status_code}")
-        return status.json()
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        return res.json()
 
     def search(self, index: str, param_from=0, size=None, f1=None, f2=None) -> Dict:
         """Search full-text and faceted search"""
@@ -276,7 +285,7 @@ class Tagging:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}")
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.json()
 
     def report_to_xlsx(self, index: str, path: str) -> bool:
@@ -295,15 +304,15 @@ class Tagging:
         if extension != ".xlsx":
             raise QTFileTypeError("File type error: Please use xlsx extension saving file")
         try:
-            report = self.session.get(BASE_URL + "reports/" + index + "/xlsx", headers=self.headers)
+            res = self.session.get(BASE_URL + "reports/" + index + "/xlsx", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if report.status_code not in [200, 201, 202]:
+        if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {report.status_code}")
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         with open(path, 'wb') as excel_file:
-            excel_file.write(report.content)
-        return report.ok
+            excel_file.write(res.content)
+        return res.ok
 
     def report_to_json(self, index: str, path: str) -> bool:
         """Exporting in Excel format"""
@@ -321,12 +330,12 @@ class Tagging:
         if extension != ".json":
             raise QTFileTypeError("File type error: Please use json extension saving file")
         try:
-            report = self.session.get(BASE_URL + "reports/" + index + "/json", headers=self.headers)
+            res = self.session.get(BASE_URL + "reports/" + index + "/json", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if report.status_code not in [200, 201, 202]:
+        if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {report.status_code}")
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         with open(path, "w") as json_file:
-            json.dump(report.json(), json_file)
-        return report.ok
+            json.dump(res.json(), json_file)
+        return res.ok

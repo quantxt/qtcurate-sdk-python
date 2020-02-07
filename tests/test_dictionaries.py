@@ -1,8 +1,8 @@
 from unittest import TestCase
 import requests
 from unittest.mock import patch, Mock
-from qt.dictionaries import Dictionary
-from qt.exceptions import *
+from qtcurate.dictionaries import Dictionary
+from qtcurate.exceptions import *
 
 
 class TestDictionaries(TestCase):
@@ -65,7 +65,7 @@ class TestDictionaries(TestCase):
         with self.assertRaises(QTArgumentError):
             dic.add_entry(key, value)
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_list_empty(self, session):
         mock = Mock()
         response = Mock()
@@ -78,7 +78,7 @@ class TestDictionaries(TestCase):
         all_dictionaries = dic.list()
         assert all_dictionaries == []
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_list_non_empty(self, session):
         dicts = [
             {
@@ -101,7 +101,7 @@ class TestDictionaries(TestCase):
         all_dictionaries = dic.list()
         self.assertEqual(all_dictionaries, dicts)
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_list_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -113,7 +113,7 @@ class TestDictionaries(TestCase):
         dic = Dictionary('123456')
         self.assertRaises(QTRestApiError, dic.list)
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_list_connection_exception(self, session):
         mock = Mock()
         mock.get.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -136,7 +136,7 @@ class TestDictionaries(TestCase):
         with self.assertRaises(QTDictionaryError):
             dic.create()
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_create_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -152,7 +152,7 @@ class TestDictionaries(TestCase):
 
         self.assertRaises(QTRestApiError, dic.create)
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_create_connection_exception(self, session):
         mock = Mock()
         mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -171,7 +171,7 @@ class TestDictionaries(TestCase):
         with self.assertRaises(QTArgumentError):
             dic.fetch(dict_id)
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_fetch_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -184,7 +184,7 @@ class TestDictionaries(TestCase):
         with self.assertRaises(QTRestApiError):
             dic.fetch("some dictionar id")
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_fetch_connection_exception(self, session):
         mock = Mock()
         mock.get.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -194,7 +194,7 @@ class TestDictionaries(TestCase):
         with self.assertRaises(QTConnectionError):
             dic.fetch("some dictionary id")
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_delete_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -207,7 +207,7 @@ class TestDictionaries(TestCase):
         with self.assertRaises(QTRestApiError):
             dic.delete("some dictionary id")
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_delete_connection_exception(self, session):
         mock = Mock()
         mock.delete.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -223,7 +223,7 @@ class TestDictionaries(TestCase):
         with self.assertRaises(QTArgumentError):
             dic.delete(dict_id)
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_update_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -239,7 +239,7 @@ class TestDictionaries(TestCase):
         with self.assertRaises(QTRestApiError):
             dic.update("some dictionar id")
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_update_connection_exception(self, session):
         mock = Mock()
         mock.put.side_effect = requests.exceptions.ConnectionError("Connection error")
@@ -274,7 +274,7 @@ class TestDictionaries(TestCase):
         with self.assertRaises(QTDictionaryError):
             dic.update(dict_id)
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_upload_not_authorized(self, session):
         mock = Mock()
         response = Mock()
@@ -289,7 +289,7 @@ class TestDictionaries(TestCase):
         with self.assertRaises(QTRestApiError):
             dic.upload(file_path, name)
 
-    @patch("qt.dictionaries.requests.Session")
+    @patch("qtcurate.dictionaries.requests.Session")
     def test_upload_connection_exception(self, session):
         mock = Mock()
         mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")

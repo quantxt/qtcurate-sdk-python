@@ -1,9 +1,9 @@
-from config import BASE_URL
+from qtcurate.config import BASE_URL
 import requests
 import json
 import os.path
 from typing import Dict, List
-from qt.exceptions import QTArgumentError, QTDictionaryError, QTConnectionError, QTRestApiError
+from qtcurate.exceptions import QTArgumentError, QTDictionaryError, QTConnectionError, QTRestApiError
 
 dic_entries = "entries"
 dic_name = "name" 
@@ -59,13 +59,13 @@ class Dictionary:
         """List all dictionaries"""
 
         try:
-            listed = self.session.get(self.url, headers=self.headers)
+            res = self.session.get(self.url, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if listed.status_code not in [200, 201, 202]:
+        if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {listed.status_code}")
-        return listed.json()
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        return res.json()
 
     def fetch(self, index: str) -> Dict:
         """Fetch dictionary by ID"""
@@ -73,13 +73,13 @@ class Dictionary:
         if not isinstance(index, str):
             raise QTArgumentError("Argument type error: String is expected as index")
         try:
-            f = self.session.get(self.url + index, headers=self.headers)
+            res = self.session.get(self.url + index, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if f.status_code not in [200, 201, 202]:
+        if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {f.status_code}")
-        return f.json()
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        return res.json()
 
     def delete(self, index: str) -> bool:
         """Delete existing dictionary"""
@@ -92,7 +92,7 @@ class Dictionary:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202, 204]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}")
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.ok
 
     def create(self) -> Dict:
@@ -105,13 +105,13 @@ class Dictionary:
         data = {'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]}
         self.headers['Content-Type'] = 'application/json'
         try:
-            created = self.session.post(self.url, headers=self.headers, data=json.dumps(data))
+            res = self.session.post(self.url, headers=self.headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if created.status_code not in [200, 201, 202]:
+        if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {created.status_code}")
-        return created.json()
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        return res.json()
 
     def update(self, index: str) -> bool:
         """Update existing dictionary"""
@@ -124,13 +124,13 @@ class Dictionary:
             raise QTDictionaryError("Dictionary error: Please add dictionary using add_entry function")
         data = {'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]}
         try:
-            updated = self.session.put(self.url + index, headers=self.headers, data=json.dumps(data))
+            res = self.session.put(self.url + index, headers=self.headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:
             raise QTConnectionError(f"Connection error: {e}")
-        if updated.status_code not in [200, 201, 202]:
+        if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {updated.status_code}")
-        return updated.ok
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        return res.ok
 
     def upload(self, file: str, name: str) -> Dict:
         """Upload dictionary data from TSV files"""
@@ -154,5 +154,8 @@ class Dictionary:
             raise QTConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
             raise QTRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}")
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.json()
+
+    def __repr__(self):
+        return str({'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]})
