@@ -1,16 +1,16 @@
-# import sys
-# import os
-#
-# sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
+import sys
+import os
 
-from qtcurate.tagging import Tagging, DictionaryType
-from qtcurate.dictionaries import Dictionary
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
+
+from qtcurate.dataprocess import DataProcess, DictionaryType
+from qtcurate.qtdict import QtDict
 from typing import List
 from time import sleep
 
 
 
-API_KEY = 'YOUR_API_KEY'
+API_KEY = '1234567'
 
 
 def get_dictionary_entries(file_name: str) -> List:
@@ -45,7 +45,7 @@ def wait_for_completion(index: str):
     sleep(5)
 
 
-d = Dictionary(api_key=API_KEY)
+d = QtDict(api_key=API_KEY)
 
 loss_entries = get_dictionary_entries("loss.tsv")
 revenue_entries = get_dictionary_entries("revenue.tsv")
@@ -82,7 +82,7 @@ try:
 except Exception as e:
     print(e)
 print(loss_dictionary['key'])
-t = Tagging(api_key=API_KEY)
+t = DataProcess(api_key=API_KEY)
 t.title("Test Large SDK with URLS")
 t.exclude_utt_without_entities(False)
 t.autotag(False)

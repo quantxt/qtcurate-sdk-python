@@ -1,28 +1,28 @@
-class QTConnectionError(Exception):
+class QtConnectionError(Exception):
     pass
 
 
-class QTRestApiError(Exception):
+class QtRestApiError(Exception):
     """ Problem with authentification"""
     pass
 
 
-class QTFileTypeError(Exception):
+class QtFileTypeError(Exception):
     """Invalid type of file"""
     pass
 
 
-class QTDictionaryIdError(Exception):
+class QtDictIdError(Exception):
     """ Invalid resource"""
     pass
 
 
-class QTArgumentError(Exception):
+class QtArgumentError(Exception):
     pass
 
 
-class QTDictionaryError(Exception):
+class QtDictError(Exception):
     pass
 
-class QTTaggingError(Exception):
+class QtDataProcessError(Exception):
     pass
