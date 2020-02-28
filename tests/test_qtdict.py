@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, main
 import requests
 from unittest.mock import patch, Mock
 from qtcurate.qtdict import QtDict
@@ -329,3 +329,6 @@ class TestQtDict(TestCase):
         dic = QtDict('123456')
         with self.assertRaises(QtArgumentError):
             dic.upload(file, name)
+
+if __name__ == '__main__':
+    main()

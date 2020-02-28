@@ -36,7 +36,7 @@ class TestDataProcess(TestCase):
         value = True
         tag = DataProcess('123456')
         tag.autotag(value)
-        self.assertEqual(value, tag.temp_dict["autotag"])
+        self.assertEqual(value, tag.temp_dict["get_phrases"])
 
     def test_autotag_arg_error(self):
         value = 12
@@ -81,6 +81,18 @@ class TestDataProcess(TestCase):
         tag = DataProcess('123456')
         with self.assertRaises(QtArgumentError):
             tag.exclude_utt_without_entities(value)
+
+    def test_regex_pattern(self):
+        value = 12
+        tag = DataProcess('123456')
+        with self.assertRaises(QtArgumentError):
+            tag.regex_pattern(value)
+
+    def test_regex_group(self):
+        value = 12
+        tag = DataProcess('123456')
+        with self.assertRaises(QtArgumentError):
+            tag.regex_group(value)
 
     def test_files(self):
         list_files = ["file1", "file2"]

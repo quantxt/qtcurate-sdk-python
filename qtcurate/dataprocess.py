@@ -13,18 +13,53 @@ tag_urls = "urls"
 tag_title = "title"
 tag_stitle = "stitle"
 tag_index = "index"
-tag_autotag = "autotag"
+tag_autotag = "get_phrases"
 tag_max_token = "maxTokenPerUtt"
 tag_min_token = "minTokenPerUtt"
 tag_exclude_utt = "exclude_utt_without_entities"
 tag_search_dict = "searchDictionaries"
-
+tag_cmd = "cmd"
+tag_sort_by_position = "sortByPosition"
+phrase_matching_pattern = "phraseMatchingPattern"
+phrase_matching_groups = "phraseMatchingGroups"
+between_key_and_value = "skipPatternBetweenKeyAndValue"
+between_values = "skipPatternBetweenValues"
+search_mod = "searchMode"
+analyze_mod = "analyzeMode"
+stop_word_list = "stopwordList"
+synonym_l = "synonymList"
 
 class DictionaryType(Enum):
     NUMBER = "DOUBLE"
     STRING = "STRING"
     DATETIME = "DATETIME"
     NONE = "NONE"
+    REGEX = "REGEX"
+
+
+class ChunkMode(Enum):
+    NONE = "NONE"
+    SENTENCE = "SENTENCE"
+    PARAGRAPH = "PARAGRAPH"
+    PAGE = "PAGE"
+
+
+class SearhMode(Enum):
+    ORDERED_SPAN = "ORDERED_SPAN"
+    FUZZY_ORDERED_SPAN = "FUZZY_ORDERED_SPAN"
+    SPAN = "SPAN"
+    FUZZY_SPAN = "FUZZY_SPAN"
+    PARTIAL_SPAN = "PARTIAL_SPAN"
+    PARTIAL_FUZZY_SPAN = "PARTIAL_FUZZY_SPAN"
+
+
+class AnalyzeMode(Enum):
+    EXACT = "EXACT"
+    EXACT_CI = "EXACT_CI"
+    WHITESPACE = "WHITESPACE"
+    SIMPLE = "SIMPLE"
+    STANDARD = "STANDARD"
+    STEM = "STEM"
 
 
 class DataProcess:
@@ -41,7 +76,10 @@ class DataProcess:
         self.temp_dict[tag_max_token] = None
         self.temp_dict[tag_min_token] = None
         self.temp_dict[tag_exclude_utt] = None
+        self.temp_dict[tag_cmd] = None
         self.temp_dict[tag_search_dict] = []
+
+
 
     def title(self, value: str) -> None:
         """Create title for mining data"""
@@ -50,6 +88,14 @@ class DataProcess:
             self.temp_dict[tag_title] = value
         else:
             raise QtArgumentError("Argument type error: String is expected as title")
+
+    def cmd(self, value: str) -> None:
+        """Create cmd for mining data"""
+
+        if isinstance(value, str):
+            self.temp_dict[tag_cmd] = value
+        else:
+            raise QtArgumentError("Argument type error: String is expected as cmd")
 
     def stitle(self, value: str) -> None:
         """Create title for mining data"""
@@ -74,6 +120,14 @@ class DataProcess:
             self.temp_dict[tag_autotag] = value
         else:
             raise QtArgumentError("Argument type error: Boolean is expected as autotag")
+
+    def sort_by_position(self, value: bool) -> None:
+        """Set sortByPosition for mining data, this is optional parameter"""
+
+        if isinstance(value, bool):
+            self.temp_dict[tag_sort_by_position] = value
+        else:
+            raise QtArgumentError("Argument type error: Boolean is expected as sortByPosition")
 
     def max_token_per_utt(self, value: int) -> None:
         """Create  max token per utt for mining data, this is optional parameter"""
@@ -115,7 +169,9 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: Expected list of urls")
 
-    def search_rule(self, dictionary_path: str, vocab_value_type: DictionaryType) -> None:
+    def search_rule(self, dictionary_path: str, vocab_value_type: None, regex_phrase: None, regex_group: None,
+                    skip_pattern_between_key_and_value: None, skip_pattern_between_values: None, stopword_list: None,
+                    synonim_list: None, search_mode: None, analyze_mode: None) -> None:
         """Prepare dictionary for searching"""
 
         vocab_dict = dict()
@@ -123,10 +179,56 @@ class DataProcess:
             vocab_dict["vocabPath"] = dictionary_path
         else:
             raise QtArgumentError("Argument type error: String is expected as dictionary_path index")
-        if isinstance(vocab_value_type, DictionaryType):
-            vocab_dict["vocabValueType"] = vocab_value_type.value
-        else:
-            raise QtArgumentError("Argument type error: DictionaryType object is expected as vocab_value_type")
+
+        if vocab_value_type is not None:
+            if isinstance(vocab_value_type, DictionaryType):
+                vocab_dict["vocabValueType"] = vocab_value_type.value
+            else:
+                raise QtArgumentError("Argument type error: DictionaryType object is expected as vocab_value_type")
+
+        if vocab_value_type.value == "REGEX":
+            if regex_phrase is not None or regex_group is not None:
+                vocab_dict[phrase_matching_pattern] = regex_phrase
+                vocab_dict[phrase_matching_groups] = regex_group
+            else:
+                raise QtArgumentError("Argument type error: If use regex you have to add regex_phrase and regex_group")
+
+        if skip_pattern_between_key_and_value is not None:
+            if isinstance(skip_pattern_between_key_and_value, str):
+                vocab_dict[between_key_and_value] = skip_pattern_between_key_and_value
+            else:
+                raise QtArgumentError("Argument type error: String is expected as skip_pattern_between_key_and_value")
+
+        if skip_pattern_between_values is not None:
+            if isinstance(skip_pattern_between_values, str):
+                vocab_dict[between_values] = skip_pattern_between_values
+            else:
+                raise QtArgumentError("Argument type error: String is expected as skip_pattern_between_values")
+
+        if stopword_list is not None:
+            if isinstance(stopword_list, str):
+                vocab_dict[stop_word_list] = stopword_list
+            else:
+                raise QtArgumentError("Argument type error: String is expected as stopword_list")
+
+        if synonim_list is not None:
+            if isinstance(synonim_list, str):
+                vocab_dict[synonym_l] = synonim_list
+            else:
+                raise QtArgumentError("Argument type error: String is expected as synonim_list")
+
+        if search_mode is not None:
+            if isinstance(search_mode, SearhMode):
+                vocab_dict[search_mod] = search_mode.value
+            else:
+                raise QtArgumentError("Argument type error: SearchMode object is expected as search_mode")
+
+        if analyze_mode is not None:
+            if isinstance(analyze_mode, AnalyzeMode):
+                vocab_dict[analyze_mod] = analyze_mode.value
+            else:
+                raise QtArgumentError("Argument type error: AnalyzeMode object is expected as analyze_mode")
+
 
         self.temp_dict[tag_search_dict].append(vocab_dict)
 
