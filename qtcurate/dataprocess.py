@@ -1,5 +1,6 @@
 from qtcurate.config import BASE_URL
 import requests
+import re
 import json
 from enum import Enum
 from typing import Dict, List
@@ -34,7 +35,7 @@ class DictionaryType(Enum):
     STRING = "STRING"
     DATETIME = "DATETIME"
     NONE = "NONE"
-    REGEX = "REGEX"
+    REGEX = "KEYWORD"
 
 
 class ChunkMode(Enum):
@@ -192,6 +193,22 @@ class DataProcess:
                 vocab_dict[phrase_matching_groups] = regex_group
             else:
                 raise QtArgumentError("Argument type error: If use regex you have to add regex_phrase and regex_group")
+
+        if regex_phrase is not None:
+            if isinstance(regex_phrase, str):
+                try:
+                    re.compile(regex_phrase)
+                    valid = True
+                except re.error:
+                    valid = False
+                if valid is False:
+                    raise QtArgumentError("Argument type error: Please write valid regular expression.")
+            else:
+                raise QtArgumentError("Argument type error: Please write valid regular expression.")
+
+        if regex_group is not None:
+            if not isinstance(regex_group, List):
+                raise QtArgumentError("Argument type error: List is expected as regex group")
 
         if skip_pattern_between_key_and_value is not None:
             if isinstance(skip_pattern_between_key_and_value, str):
