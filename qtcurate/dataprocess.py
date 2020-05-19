@@ -29,6 +29,8 @@ search_mod = "searchMode"
 analyze_mod = "analyzeMode"
 stop_word_list = "stopwordList"
 synonym_l = "synonymList"
+tag_query = "query"
+tag_sources = "sources"
 
 class DictionaryType(Enum):
     NUMBER = "DOUBLE"
@@ -79,6 +81,8 @@ class DataProcess:
         self.temp_dict[tag_exclude_utt] = None
         self.temp_dict[tag_cmd] = None
         self.temp_dict[tag_search_dict] = []
+        self.temp_dict[tag_query] = None
+        self.temp_dict[tag_sources] = []
 
 
 
@@ -95,6 +99,14 @@ class DataProcess:
 
         if isinstance(value, str):
             self.temp_dict[tag_cmd] = value
+        else:
+            raise QtArgumentError("Argument type error: String is expected as cmd")
+
+    def query(self, value: str) -> None:
+        """Create cmd for mining data"""
+
+        if isinstance(value, str):
+            self.temp_dict[tag_query] = value
         else:
             raise QtArgumentError("Argument type error: String is expected as cmd")
 
@@ -159,6 +171,14 @@ class DataProcess:
 
         if isinstance(list_of_files, list):
             self.temp_dict[tag_files] = list_of_files
+        else:
+            raise QtArgumentError("Argument type error: Expected list of file indexes")
+
+    def sources(self, list_of_files: list) -> None:
+        """Create a list of existing files"""
+
+        if isinstance(list_of_files, list):
+            self.temp_dict[tag_sources] = list_of_files
         else:
             raise QtArgumentError("Argument type error: Expected list of file indexes")
 
