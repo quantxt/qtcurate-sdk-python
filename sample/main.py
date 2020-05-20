@@ -57,7 +57,6 @@ for entry in loss_entries:
 try:
     loss_dictionary = d.create()
 except Exception as e:
-    print("mima")
     print(e)
 
 d.clear()

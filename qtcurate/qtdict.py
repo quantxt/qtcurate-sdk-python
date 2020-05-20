@@ -16,7 +16,9 @@ class QtDict:
         self.temp_dict = dict()
         self.temp_dict[dic_entries] = []
         self.temp_dict[dic_name] = None
-        self.url = "http://" + environment + "." + BASE_URL + "dictionaries/"
+        if environment != "":
+            environment = environment + "."
+        self.url = "http://" + environment + BASE_URL + "dictionaries/"
 
     def name(self, name: str) -> None:
         """Create a new name for dictionary"""
