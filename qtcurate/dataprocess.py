@@ -318,7 +318,7 @@ class DataProcess:
             data = {'urls': self.temp_dict[tag_urls], 'searchDictionaries': self.temp_dict[tag_search_dict]}
             correct += 1
         elif len(self.temp_dict[tag_sources]) > 0:
-            data = {'urls': self.temp_dict[tag_sources], 'searchDictionaries': self.temp_dict[tag_search_dict]}
+            data = {'sources': self.temp_dict[tag_sources], 'searchDictionaries': self.temp_dict[tag_search_dict]}
             correct += 1
         if correct != 1:
             raise QtDataProcessError("DataProcess error: You must choose one kind of data: files, URLs or source")
