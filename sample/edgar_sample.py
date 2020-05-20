@@ -31,7 +31,7 @@ def create_phrases_table(key: str):
 
 
 # 1- Run once and use the dictionary IDs in future runs
-clim_dic_id, disr_dic_id = create_phrases_table(API_KEY)
+# clim_dic_id, disr_dic_id = create_phrases_table(API_KEY)
 
 # 2- Initialize the API - Test enviroment
 dp = DataProcess(API_KEY, "test")
