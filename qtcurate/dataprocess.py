@@ -83,7 +83,9 @@ class DataProcess:
         self.temp_dict[tag_search_dict] = []
         self.temp_dict[tag_query] = None
         self.temp_dict[tag_sources] = []
-        self.url = 'http://' + environment + "." +BASE_URL
+        if environment != "":
+            environment = environment + "."
+        self.url = 'http://' + environment + BASE_URL
 
     def title(self, value: str) -> None:
         """Create title for mining data"""
