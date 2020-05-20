@@ -16,7 +16,7 @@ tag_index = "index"
 tag_autotag = "get_phrases"
 tag_max_token = "maxTokenPerUtt"
 tag_min_token = "minTokenPerUtt"
-tag_exclude_utt = "exclude_utt_without_entities"
+tag_exclude_utt = "excludeUttWithoutEntities"
 tag_search_dict = "searchDictionaries"
 tag_cmd = "cmd"
 tag_sort_by_position = "sortByPosition"
@@ -75,10 +75,10 @@ class DataProcess:
         self.temp_dict[tag_urls] = []
         self.temp_dict[tag_title] = None
         self.temp_dict[tag_index] = None
-        self.temp_dict[tag_autotag] = None
+        self.temp_dict[tag_autotag] = False
         self.temp_dict[tag_max_token] = None
         self.temp_dict[tag_min_token] = None
-        self.temp_dict[tag_exclude_utt] = None
+        self.temp_dict[tag_exclude_utt] = True
         self.temp_dict[tag_cmd] = None
         self.temp_dict[tag_search_dict] = []
         self.temp_dict[tag_query] = None
@@ -312,30 +312,32 @@ class DataProcess:
         if len(self.temp_dict[tag_search_dict]) == 0:
             raise QtDataProcessError("DataProcess error: Please add parameters using search_rule function")
         if len(self.temp_dict[tag_files]) > 0:
-            data = {'files': self.temp_dict[tag_files], 'searchDictionaries': self.temp_dict[tag_search_dict]}
+            data = {tag_files: self.temp_dict[tag_files]}
             correct += 1
         elif len(self.temp_dict[tag_urls]) > 0:
-            data = {'urls': self.temp_dict[tag_urls], 'searchDictionaries': self.temp_dict[tag_search_dict]}
+            data = {tag_urls: self.temp_dict[tag_urls]}
             correct += 1
         elif len(self.temp_dict[tag_sources]) > 0:
-            data = {'sources': self.temp_dict[tag_sources], 'searchDictionaries': self.temp_dict[tag_search_dict]}
+            if len(self.temp_dict[tag_query]) > 0:
+                data = {tag_sources: self.temp_dict[tag_sources], tag_query: self.temp_dict[tag_query]}
+            else:
+                raise QtDataProcessError("DataProcess error: Query is requested parameter for sources")
             correct += 1
         if correct != 1:
             raise QtDataProcessError("DataProcess error: You must choose one kind of data: files, URLs or source")
+        data[tag_autotag] = self.temp_dict[tag_autotag]
+        data[tag_exclude_utt] = self.temp_dict[tag_exclude_utt]
         if len(self.temp_dict[tag_search_dict]) != 0:
-            data['searchDictionaries'] = self.temp_dict[tag_search_dict]
+            data[tag_search_dict] = self.temp_dict[tag_search_dict]
         if self.temp_dict[tag_title] is not None:
-            data['title'] = self.temp_dict[tag_title]
+            data[tag_title] = self.temp_dict[tag_title]
         if self.temp_dict[tag_index] is not None:
-            data['index'] = self.temp_dict[tag_index]
-        if self.temp_dict[tag_autotag] is not None:
-            data['autotag'] = self.temp_dict[tag_autotag]
+            data[tag_index] = self.temp_dict[tag_index]
         if self.temp_dict[tag_max_token] is not None:
-            data['maxTokenPerUtt'] = self.temp_dict[tag_max_token]
+            data[tag_max_token] = self.temp_dict[tag_max_token]
         if self.temp_dict[tag_min_token] is not None:
-            data['minTokenPerUtt'] = self.temp_dict[tag_min_token]
-        if self.temp_dict[tag_exclude_utt] is not None:
-            data['exclude_utt_without_entities'] = self.temp_dict[tag_exclude_utt]
+            data[tag_min_token] = self.temp_dict[tag_min_token]
+
         try:
             res = self.session.post(self.url + "search/" + "new", headers=self.headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:
