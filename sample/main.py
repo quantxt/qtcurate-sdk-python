@@ -5,16 +5,14 @@
 
 from qtcurate.dataprocess import DataProcess, DictionaryType
 from qtcurate.qtdict import QtDict
+from qtcurate.utilities import wait_for_completion
 from typing import List
-from time import sleep
-
 
 
 API_KEY = 'YOUR-API-KEY'
 
 
 def get_dictionary_entries(file_name: str) -> List:
-
     entries = []
     with open(file_name) as f:
         for line in f:
@@ -33,16 +31,6 @@ def get_links() -> List:
             unique_links.add(line.rstrip())
     return list(unique_links)
 
-
-def wait_for_completion(index: str):
-    percentage = 0
-    while percentage < 100:
-        result = t.progress(index)
-        percentage = result['progress']
-        print(f"Search progress {percentage}%")
-        if percentage < 100:
-            sleep(1)
-    sleep(5)
 
 
 d = QtDict(API_KEY, "test")
@@ -90,5 +78,5 @@ t.search_rule(revenue_dictionary['key'], DictionaryType.NUMBER)
 t.search_rule(usstocks_dictionary['key'], DictionaryType.STRING)
 t.urls(get_links())
 url_process = t.create()
-wait_for_completion(url_process['index'])
+wait_for_completion(url_process['index'], t)
 t.report_to_json(url_process['index'], "report.json")
