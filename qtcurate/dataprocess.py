@@ -7,7 +7,6 @@ from typing import Dict, List
 import os.path
 from qtcurate.exceptions import QtFileTypeError, QtArgumentError, QtConnectionError, QtRestApiError, QtDataProcessError
 
-url = BASE_URL + "search/"
 
 tag_files = "files"
 tag_urls = "urls"
@@ -31,6 +30,7 @@ stop_word_list = "stopwordList"
 synonym_l = "synonymList"
 tag_query = "query"
 tag_sources = "sources"
+
 
 class DictionaryType(Enum):
     NUMBER = "DOUBLE"
@@ -67,7 +67,7 @@ class AnalyzeMode(Enum):
 
 class DataProcess:
 
-    def __init__(self, api_key):
+    def __init__(self, api_key: str, environment: str = ""):
         self.session = requests.Session()
         self.headers = {"X-API-Key": api_key}
         self.temp_dict = dict()
@@ -83,8 +83,7 @@ class DataProcess:
         self.temp_dict[tag_search_dict] = []
         self.temp_dict[tag_query] = None
         self.temp_dict[tag_sources] = []
-
-
+        self.url = 'http://' + environment + "." +BASE_URL
 
     def title(self, value: str) -> None:
         """Create title for mining data"""
@@ -190,9 +189,9 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: Expected list of urls")
 
-    def search_rule(self, dictionary_path: str, vocab_value_type: None, regex_phrase: None, regex_group: None,
-                    skip_pattern_between_key_and_value: None, skip_pattern_between_values: None, stopword_list: None,
-                    synonim_list: None, search_mode: None, analyze_mode: None) -> None:
+    def search_rule(self, dictionary_path: str, vocab_value_type: DictionaryType = None, regex_phrase: str = None, regex_group: List = None,
+                    skip_pattern_between_key_and_value: str = None, skip_pattern_between_values: str = None, stopword_list: str = None,
+                    synonim_list: str = None, search_mode: SearhMode = None, analyze_mode: AnalyzeMode = None) -> None:
         """Prepare dictionary for searching"""
 
         vocab_dict = dict()
@@ -266,7 +265,6 @@ class DataProcess:
             else:
                 raise QtArgumentError("Argument type error: AnalyzeMode object is expected as analyze_mode")
 
-
         self.temp_dict[tag_search_dict].append(vocab_dict)
 
     def clear(self) -> None:
@@ -295,7 +293,7 @@ class DataProcess:
             raise QtArgumentError(f"Argument error: File {file} does not exist")
         files = {'file': open(file, 'rb')}
         try:
-            res = self.session.post(url + "file", headers=self.headers, files=files)
+            res = self.session.post(self.url + "search/" + "file", headers=self.headers, files=files)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -304,15 +302,24 @@ class DataProcess:
         
         return res.json()
 
-    def tagging_files(self) -> Dict:
+    def create(self) -> Dict:
         """Mine data via dictionaries"""
 
         self.headers["Content-Type"] = "application/json"
-        if len(self.temp_dict[tag_files]) == 0:
-            raise QtDataProcessError("DataProcess error: Please add files using files function")
+        correct = 0
         if len(self.temp_dict[tag_search_dict]) == 0:
-            raise QtDataProcessError("DataProcess error: Please add URLs using search_url function")
-        data = {'files': self.temp_dict[tag_files], 'searchDictionaries': self.temp_dict[tag_search_dict]}
+            raise QtDataProcessError("DataProcess error: Please add parameters using search_rule function")
+        if len(self.temp_dict[tag_files]) > 0:
+            data = {'files': self.temp_dict[tag_files], 'searchDictionaries': self.temp_dict[tag_search_dict]}
+            correct += 1
+        elif len(self.temp_dict[tag_urls]) > 0:
+            data = {'urls': self.temp_dict[tag_urls], 'searchDictionaries': self.temp_dict[tag_search_dict]}
+            correct += 1
+        elif len(self.temp_dict[tag_sources]) > 0:
+            data = {'urls': self.temp_dict[tag_sources], 'searchDictionaries': self.temp_dict[tag_search_dict]}
+            correct += 1
+        if correct != 1:
+            raise QtDataProcessError("DataProcess error: You must choose one kind of data: files, URLs or source")
         if len(self.temp_dict[tag_search_dict]) != 0:
             data['searchDictionaries'] = self.temp_dict[tag_search_dict]
         if self.temp_dict[tag_title] is not None:
@@ -328,7 +335,7 @@ class DataProcess:
         if self.temp_dict[tag_exclude_utt] is not None:
             data['exclude_utt_without_entities'] = self.temp_dict[tag_exclude_utt]
         try:
-            res = self.session.post(url + "new", headers=self.headers, data=json.dumps(data))
+            res = self.session.post(self.url + "search/" + "new", headers=self.headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -342,7 +349,7 @@ class DataProcess:
         if not isinstance(index, str):
             raise QtArgumentError("Argument type error: String is expected as index")
         try:
-            res = self.session.delete(url + index, headers=self.headers)
+            res = self.session.delete(self.url + "search/" + index, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202, 204]:
@@ -350,37 +357,7 @@ class DataProcess:
                                  f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.ok
 
-    def mining_url(self) -> dict:
-        """Mining data on URLs"""
-
-        self.headers["Content-Type"] = "application/json"
-        if len(self.temp_dict[tag_urls]) == 0:
-            raise QtDataProcessError("DataProcess error: Please add urls using files function")
-        if len(self.temp_dict[tag_search_dict]) == 0:
-            raise QtDataProcessError("DataProcess error: Please add dictionary using search_url function")
-        data = {'urls': self.temp_dict[tag_urls], 'searchDictionaries': self.temp_dict[tag_search_dict]}
-        if self.temp_dict[tag_title] is not None:
-            data['title'] = self.temp_dict[tag_title]
-        if self.temp_dict[tag_index] is not None:
-            data['index'] = self.temp_dict[tag_index]
-        if self.temp_dict[tag_autotag] is not None:
-            data['autotag'] = self.temp_dict[tag_autotag]
-        if self.temp_dict[tag_max_token] is not None:
-            data['maxTokenPerUtt'] = self.temp_dict[tag_max_token]
-        if self.temp_dict[tag_min_token] is not None:
-            data['minTokenPerUtt'] = self.temp_dict[tag_min_token]
-        if self.temp_dict[tag_exclude_utt] is not None:
-            data['exclude_utt_without_entities'] = self.temp_dict[tag_exclude_utt]
-        try:
-            res = self.session.post(url + "new", data=json.dumps(data), headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-        return res.json()
-
-    def progress(self, index=None) -> Dict:
+    def progress(self, index: str = None) -> Dict:
         """Show progress for submitted data mining job"""
 
         url_path = "progress"
@@ -390,7 +367,7 @@ class DataProcess:
             else:
                 raise QtArgumentError("Expected string")
         try:
-            res = self.session.get(url + url_path, headers=self.headers)
+            res = self.session.get(self.url + "search/" + url_path, headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -398,7 +375,7 @@ class DataProcess:
                                  f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.json()
 
-    def search(self, index: str, param_from=0, size=None, f1=None, f2=None) -> Dict:
+    def search(self, index: str, param_from: int = 0, size: int = None, f1: int = None, f2: int = None) -> Dict:
         """Search full-text and faceted search"""
 
         if not isinstance(index, str):
@@ -420,7 +397,7 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument error: Query filters must be used in pairs")
         try:
-            res = self.session.get(url + index, headers=self.headers, params=parameters)
+            res = self.session.get(self.url + "search/" + index, headers=self.headers, params=parameters)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -444,7 +421,7 @@ class DataProcess:
         if extension != ".xlsx":
             raise QtFileTypeError("File type error: Please use xlsx extension saving file")
         try:
-            res = self.session.get(BASE_URL + "reports/" + index + "/xlsx", headers=self.headers)
+            res = self.session.get(self.url + "reports/" + index + "/xlsx", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -470,7 +447,7 @@ class DataProcess:
         if extension != ".json":
             raise QtFileTypeError("File type error: Please use json extension saving file")
         try:
-            res = self.session.get(BASE_URL + "reports/" + index + "/json", headers=self.headers)
+            res = self.session.get(self.url + "reports/" + index + "/json", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:

@@ -2,7 +2,7 @@ from qtcurate.config import BASE_URL
 import requests
 import json
 import os.path
-from typing import Dict, List
+from typing import Dict, List, Union
 from qtcurate.exceptions import QtArgumentError, QtDictError, QtConnectionError, QtRestApiError
 
 dic_entries = "entries"
@@ -10,13 +10,13 @@ dic_name = "name"
 
 
 class QtDict:
-    def __init__(self, api_key):
+    def __init__(self, api_key: str, environment: str = ""):
         self.session = requests.Session()
         self.headers = {"X-API-Key": api_key}
         self.temp_dict = dict()
         self.temp_dict[dic_entries] = []
         self.temp_dict[dic_name] = None
-        self.url = BASE_URL + "dictionaries/"
+        self.url = "http://" + environment + "." + BASE_URL + "dictionaries/"
 
     def name(self, name: str) -> None:
         """Create a new name for dictionary"""
@@ -46,7 +46,7 @@ class QtDict:
         self.temp_dict[dic_entries] = []
         self.temp_dict[dic_name] = None
 
-    def add_entry(self, key, value) -> None:
+    def add_entry(self, key: Union[str, int, float], value: Union[str, int, float]) -> None:
         """Create dictionary data"""
 
         if not isinstance(key, (str, int, float)):
