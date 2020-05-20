@@ -4,7 +4,6 @@ from time import sleep
 
 API_KEY = 'YOUR-API-KEY'
 
-
 def wait_for_completion(index: str):
     percentage = 0
     while percentage < 100:
@@ -34,18 +33,28 @@ def create_phrases_table(key: str):
 
     print(f"{dictionary1['id']} {dictionary2['id']}")
 
-
+# 1- Run once and use the dictionary IDs in future runs
 # create_phrases_table(API_KEY)
 
-data_feeds = ["edgar_8k_full.json"]
+# 2- Initialize the API - Test enviroment
 dp = DataProcess(API_KEY, "test")
-dp.title("Milojko test 10-K job")
-dic = QtDict(API_KEY, "test")
+          
+# 3- Name the project
+dp.title("Test 10-K labeling")
+          
+# 3- Set data feed and query
+data_feeds = ["edgar_8k_full.json"]
 dp.sources(data_feeds)
-dp.query("1800,1961,2098,2178,2186,2488,3116,3197,3453,3499,3570,4281,4447,4962,4969,4977")
+dp.query("2098,3197,4447,3116,4977")
+
+# 4- Pass data dictionaries
+dic = QtDict(API_KEY, "test")
 dp.search_rule(dic.fetch("c8faa596-4f36-4fa8-818c-a89324fd92a7")["key"], DictionaryType.NONE)
 dp.search_rule(dic.fetch("2b4d483a-c2b4-4f1f-bf53-7a8c9a53d236")["key"], DictionaryType.NONE)
 
+# 5- Run and block until finish
 data_process = dp.create()
 wait_for_completion(data_process['index'])
+
+# 6- Export raw results
 dp.report_to_json(data_process['index'], "export.json")
