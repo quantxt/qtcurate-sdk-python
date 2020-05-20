@@ -3,14 +3,14 @@
 #
 # sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
-from qtcurate.tagging import Tagging, DictionaryType
-from qtcurate.dictionaries import Dictionary
+from qtcurate.dataprocess import DataProcess, DictionaryType
+from qtcurate.qtdict import QtDict
 from typing import List
 from time import sleep
 
 
 
-API_KEY = 'YOUR_API_KEY'
+API_KEY = 'YOUR-API-KEY'
 
 
 def get_dictionary_entries(file_name: str) -> List:
@@ -45,7 +45,7 @@ def wait_for_completion(index: str):
     sleep(5)
 
 
-d = Dictionary(api_key=API_KEY)
+d = QtDict(API_KEY, "test")
 
 loss_entries = get_dictionary_entries("loss.tsv")
 revenue_entries = get_dictionary_entries("revenue.tsv")
@@ -82,7 +82,7 @@ try:
 except Exception as e:
     print(e)
 print(loss_dictionary['key'])
-t = Tagging(api_key=API_KEY)
+t = DataProcess(API_KEY, "test")
 t.title("Test Large SDK with URLS")
 t.exclude_utt_without_entities(False)
 t.autotag(False)
@@ -90,6 +90,6 @@ t.search_rule(loss_dictionary['key'], DictionaryType.NUMBER)
 t.search_rule(revenue_dictionary['key'], DictionaryType.NUMBER)
 t.search_rule(usstocks_dictionary['key'], DictionaryType.STRING)
 t.urls(get_links())
-url_process = t.mining_url()
+url_process = t.create()
 wait_for_completion(url_process['index'])
 t.report_to_json(url_process['index'], "report.json")

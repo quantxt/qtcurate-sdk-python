@@ -1,1 +1,1 @@
-BASE_URL = 'http://search.api.quantxt.com/'
+BASE_URL = 'api.quantxt.com/'
