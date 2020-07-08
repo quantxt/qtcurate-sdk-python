@@ -2,12 +2,12 @@ from time import sleep
 from qtcurate.dataprocess import DataProcess
 
 
-def wait_for_completion(index: str, dp: DataProcess):
+def wait_for_completion(dp_id: str, dp: DataProcess):
     percentage = 0
     while percentage < 100:
-        result = dp.progress(index)
+        result = dp.progress(dp_id)
         percentage = result['progress']
         print(f"Search progress {percentage}%")
         if percentage < 100:
             sleep(1)
-    sleep(5)
+    sleep(3)

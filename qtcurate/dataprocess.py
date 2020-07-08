@@ -2,26 +2,22 @@ from qtcurate.config import BASE_URL
 import requests
 import re
 import json
-from enum import Enum
 from typing import Dict, List
 import os.path
 from qtcurate.exceptions import QtFileTypeError, QtArgumentError, QtConnectionError, QtRestApiError, QtDataProcessError
+from qtcurate.data_types import ChunkMode, SearchMode, DataType, HtmlParseMode, DictionaryType, AnalyzeMode
 
 
 tag_files = "files"
 tag_urls = "urls"
 tag_title = "title"
 tag_stitle = "stitle"
-tag_index = "index"
-tag_autotag = "get_phrases"
-tag_max_token = "maxTokenPerUtt"
-tag_min_token = "minTokenPerUtt"
+vocab_id = "vocabId"
+vocab_value_type = "vocabValueType"
 tag_exclude_utt = "excludeUttWithoutEntities"
 tag_search_dict = "searchDictionaries"
-tag_cmd = "cmd"
 tag_sort_by_position = "sortByPosition"
 phrase_matching_pattern = "phraseMatchingPattern"
-phrase_matching_groups = "phraseMatchingGroups"
 between_key_and_value = "skipPatternBetweenKeyAndValue"
 between_values = "skipPatternBetweenValues"
 search_mod = "searchMode"
@@ -29,87 +25,40 @@ analyze_mod = "analyzeMode"
 stop_word_list = "stopwordList"
 synonym_l = "synonymList"
 tag_query = "query"
-tag_sources = "sources"
-
-
-class DictionaryType(Enum):
-    NUMBER = "DOUBLE"
-    STRING = "STRING"
-    DATETIME = "DATETIME"
-    NONE = "NONE"
-    REGEX = "KEYWORD"
-
-
-class ChunkMode(Enum):
-    NONE = "NONE"
-    SENTENCE = "SENTENCE"
-    PARAGRAPH = "PARAGRAPH"
-    PAGE = "PAGE"
-
-
-class SearhMode(Enum):
-    ORDERED_SPAN = "ORDERED_SPAN"
-    FUZZY_ORDERED_SPAN = "FUZZY_ORDERED_SPAN"
-    SPAN = "SPAN"
-    FUZZY_SPAN = "FUZZY_SPAN"
-    PARTIAL_SPAN = "PARTIAL_SPAN"
-    PARTIAL_FUZZY_SPAN = "PARTIAL_FUZZY_SPAN"
-
-
-class AnalyzeMode(Enum):
-    EXACT = "EXACT"
-    EXACT_CI = "EXACT_CI"
-    WHITESPACE = "WHITESPACE"
-    SIMPLE = "SIMPLE"
-    STANDARD = "STANDARD"
-    STEM = "STEM"
+tag_sources = "source"
 
 
 class DataProcess:
-
     def __init__(self, api_key: str, environment: str = ""):
         self.session = requests.Session()
         self.headers = {"X-API-Key": api_key}
         self.temp_dict = dict()
-        self.temp_dict[tag_files] = []
-        self.temp_dict[tag_urls] = []
-        self.temp_dict[tag_title] = None
-        self.temp_dict[tag_index] = None
-        self.temp_dict[tag_autotag] = False
-        self.temp_dict[tag_max_token] = None
-        self.temp_dict[tag_min_token] = None
         self.temp_dict[tag_exclude_utt] = True
-        self.temp_dict[tag_cmd] = None
+        self.temp_dict[tag_sort_by_position] = False
         self.temp_dict[tag_search_dict] = []
-        self.temp_dict[tag_query] = None
-        self.temp_dict[tag_sources] = []
-        if environment != "":
-            environment = environment + "."
-        self.url = 'http://' + environment + BASE_URL
 
-    def title(self, value: str) -> None:
+        if environment != "":
+            environment = f"{environment}."
+        self.url = f"http://{environment}{BASE_URL}"
+
+    def __repr__(self):
+        return f"{self.temp_dict}"
+
+    def title(self, title_name: str) -> None:
         """Create title for mining data"""
 
-        if isinstance(value, str):
-            self.temp_dict[tag_title] = value
+        if isinstance(title_name, str):
+            self.temp_dict[tag_title] = title_name
         else:
             raise QtArgumentError("Argument type error: String is expected as title")
 
-    def cmd(self, value: str) -> None:
-        """Create cmd for mining data"""
-
-        if isinstance(value, str):
-            self.temp_dict[tag_cmd] = value
-        else:
-            raise QtArgumentError("Argument type error: String is expected as cmd")
-
     def query(self, value: str) -> None:
-        """Create cmd for mining data"""
+        """Create query for mining data"""
 
         if isinstance(value, str):
             self.temp_dict[tag_query] = value
         else:
-            raise QtArgumentError("Argument type error: String is expected as cmd")
+            raise QtArgumentError("Argument type error: String is expected as query")
 
     def stitle(self, value: str) -> None:
         """Create title for mining data"""
@@ -119,22 +68,6 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: String is expected as title")
 
-    def index(self, value: str) -> None:
-        """Create index for mining data, this is optional parameter"""
-
-        if isinstance(value, (str, int)):
-            self.temp_dict[tag_index] = value
-        else:
-            raise QtArgumentError("Argument type error: String is expected as index")
-
-    def autotag(self, value: bool) -> None:
-        """Set autotag for mining data, this is optional parameter"""
-
-        if isinstance(value, bool):
-            self.temp_dict[tag_autotag] = value
-        else:
-            raise QtArgumentError("Argument type error: Boolean is expected as autotag")
-
     def sort_by_position(self, value: bool) -> None:
         """Set sortByPosition for mining data, this is optional parameter"""
 
@@ -142,22 +75,6 @@ class DataProcess:
             self.temp_dict[tag_sort_by_position] = value
         else:
             raise QtArgumentError("Argument type error: Boolean is expected as sortByPosition")
-
-    def max_token_per_utt(self, value: int) -> None:
-        """Create  max token per utt for mining data, this is optional parameter"""
-
-        if isinstance(value, int):
-            self.temp_dict[tag_max_token] = value
-        else:
-            raise QtArgumentError("Argument type error: Integer is expected as max token per utt")
-
-    def min_token_per_utt(self, value: int) -> None:
-        """Create min token per utt for mining data, this is optional parameter"""
-
-        if isinstance(value, int):
-            self.temp_dict[tag_min_token] = value
-        else:
-            raise QtArgumentError("Argument type error: Integer is expected as min token per utt")
 
     def exclude_utt_without_entities(self, value: bool) -> None:
         """Set exclude utt for mining data, this is optional parameter"""
@@ -173,7 +90,7 @@ class DataProcess:
         if isinstance(list_of_files, list):
             self.temp_dict[tag_files] = list_of_files
         else:
-            raise QtArgumentError("Argument type error: Expected list of file indexes")
+            raise QtArgumentError("Argument type error: Expected list of file IDs")
 
     def sources(self, list_of_files: list) -> None:
         """Create a list of existing files"""
@@ -181,7 +98,7 @@ class DataProcess:
         if isinstance(list_of_files, list):
             self.temp_dict[tag_sources] = list_of_files
         else:
-            raise QtArgumentError("Argument type error: Expected list of file indexes")
+            raise QtArgumentError("Argument type error: Expected list of file IDs")
 
     def urls(self, list_of_urls: list) -> None:
         """Create a list of existing files"""
@@ -191,45 +108,47 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: Expected list of urls")
 
-    def search_rule(self, dictionary_path: str, vocab_value_type: DictionaryType = None, regex_phrase: str = None, regex_group: List = None,
-                    skip_pattern_between_key_and_value: str = None, skip_pattern_between_values: str = None, stopword_list: str = None,
-                    synonim_list: str = None, search_mode: SearhMode = None, analyze_mode: AnalyzeMode = None) -> None:
+    def search_rule(self, vocab_id_input: str,
+                    vocab_value_type_input: DictionaryType = None,
+                    skip_pattern_between_key_and_value: str = None,
+                    skip_pattern_between_values: str = None,
+                    re_phrase_matching_pattern: str = None,
+                    stopword_list: str = None,
+                    synonim_list: str = None,
+                    search_mode: SearchMode = None,
+                    analyze_mode: AnalyzeMode = None
+                    ) -> None:
         """Prepare dictionary for searching"""
 
         vocab_dict = dict()
-        if isinstance(dictionary_path, str):
-            vocab_dict["vocabPath"] = dictionary_path
+        if isinstance(vocab_id_input, str):
+            vocab_dict[vocab_id] = vocab_id_input
         else:
-            raise QtArgumentError("Argument type error: String is expected as dictionary_path index")
+            raise QtArgumentError("Argument type error: String is expected as dictionary_path id")
 
-        if vocab_value_type is not None:
-            if isinstance(vocab_value_type, DictionaryType):
-                vocab_dict["vocabValueType"] = vocab_value_type.value
+        if vocab_value_type_input is not None:
+            if isinstance(vocab_value_type_input, DictionaryType):
+                vocab_dict[vocab_value_type] = vocab_value_type_input.value
             else:
                 raise QtArgumentError("Argument type error: DictionaryType object is expected as vocab_value_type")
 
-        if vocab_value_type.value == "REGEX":
-            if regex_phrase is not None or regex_group is not None:
-                vocab_dict[phrase_matching_pattern] = regex_phrase
-                vocab_dict[phrase_matching_groups] = regex_group
-            else:
-                raise QtArgumentError("Argument type error: If use regex you have to add regex_phrase and regex_group")
-
-        if regex_phrase is not None:
-            if isinstance(regex_phrase, str):
-                try:
-                    re.compile(regex_phrase)
-                    valid = True
-                except re.error:
-                    valid = False
-                if valid is False:
-                    raise QtArgumentError("Argument type error: Please write valid regular expression.")
-            else:
-                raise QtArgumentError("Argument type error: Please write valid regular expression.")
-
-        if regex_group is not None:
-            if not isinstance(regex_group, List):
-                raise QtArgumentError("Argument type error: List is expected as regex group")
+            if vocab_value_type_input.value == "REGEX":
+                if re_phrase_matching_pattern is not None:
+                    if isinstance(re_phrase_matching_pattern, str):
+                        try:
+                            re.compile(re_phrase_matching_pattern)
+                            valid = True
+                        except re.error:
+                            valid = False
+                        if valid is False:
+                            raise QtArgumentError("Argument type error: Please write valid regular expression.")
+                        else:
+                            vocab_dict[re_phrase_matching_pattern] = re_phrase_matching_pattern
+                    else:
+                        raise QtArgumentError(
+                            "Argument type error: String is expected as re_phrase_matching_pattern")
+                else:
+                    raise QtArgumentError("Argument type error: If you use regex you have to add phrase_matching_pattern")
 
         if skip_pattern_between_key_and_value is not None:
             if isinstance(skip_pattern_between_key_and_value, str):
@@ -256,7 +175,7 @@ class DataProcess:
                 raise QtArgumentError("Argument type error: String is expected as synonim_list")
 
         if search_mode is not None:
-            if isinstance(search_mode, SearhMode):
+            if isinstance(search_mode, SearchMode):
                 vocab_dict[search_mod] = search_mode.value
             else:
                 raise QtArgumentError("Argument type error: SearchMode object is expected as search_mode")
@@ -271,16 +190,11 @@ class DataProcess:
 
     def clear(self) -> None:
         """Remove all temporary data"""
-
-        self.temp_dict[tag_files] = []
-        self.temp_dict[tag_urls] = []
-        self.temp_dict[tag_title] = None
-        self.temp_dict[tag_index] = None
-        self.temp_dict[tag_autotag] = None
-        self.temp_dict[tag_max_token] = None
-        self.temp_dict[tag_min_token] = None
-        self.temp_dict[tag_exclude_utt] = None
-        self.temp_dict[tag_search_dict] = []
+        self.temp_dict.pop(tag_files, None)
+        self.temp_dict.pop(tag_urls, None)
+        self.temp_dict.pop(tag_title, None)
+        self.temp_dict[tag_exclude_utt] = True
+        self.temp_dict.pop(tag_search_dict, None)
 
     def upload(self, file: str) -> Dict:
         """Upload files for data mining"""
@@ -289,13 +203,13 @@ class DataProcess:
             raise QtArgumentError("Argument type error: String is expected as file path")
 
         extension = os.path.splitext(file)[1].lower()
-        if extension not in [".pdf", ".txt", ".html"]:
-            raise QtArgumentError("Argument type error: PDF, TXT or HTML file expected")
+        if extension not in [".pdf", ".txt", ".html", ".xls", ".xlsx", ".csv", ".tiff", ".png"]:
+            raise QtArgumentError("Argument type error: PDF, TXT, XLS, XLSX, CSV, TIFF, PNG or HTML file expected")
         if not os.path.exists(file):
             raise QtArgumentError(f"Argument error: File {file} does not exist")
         files = {'file': open(file, 'rb')}
         try:
-            res = self.session.post(self.url + "search/" + "file", headers=self.headers, files=files)
+            res = self.session.post(f"{self.url}search/file", headers=self.headers, files=files)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -311,35 +225,28 @@ class DataProcess:
         correct = 0
         if len(self.temp_dict[tag_search_dict]) == 0:
             raise QtDataProcessError("DataProcess error: Please add parameters using search_rule function")
-        if len(self.temp_dict[tag_files]) > 0:
+        if tag_files in self.temp_dict and len(self.temp_dict[tag_files]) > 0:
             data = {tag_files: self.temp_dict[tag_files]}
             correct += 1
-        elif len(self.temp_dict[tag_urls]) > 0:
+        if tag_urls in self.temp_dict and len(self.temp_dict[tag_urls]) > 0:
             data = {tag_urls: self.temp_dict[tag_urls]}
             correct += 1
-        elif len(self.temp_dict[tag_sources]) > 0:
+        if tag_sources in self.temp_dict and len(self.temp_dict[tag_sources]) > 0:
             if len(self.temp_dict[tag_query]) > 0:
                 data = {tag_sources: self.temp_dict[tag_sources], tag_query: self.temp_dict[tag_query]}
             else:
                 raise QtDataProcessError("DataProcess error: Query is requested parameter for sources")
             correct += 1
+
         if correct != 1:
             raise QtDataProcessError("DataProcess error: You must choose one kind of data: files, URLs or source")
-        data[tag_autotag] = self.temp_dict[tag_autotag]
         data[tag_exclude_utt] = self.temp_dict[tag_exclude_utt]
         if len(self.temp_dict[tag_search_dict]) != 0:
             data[tag_search_dict] = self.temp_dict[tag_search_dict]
-        if self.temp_dict[tag_title] is not None:
+        if tag_title in self.temp_dict:
             data[tag_title] = self.temp_dict[tag_title]
-        if self.temp_dict[tag_index] is not None:
-            data[tag_index] = self.temp_dict[tag_index]
-        if self.temp_dict[tag_max_token] is not None:
-            data[tag_max_token] = self.temp_dict[tag_max_token]
-        if self.temp_dict[tag_min_token] is not None:
-            data[tag_min_token] = self.temp_dict[tag_min_token]
-
         try:
-            res = self.session.post(self.url + "search/" + "new", headers=self.headers, data=json.dumps(data))
+            res = self.session.post(f"{self.url}search/new", headers=self.headers, data=json.dumps(data))
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -347,13 +254,70 @@ class DataProcess:
                                  f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.json()
 
-    def delete(self, index: str) -> bool:
+    def fetch(self, dp_id: str) -> Dict:
+        """ Fetch dataprocess where dp_id is existing ID"""
+
+        self.headers["Content-Type"] = "application/json"
+        if not isinstance(dp_id, str):
+            raise QtArgumentError("Argument type error: String is expected as dp_id")
+        try:
+            res = self.session.post(f"{self.url}search/{dp_id}", headers=self.headers)
+        except requests.exceptions.RequestException as e:
+            raise QtConnectionError(f"Connection error: {e}")
+        if res.status_code not in [200, 201, 202]:
+            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        return res.json()
+
+    def update(self, dp_id: str, update_files: List) -> Dict:
+        """ Update dataprocess where dp_id is existing ID"""
+
+        self.headers["Content-Type"] = "application/json"
+        if not isinstance(dp_id, str):
+            raise QtArgumentError("Argument type error: String is expected as dp_id")
+        if not isinstance(update_files, List):
+            raise QtArgumentError("Argument type error: List is expected as update file")
+        else:
+            self.clear()
+            data = {tag_files: update_files}
+        try:
+            res = self.session.post(f"{self.url}search/update/{dp_id}", headers=self.headers, data=json.dumps(data))
+        except requests.exceptions.RequestException as e:
+            raise QtConnectionError(f"Connection error: {e}")
+        if res.status_code not in [200, 201, 202]:
+            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+
+        return res.json()
+
+    def clone(self, dp_id: str, update_files: List) -> Dict:
+        """ Update dataprocess where dp_id is existing ID"""
+
+        self.headers["Content-Type"] = "application/json"
+        if not isinstance(dp_id, str):
+            raise QtArgumentError("Argument type error: String is expected as dp_id")
+        if not isinstance(update_files, List):
+            raise QtArgumentError("Argument type error: List is expected as update file")
+        else:
+            self.clear()
+            data = {tag_files: update_files}
+        try:
+            res = self.session.post(f"{self.url}search/new/{dp_id}", headers=self.headers, data=json.dumps(data))
+        except requests.exceptions.RequestException as e:
+            raise QtConnectionError(f"Connection error: {e}")
+        if res.status_code not in [200, 201, 202]:
+            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+
+        return res.json()
+
+    def delete(self, dp_id: str) -> bool:
         """Delete data container"""
 
-        if not isinstance(index, str):
-            raise QtArgumentError("Argument type error: String is expected as index")
+        if not isinstance(dp_id, str):
+            raise QtArgumentError("Argument type error: String is expected as dp_id")
         try:
-            res = self.session.delete(self.url + "search/" + index, headers=self.headers)
+            res = self.session.delete(f"{self.url}search/{dp_id}", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202, 204]:
@@ -361,17 +325,17 @@ class DataProcess:
                                  f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.ok
 
-    def progress(self, index: str = None) -> Dict:
+    def progress(self, dp_id: str = None) -> Dict:
         """Show progress for submitted data mining job"""
 
         url_path = "progress"
-        if index is not None:
-            if isinstance(index, str):
-                url_path = url_path + "/" + index
+        if dp_id is not None:
+            if isinstance(dp_id, str):
+                url_path = f"{url_path}/{dp_id}"
             else:
                 raise QtArgumentError("Expected string")
         try:
-            res = self.session.get(self.url + "search/" + url_path, headers=self.headers)
+            res = self.session.get(f"{self.url}search/{url_path}", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -379,11 +343,11 @@ class DataProcess:
                                  f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.json()
 
-    def search(self, index: str, param_from: int = 0, size: int = None, f1: int = None, f2: int = None) -> Dict:
+    def search(self, dp_id: str, param_from: int = 0, size: int = None, f1: int = None, f2: int = None) -> Dict:
         """Search full-text and faceted search"""
 
-        if not isinstance(index, str):
-            raise QtArgumentError("Argument type error: String is expected as index")
+        if not isinstance(dp_id, str):
+            raise QtArgumentError("Argument type error: String is expected as dp_id")
         if isinstance(param_from, int):
             parameters = [('from', param_from)]
         else:
@@ -401,7 +365,7 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument error: Query filters must be used in pairs")
         try:
-            res = self.session.get(self.url + "search/" + index, headers=self.headers, params=parameters)
+            res = self.session.get(f"{self.url}search/{dp_id}", headers=self.headers, params=parameters)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -409,11 +373,11 @@ class DataProcess:
                                  f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.json()
 
-    def report_to_xlsx(self, index: str, path: str) -> bool:
+    def report_to_xlsx(self, dp_id: str, path: str) -> bool:
         """Exporting in Excel format"""
 
-        if not isinstance(index, str):
-            raise QtArgumentError("Argument type error: String is expected as index")
+        if not isinstance(dp_id, str):
+            raise QtArgumentError("Argument type error: String is expected as dp_id")
         if not isinstance(path, str):
             raise QtArgumentError("Argument type error: String is expected as path")
         directory = os.path.dirname(path)
@@ -425,7 +389,7 @@ class DataProcess:
         if extension != ".xlsx":
             raise QtFileTypeError("File type error: Please use xlsx extension saving file")
         try:
-            res = self.session.get(self.url + "reports/" + index + "/xlsx", headers=self.headers)
+            res = self.session.get(f"{self.url}reports/{dp_id}/xlsx", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -435,11 +399,11 @@ class DataProcess:
             excel_file.write(res.content)
         return res.ok
 
-    def report_to_json(self, index: str, path: str) -> bool:
+    def report_to_json(self, dp_id: str, path: str) -> bool:
         """Exporting in Excel format"""
 
-        if not isinstance(index, str):
-            raise QtArgumentError("Argument type error: String is expected as index")
+        if not isinstance(dp_id, str):
+            raise QtArgumentError("Argument type error: String is expected as dp_id")
         if not isinstance(path, str):
             raise QtArgumentError("Argument type error: String is expected as path")
         directory = os.path.dirname(path)
@@ -451,7 +415,7 @@ class DataProcess:
         if extension != ".json":
             raise QtFileTypeError("File type error: Please use json extension saving file")
         try:
-            res = self.session.get(self.url + "reports/" + index + "/json", headers=self.headers)
+            res = self.session.get(f"{self.url}reports/{dp_id}/json", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:

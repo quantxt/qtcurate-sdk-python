@@ -1,9 +1,9 @@
-# import sys
-# import os
-#
-# sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from qtcurate.qtdict import QtDict
-from qtcurate.dataprocess import DataProcess, DictionaryType
+from qtcurate.dataprocess import DataProcess
 from qtcurate.utilities import wait_for_completion
 
 
@@ -33,7 +33,7 @@ def create_phrases_table(key: str):
 # 1- Run once and use the dictionary IDs in future runs
 clim_dic_id, disr_dic_id = create_phrases_table(API_KEY)
 
-# 2- Initialize the API - Test enviroment
+# 2- Initialize the API - Test environment
 dp = DataProcess(API_KEY, "test")
           
 # 3- Name the project
@@ -46,10 +46,11 @@ dp.query("1706524,1648636,1326089,1169561")
 
 # 4- Pass data dictionaries
 dic = QtDict(API_KEY, "test")
-dp.search_rule(dic.fetch(clim_dic_id)["key"], DictionaryType.NONE)
-dp.search_rule(dic.fetch(disr_dic_id)["key"], DictionaryType.NONE)
+dp.search_rule(dic.fetch(clim_dic_id)["id"])
+dp.search_rule(dic.fetch(disr_dic_id)["id"])
 
 # 5- Run and block until finish
+print(dp)
 data_process = dp.create()
 wait_for_completion(data_process['index'], dp)
 
