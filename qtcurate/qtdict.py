@@ -20,6 +20,9 @@ class QtDict:
             environment = environment + "."
         self.url = f"http://{environment}{BASE_URL}dictionaries/"
 
+    def __repr__(self):
+        return f"{self.temp_dict}"
+
     def name(self, name: str) -> None:
         """Create a new name for dictionary"""
 

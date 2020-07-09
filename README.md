@@ -207,7 +207,9 @@ Response
 
 ### Extraction and Mining
 
-Data extraction and mining is the process of identifying entities found in the unstructured content using entity dictionaries and formatting them it into structured format. Unstructured data can be streamed from content files, data APIs or directly from public URLs.
+Data extraction and mining is the process of identifying entities found in the unstructured content using entity 
+dictionaries and formatting them it into structured format. Unstructured data can be streamed from content files, 
+data APIs or directly from public URLs.
 
 Authenticate with API_KEY
 
@@ -222,7 +224,8 @@ First, upload all content files for DataProcess:
 tag.upload("file.pdf")
 ```
 
-PDF, TXT and HTML formats are supported.
+PDF, TXT, XLS, XLSX, CSV and HTML formats are supported. Image documents, such as TIFF, PNG or scanned PDF, 
+will automatically run through OCR before data extraction.
 
 #### Response
 
@@ -238,66 +241,63 @@ PDF, TXT and HTML formats are supported.
 ```
 
 Now you can mine data via dictionaries. First you have to prepare additional options.
+`vocabId` (required) id of the dictionary.
 `title` is optional but it is highly recommended for easier distinction between different tagging jobs.
 
-`vocabValueType` (Optional): can have one of the following values: `NONE`, `STRING`, `DOUBLE`, `DATETIME`. If set, the engine will extract only entities that are associated with an entity of this type.
-`vocabPath` (Required): The path to entity QtDict. Path is returned either after creation of a new QtDict or via listing of existing dictionaries.**There is no limit on the number of files and dictionaries that can be processed via tagging_files function**
+`vocabValueType` (Optional): can have one of the following values: `NUMBER`, `DATETIME`, `REGEX`. If no extraction type 
+is set, the dictionary will be used for tagging documents. If set, the engine will extract only entities that are 
+associated with an entity of this type. If `REGEX` is set user will also need to provide the look up regular expression 
+via `phraseMatchingPattern`. The following pattern matches on social securities numbers:
+
 ```
 tag.files("c351283c-330c-418b-8fb7-44cf3c7a09d5")
 tag.title("My data mining with files and dictionaries")
-tag.search_rule("user-example-com/58608b1f-a0ff-45d0-b12a-2fb93af1a9ad.csv.gz", DictionaryType.NONE)
+tag.search_rule("758345h-a0ff-45d0-b12a-2fb93af1a9ad", vocab_value_type_input=DictionaryType.REGEX, 
+                phrase_matching_pattern="(\d{3}-\d{2}-\d{4})")
 
-tag.tagging_files()
+tag.create()
 ```
 #### Response
 
 ```
 {
-"index": "puvqrjfhqq",
-"title": "My data mining with files and dictionaries",
-"get_phrases": true,
-"maxTokenPerUtt": 35,
-"minTokenPerUtt": 6,
-"excludeUttWithoutEntities": false,
-"stitle": null,
-"files": ["c351283c-330c-418b-8fb7-44cf3c7a09d5"],
-"searchDictionaries": [
-{
-"vocabPath": "user-example-com/58608b1f-a0ff-45d0-b12a-2fb93af1a9ad.csv.gz",
-"vocabValueType": "NONE"
-}
-]
+    "id": "puvqrjfhqq",
+    "title": "My data mining with files and dictionaries",
+    "excludeUttWithoutEntities": true,
+    "files": ["c351283c-330c-418b-8fb7-44cf3c7a09d5"],
+    "searchDictionaries": [
+        { 
+            "vocabId": "58608b1f-a0ff-45d0-b12a-2fb93af1a9ad",
+            "vocabValueType": "NUMBER"
+        }
+    ]
 }
 ```
 
-`index` represents the unique identification for the container that holds output labeled data.
-You can set index, autotag, maxTokenPerUtt, minTokenPerUtt, excludeUttWithoutEntities with following methods:
+`id` is the extraction job id. You can use it to monitor status of the job or retrieve the results once completed.
+You can set `sortByPosition`, `excludeUttWithoutEntities`, `stitle`, `query` with following methods:
 ```
-tag.index("some index")
-tag.autotag(True)
+tag.sort_by_position(True)
 tag.exclude_utt_without_entities(True)
-tag.max_token_per_utt(101)
-tag.min_token_per_utt(101)
 tag.stitle("some stitle string")
+tag.query("some query string")
 ```
 
 
 **Request parameters:**
 
 `chunk`
-(Optional, string) can be `SENTENCE` or `PARAGRAPH` or `NONE`. This will result in splitting of data into semantic chunks before processing. For example, this allows user to split the content of an article in semantic sentences and apply entity dictionaries at sentence level.
+(Optional, string) can be `SENTENCE` or `PAGE` or `NONE`. This will result in splitting of data into semantic chunks 
+before processing. For example, this allows user to split the content of an article in semantic sentences and apply 
+entity dictionaries at sentence level.
 
 `excludeUttWithoutEntities`
-(Optional, boolean) if `true` the output will only include chunks that have at least one label from the input dictionaries.
-
-`get_phrases`
-(Optional, boolean) if `true` auto tagging will be performed.
-
-`minTokenPerUtt` (Optional, int)
-
-`maxTokenPerUtt` (Optional, int)
+(Optional, boolean) if `true` the output will only include chunks that have at least one label from the input 
+dictionaries.
 
 `stitle` (Optional, string) Override command.
+
+`query` (Optional, string) Set query for source.
 
 To delete a data container:
 ```
@@ -306,12 +306,15 @@ tag.delete("puvqrjfhqq")
 
 #### Mining Web URLs:
 
-Mining can be performed on a list of URLs. All parameters used in tagging files are applicable here.
+Mining can be performed on a list of URLs. 
 ```
-tag.mining_url()
+tag.search_rule("758345h-a0ff-45d0-b12a-2fb93af1a9ad")
+tag.urls(["url1", "url2"])
+tag.create()
 ```
 
-**Theia can process both static and dynamic web pages. However, a number of websites use mechanisms to block webpage scrapping. Theia built-in Web parser is not designed to bypass such blocking mechanisms**
+**Theia can process both static and dynamic web pages. However, a number of websites use mechanisms to block webpage 
+scrapping. Theia built-in Web parser is not designed to bypass such blocking mechanisms**
 
 #### Mining Data Streams
 
@@ -320,7 +323,8 @@ Tagging data from data streams such as third party APIs is supported. Please con
 
 #### Extracting Typed Entities
 
-Entity dictionaries allow the user to quickly search and label thousands of phrases in unstructured content. There are cases when users want to label a keyword or phrase as an entity only if it is associated with a value. For example:
+Entity dictionaries allow the user to quickly search and label thousands of phrases in unstructured content. 
+There are cases when users want to label a keyword or phrase as an entity only if it is associated with a value. For example:
 
 A "release => "Manufactured" dictionary item will label both of the following utterances:
 
@@ -336,7 +340,7 @@ Supported types for associated entities are:
 types are passed via `vocabValueType` parameter.
 
 If a type is set, a dictionary item will be extracted only if a type is found in its close proximity.
-In the above example, user can set *vocabValueType* in the request to `DOUBLE` to identify **1908** only if it is associated with the entity **released**
+In the above example, user can set `vocabValueType` in the request to `DOUBLE` to identify **1908** only if it is associated with the entity **released**
 
 #### Status Monitoring
 
@@ -353,7 +357,7 @@ The search result is an array of active data mining jobs:
 ```
 [
 {
-"index": "cjaejhvtao",
+"dp_id": "cjaejhvtao",
 "progress": 36,
 "progress_msg": "Collecting data..."
 }
@@ -361,7 +365,7 @@ The search result is an array of active data mining jobs:
 
 ```
 
-`index` Unique ID of the running job
+`dp_id` Unique ID of the running job
 
 `progress`  Progress in % (a number between 0 to 100).
 
@@ -380,7 +384,7 @@ tag.progress("cjaejhvtao")
 
 ```
 {
-"index": "cjaejhvtao",
+"dp_id": "cjaejhvtao",
 "progress": 36,
 "progress_msg": "Collecting data..."
 }
@@ -469,7 +473,7 @@ tag.report_to_json("puvqrjfhqq", "name-of-output-file.json")
 ```
 
 ### Clear temporary data
-Both classes QtDict and DataProcess have a method clear() to delete all used variable.
+Both classes QtDict and DataProcess have a method `clear()` to delete all used variable.
 ```
 dic.clear()
 tag.clear()

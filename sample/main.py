@@ -1,8 +1,3 @@
-import sys
-import os
-
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
-
 from qtcurate.dataprocess import DataProcess, DictionaryType
 from qtcurate.qtdict import QtDict
 from qtcurate.utilities import wait_for_completion
