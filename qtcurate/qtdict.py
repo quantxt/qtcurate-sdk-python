@@ -16,12 +16,52 @@ class QtDict:
         self.temp_dict = dict()
         self.temp_dict[dic_entries] = []
         self.temp_dict[dic_name] = None
+        self.id = None
         if environment != "":
             environment = environment + "."
         self.url = f"http://{environment}{BASE_URL}dictionaries/"
 
     def __repr__(self):
-        return f"{self.temp_dict}"
+        return str({'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]})
+
+    def get_id(self) -> str:
+        return str(self.id)
+
+    def connect(self, method: str, uri: str, data: Dict = None) -> Dict:
+        if method.lower() == 'get':
+            try:
+                res = self.session.get(uri, headers=self.headers)
+            except requests.exceptions.RequestException as e:
+                raise QtConnectionError(f"Connection error: {e}")
+            if res.status_code not in [200, 201, 202]:
+                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        elif method.lower() == "delete":
+            try:
+                res = self.session.delete(uri, headers=self.headers)
+            except requests.exceptions.RequestException as e:
+                raise QtConnectionError(f"Connection error: {e}")
+            if res.status_code not in [200, 201, 202]:
+                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        elif method.lower() == "post":
+            try:
+                res = self.session.post(uri, headers=self.headers, data=json.dumps(data))
+            except requests.exceptions.RequestException as e:
+                raise QtConnectionError(f"Connection error: {e}")
+            if res.status_code not in [200, 201, 202]:
+                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        elif method.lower() == "put":
+            try:
+                res = self.session.put(uri, headers=self.headers, data=json.dumps(data))
+            except requests.exceptions.RequestException as e:
+                raise QtConnectionError(f"Connection error: {e}")
+            if res.status_code not in [200, 201, 202]:
+                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+
+        return res
 
     def name(self, name: str) -> None:
         """Create a new name for dictionary"""
@@ -55,6 +95,7 @@ class QtDict:
 
         self.temp_dict[dic_entries] = []
         self.temp_dict[dic_name] = None
+        self.id = None
 
     def add_entry(self, str_key: Union[str, int, float], category: Union[str, int, float] = None) -> None:
         """Create dictionary data"""
@@ -71,16 +112,11 @@ class QtDict:
             else:
                 self.temp_dict[dic_entries].append({'str': str_key})
 
-    def list(self) -> List:
+    def list(self) -> Dict:
         """List all dictionaries"""
 
-        try:
-            res = self.session.get(self.url, headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = self.connect("get", self.url)
+
         return res.json()
 
     def fetch(self, qt_id: str) -> Dict:
@@ -88,13 +124,9 @@ class QtDict:
 
         if not isinstance(qt_id, str):
             raise QtArgumentError("Argument type error: String is expected as qt_id")
-        try:
-            res = self.session.get(f"{self.url}{qt_id}", headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+
+        res = self.connect("get", f"{self.url}{qt_id}")
+        self.id = res.json()["id"]
         return res.json()
 
     def delete(self, qt_id: str) -> bool:
@@ -102,13 +134,8 @@ class QtDict:
 
         if not isinstance(qt_id, str):
             raise QtArgumentError("Argument type error: String is expected as qt_id")
-        try:
-            res = self.session.delete(f"{self.url}{qt_id}", headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202, 204]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = self.connect("delete", f"{self.url}{qt_id}")
+
         return res.ok
 
     def create(self) -> Dict:
@@ -120,13 +147,9 @@ class QtDict:
             raise QtDictError("QtDict error: Please add dictionary using add_entry function")
         data = {'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]}
         self.headers['Content-Type'] = 'application/json'
-        try:
-            res = self.session.post(self.url, headers=self.headers, data=json.dumps(data))
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = self.connect("post", self.url, data)
+        self.id = res.json()["id"]
+        del self.headers['Content-Type']
         return res.json()
 
     def update(self, qt_id: str) -> bool:
@@ -139,13 +162,9 @@ class QtDict:
         if len(self.temp_dict[dic_entries]) == 0:
             raise QtDictError("QtDict error: Please add dictionary using add_entry function")
         data = {'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]}
-        try:
-            res = self.session.put(f"{self.url}{qt_id}", headers=self.headers, data=json.dumps(data))
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+
+        res = self.connect("put", f"{self.url}{qt_id}", data)
+
         return res.ok
 
     def upload(self, file: str, name: str) -> Dict:
@@ -164,14 +183,7 @@ class QtDict:
             'name': (None, name),
             'file': open(file, 'rb')
         }
-        try:
-            res = self.session.post(f"{self.url}upload", headers=self.headers, files=files)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-        return res.json()
+        res = self.connect("post", f"{self.url}upload", files)
+        self.id = res.json()["id"]
 
-    def __repr__(self):
-        return str({'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]})
+        return res.json()

@@ -1,8 +1,9 @@
 from qtcurate.qtdict import QtDict
 from typing import List
 
+
 API_KEY = 'YOUR-API-KEY'
-FILE_NAME = "revenue.tsv"
+FILE_NAME = "resources/revenue.tsv"
 
 
 def get_dictionary_entries(file_name: str) -> List:

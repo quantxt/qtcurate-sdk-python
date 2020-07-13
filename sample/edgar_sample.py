@@ -1,6 +1,5 @@
 from qtcurate.qtdict import QtDict
 from qtcurate.dataprocess import DataProcess
-from qtcurate.utilities import wait_for_completion
 
 
 API_KEY = 'YOUR-API-KEY'
@@ -12,17 +11,17 @@ def create_phrases_table(key: str):
     qt_dict.add_entry("weather conditions", "Climate Conditions")
     qt_dict.add_entry("climate change", "Climate Change")
     qt_dict.add_entry("global warming", "Climate Change")
-    dictionary1 = qt_dict.create()
+    qt_dict.create()
+    climate_dictionary_id = qt_dict.get_id()
     qt_dict.clear()
 
     qt_dict.name("Disruption")
     qt_dict.add_entry("business disruption", "Business Disruptions")
     qt_dict.add_entry("competition", "Competition")
-    dictionary2 = qt_dict.create()
+    qt_dict.create()
+    disruption_dictionary_id = qt_dict.get_id()
     qt_dict.clear()
 
-    climate_dictionary_id = dictionary1['id']
-    disruption_dictionary_id = dictionary2['id']
     return climate_dictionary_id, disruption_dictionary_id
 
 
@@ -42,13 +41,14 @@ dp.query("1706524,1648636,1326089,1169561")
 
 # 4- Pass data dictionaries
 dic = QtDict(API_KEY, "test")
-dp.search_rule(dic.fetch(clim_dic_id)["id"])
-dp.search_rule(dic.fetch(disr_dic_id)["id"])
+dic.fetch(clim_dic_id)
+dp.search_rule(dic.get_id())
+dic.fetch(disr_dic_id)
+dp.search_rule(dic.get_id())
 
 # 5- Run and block until finish
-print(dp)
-data_process = dp.create()
-wait_for_completion(data_process['index'], dp)
+dp.create()
+dp.wait_for_completion()
 
 # 6- Export raw results
-dp.report_to_json(data_process['index'], "export.json")
+dp.report_to_json(dp.get_index(), "export.json")

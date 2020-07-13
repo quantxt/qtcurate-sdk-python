@@ -1,11 +1,12 @@
 from qtcurate.config import BASE_URL
+from time import sleep
 import requests
 import re
 import json
 from typing import Dict, List
 import os.path
 from qtcurate.exceptions import QtFileTypeError, QtArgumentError, QtConnectionError, QtRestApiError, QtDataProcessError
-from qtcurate.data_types import ChunkMode, SearchMode, DataType, HtmlParseMode, DictionaryType, AnalyzeMode
+from qtcurate.data_types import SearchMode, DictionaryType, AnalyzeMode
 
 
 tag_files = "files"
@@ -36,13 +37,53 @@ class DataProcess:
         self.temp_dict[tag_exclude_utt] = True
         self.temp_dict[tag_sort_by_position] = False
         self.temp_dict[tag_search_dict] = []
-
+        self.index = None
         if environment != "":
             environment = f"{environment}."
         self.url = f"http://{environment}{BASE_URL}"
 
+    def connect(self, method: str, uri: str, data: Dict = None) -> Dict:
+        if method.lower() == 'get':
+            try:
+                res = self.session.get(uri, headers=self.headers)
+
+            except requests.exceptions.RequestException as e:
+                raise QtConnectionError(f"Connection error: {e}")
+            if res.status_code not in [200, 201, 202]:
+                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        elif method.lower() == "delete":
+            try:
+                res = self.session.delete(uri, headers=self.headers)
+            except requests.exceptions.RequestException as e:
+                raise QtConnectionError(f"Connection error: {e}")
+            if res.status_code not in [200, 201, 202]:
+                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        elif method.lower() == "post":
+            try:
+                res = self.session.post(uri, headers=self.headers, data=json.dumps(data))
+            except requests.exceptions.RequestException as e:
+                raise QtConnectionError(f"Connection error: {e}")
+            if res.status_code not in [200, 201, 202]:
+                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        elif method.lower() == "put":
+            try:
+                res = self.session.put(uri, headers=self.headers, data=json.dumps(data))
+            except requests.exceptions.RequestException as e:
+                raise QtConnectionError(f"Connection error: {e}")
+            if res.status_code not in [200, 201, 202]:
+                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+
+        return res
+
     def __repr__(self):
         return f"{self.temp_dict}"
+
+    def get_index(self):
+        return self.index
 
     def title(self, title_name: str) -> None:
         """Create title for mining data"""
@@ -148,7 +189,8 @@ class DataProcess:
                         raise QtArgumentError(
                             "Argument type error: String is expected as re_phrase_matching_pattern")
                 else:
-                    raise QtArgumentError("Argument type error: If you use regex you have to add phrase_matching_pattern")
+                    raise QtArgumentError("Argument type error: If you use regex you have to add "
+                                          "phrase_matching_pattern")
 
         if skip_pattern_between_key_and_value is not None:
             if isinstance(skip_pattern_between_key_and_value, str):
@@ -195,6 +237,7 @@ class DataProcess:
         self.temp_dict.pop(tag_title, None)
         self.temp_dict[tag_exclude_utt] = True
         self.temp_dict.pop(tag_search_dict, None)
+        self.index = None
 
     def upload(self, file: str) -> Dict:
         """Upload files for data mining"""
@@ -208,14 +251,9 @@ class DataProcess:
         if not os.path.exists(file):
             raise QtArgumentError(f"Argument error: File {file} does not exist")
         files = {'file': open(file, 'rb')}
-        try:
-            res = self.session.post(f"{self.url}search/file", headers=self.headers, files=files)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-        
+
+        res = self.connect("post", f"{self.url}search/file", files)
+        self.index = res.json()['index']
         return res.json()
 
     def create(self) -> Dict:
@@ -245,13 +283,10 @@ class DataProcess:
             data[tag_search_dict] = self.temp_dict[tag_search_dict]
         if tag_title in self.temp_dict:
             data[tag_title] = self.temp_dict[tag_title]
-        try:
-            res = self.session.post(f"{self.url}search/new", headers=self.headers, data=json.dumps(data))
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = self.connect("post", f"{self.url}search/new", data)
+        self.index = res.json()['index']
+        del self.headers['Content-Type']
+
         return res.json()
 
     def fetch(self, dp_id: str) -> Dict:
@@ -260,13 +295,9 @@ class DataProcess:
         self.headers["Content-Type"] = "application/json"
         if not isinstance(dp_id, str):
             raise QtArgumentError("Argument type error: String is expected as dp_id")
-        try:
-            res = self.session.post(f"{self.url}search/{dp_id}", headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = self.connect("get", f"{self.url}search/{dp_id}")
+        del self.headers['Content-Type']
+
         return res.json()
 
     def update(self, dp_id: str, update_files: List) -> Dict:
@@ -280,13 +311,9 @@ class DataProcess:
         else:
             self.clear()
             data = {tag_files: update_files}
-        try:
-            res = self.session.post(f"{self.url}search/update/{dp_id}", headers=self.headers, data=json.dumps(data))
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = self.connect("post", f"{self.url}search/update/{dp_id}", data)
+        del self.headers['Content-Type']
+
 
         return res.json()
 
@@ -301,13 +328,10 @@ class DataProcess:
         else:
             self.clear()
             data = {tag_files: update_files}
-        try:
-            res = self.session.post(f"{self.url}search/new/{dp_id}", headers=self.headers, data=json.dumps(data))
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = self.connect("post", f"{self.url}search/new/{dp_id}", data)
+
+        self.index = res.json()['index']
+        del self.headers['Content-Type']
 
         return res.json()
 
@@ -316,13 +340,8 @@ class DataProcess:
 
         if not isinstance(dp_id, str):
             raise QtArgumentError("Argument type error: String is expected as dp_id")
-        try:
-            res = self.session.delete(f"{self.url}search/{dp_id}", headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202, 204]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = self.connect("delete", f"{self.url}search/{dp_id}")
+
         return res.ok
 
     def progress(self, dp_id: str = None) -> Dict:
@@ -334,14 +353,19 @@ class DataProcess:
                 url_path = f"{url_path}/{dp_id}"
             else:
                 raise QtArgumentError("Expected string")
-        try:
-            res = self.session.get(f"{self.url}search/{url_path}", headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = self.connect("get", f"{self.url}search/{url_path}")
+
         return res.json()
+
+    def wait_for_completion(self):
+        percentage = 0
+        while percentage < 100:
+            result = self.progress(self.index)
+            percentage = result['progress']
+            print(f"Search progress {percentage}%")
+            if percentage < 100:
+                sleep(1)
+        sleep(3)
 
     def search(self, dp_id: str, param_from: int = 0, size: int = None, f1: int = None, f2: int = None) -> Dict:
         """Search full-text and faceted search"""

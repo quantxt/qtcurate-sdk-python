@@ -1,8 +1,6 @@
 from qtcurate.dataprocess import DataProcess, DictionaryType
 from qtcurate.qtdict import QtDict
-from qtcurate.utilities import wait_for_completion
 from typing import List
-
 
 API_KEY = 'YOUR-API-KEY'
 
@@ -21,7 +19,7 @@ def get_dictionary_entries(file_name: str) -> List:
 
 def get_links() -> List:
     unique_links = set()
-    with open("links.txt") as f:
+    with open("resources/links.txt") as f:
         for line in f:
             unique_links.add(line.rstrip())
     return list(unique_links)
@@ -29,17 +27,20 @@ def get_links() -> List:
 
 d = QtDict(API_KEY, "test")
 
-loss_entries = get_dictionary_entries("loss.tsv")
-revenue_entries = get_dictionary_entries("revenue.tsv")
+loss_entries = get_dictionary_entries("resources/loss.tsv")
+revenue_entries = get_dictionary_entries("resources/revenue.tsv")
+
+t = DataProcess(API_KEY, "test")
+t.title("Test Large SDK with URLS")
 
 d.name("loss")
 for entry in loss_entries:
     d.entries(entry)
 try:
-    loss_dictionary = d.create()
+    d.create()
 except Exception as e:
     print(e)
-
+t.search_rule(d.get_id(), DictionaryType.NUMBER)
 d.clear()
 
 d.name("revenue")
@@ -47,21 +48,13 @@ for entry in revenue_entries:
     d.entries(entry)
 
 try:
-    revenue_dictionary = d.create()
+    d.create()
 
 except Exception as e:
     print(e)
 
-d.clear()
-
-t = DataProcess(API_KEY, "test")
-t.title("Test Large SDK with URLS")
-t.exclude_utt_without_entities(False)
-t.search_rule(loss_dictionary['id'], DictionaryType.NUMBER)
-t.search_rule(revenue_dictionary['id'], DictionaryType.NUMBER)
+t.search_rule(d.get_id(), DictionaryType.NUMBER)
 t.urls(get_links())
-print(t)
-url_process = t.create()
-print(url_process['id'])
-wait_for_completion(url_process['id'], t)
-t.report_to_json(url_process['id'], "report.json")
+t.create()
+t.wait_for_completion()
+t.report_to_json(t.get_index(), "report.json")
