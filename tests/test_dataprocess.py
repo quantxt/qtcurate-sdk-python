@@ -12,6 +12,114 @@ API_KEY = 'some_key'
 
 class TestDataProcess(TestCase):
 
+    @patch("qtcurate.qtdict.requests.Session")
+    def test_connect_get_conn_error(self, session):
+        mock = Mock()
+        mock.get.side_effect = requests.exceptions.ConnectionError("Connection error")
+        session.return_value = mock
+
+        method = "get"
+        url = "some url"
+        tag = DataProcess(API_KEY)
+        with self.assertRaises(QtConnectionError):
+            tag.connect(method, url)
+
+    @patch("qtcurate.qtdict.requests.Session")
+    def test_connect_get_not_authorized(self, session):
+        mock = Mock()
+        response = Mock()
+        response.status_code = 401
+        response.json.return_value = []
+        mock.get.return_value = response
+        session.return_value = mock
+
+        tag = DataProcess(API_KEY)
+        method = "get"
+        url = "some url"
+        with self.assertRaises(QtRestApiError):
+            tag.connect(method, url)
+
+    @patch("qtcurate.qtdict.requests.Session")
+    def test_connect_delete_conn_error(self, session):
+        mock = Mock()
+        mock.delete.side_effect = requests.exceptions.ConnectionError("Connection error")
+        session.return_value = mock
+
+        method = "delete"
+        url = "some url"
+        tag = DataProcess(API_KEY)
+        with self.assertRaises(QtConnectionError):
+            tag.connect(method, url)
+
+    @patch("qtcurate.qtdict.requests.Session")
+    def test_connect_delete_not_authorized(self, session):
+        mock = Mock()
+        response = Mock()
+        response.status_code = 401
+        response.json.return_value = []
+        mock.delete.return_value = response
+        session.return_value = mock
+
+        tag = DataProcess(API_KEY)
+        method = "delete"
+        url = "some url"
+        with self.assertRaises(QtRestApiError):
+            tag.connect(method, url)
+
+    @patch("qtcurate.qtdict.requests.Session")
+    def test_connect_post_conn_error(self, session):
+        mock = Mock()
+        mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")
+        session.return_value = mock
+
+        method = "post"
+        url = "some url"
+        tag = DataProcess(API_KEY)
+        with self.assertRaises(QtConnectionError):
+            tag.connect(method, url)
+
+    @patch("qtcurate.qtdict.requests.Session")
+    def test_connect_post_not_authorized(self, session):
+        mock = Mock()
+        response = Mock()
+        response.status_code = 401
+        response.json.return_value = []
+        mock.post.return_value = response
+        session.return_value = mock
+
+        tag = DataProcess(API_KEY)
+        method = "post"
+        url = "some url"
+        with self.assertRaises(QtRestApiError):
+            tag.connect(method, url)
+
+    @patch("qtcurate.qtdict.requests.Session")
+    def test_connect_put_conn_error(self, session):
+        mock = Mock()
+        mock.put.side_effect = requests.exceptions.ConnectionError("Connection error")
+        session.return_value = mock
+
+        method = "put"
+        url = "some url"
+        tag = DataProcess(API_KEY)
+        with self.assertRaises(QtConnectionError):
+            tag.connect(method, url)
+
+    @patch("qtcurate.qtdict.requests.Session")
+    def test_connect_put_not_authorized(self, session):
+        mock = Mock()
+        response = Mock()
+        response.status_code = 401
+        response.json.return_value = []
+        mock.put.return_value = response
+        session.return_value = mock
+
+        tag = DataProcess(API_KEY)
+        method = "put"
+        url = "some url"
+        with self.assertRaises(QtRestApiError):
+            tag.connect(method, url)
+
     def test_title(self):
         title = "some title"
         tag = DataProcess(API_KEY)
@@ -83,6 +191,18 @@ class TestDataProcess(TestCase):
         tag = DataProcess(API_KEY)
         with self.assertRaises(QtArgumentError):
             tag.files(list_files)
+
+    def test_sources(self):
+        list_files = ["file1", "file2"]
+        tag = DataProcess(API_KEY)
+        tag.sources(list_files)
+        self.assertEqual(list_files, tag.temp_dict['source'])
+
+    def test_sources_arg_error(self):
+        list_files = "string"
+        tag = DataProcess(API_KEY)
+        with self.assertRaises(QtArgumentError):
+            tag.sources(list_files)
 
     def test_urls(self):
         list_urls = ["www.url1.com", "www.url2.com"]
@@ -189,52 +309,6 @@ class TestDataProcess(TestCase):
         with self.assertRaises(QtArgumentError):
             tag.upload(file)
 
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_upload_not_authorized(self, session):
-        mock = Mock()
-        response = Mock()
-        response.status_code = 401
-        response.json.return_value = []
-        mock.post.return_value = response
-        session.return_value = mock
-        tag = DataProcess(API_KEY)
-        file_path = "test.txt"
-
-        with self.assertRaises(QtRestApiError):
-            tag.upload(file_path)
-
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_upload_connection_exception(self, session):
-        mock = Mock()
-        mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        file_path = "test.txt"
-
-        with self.assertRaises(QtConnectionError):
-            tag.upload(file_path)
-
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_upload(self, session):
-        dic = {'uuid': '2d3e39e4-fe7d-493b-b4f0-b275a1147ffe',
-               'username': 'mbjelanovic@gmail.com',
-               'fileName': 'links.txt',
-               'link': 'http://portal.files.quantxt.com/mbjelanovic@gmail.com/2d3e39e4-fe7d-493b-b4f0-b275a1147ffe',
-               'date': '2020-07-05T17:13:44.579029',
-               'contentType': 'text/plain',
-               'source': 'links.txt'}
-        mock = Mock()
-        response = Mock()
-        response.status_code = 200
-        response.json.return_value = dic
-        mock.post.return_value = response
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        file = "test.txt"
-        self.assertEqual(tag.upload(file), dic)
-
     def test_create_empty_search_dict(self):
         tag = DataProcess(API_KEY)
         with self.assertRaises(QtDataProcessError):
@@ -258,85 +332,10 @@ class TestDataProcess(TestCase):
         with self.assertRaises(QtDataProcessError):
             tag.create()
 
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_create_not_authorized(self, session):
-        mock = Mock()
-        response = Mock()
-        response.status_code = 401
-        response.json.return_value = []
-        mock.post.return_value = response
-        session.return_value = mock
-
-        list_files = ['test.txt']
-        vocab_id = "some_id"
+    def test_fetch_dp_id_arg_err(self):
         tag = DataProcess(API_KEY)
-        tag.files(list_files)
-        tag.search_rule(vocab_id)
-        with self.assertRaises(QtRestApiError):
-            tag.create()
-
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_create_connection_exception(self, session):
-        mock = Mock()
-        mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")
-        session.return_value = mock
-
-        list_files = ['test.txt']
-        vocab_id = "some_id"
-        tag = DataProcess(API_KEY)
-        tag.files(list_files)
-        tag.search_rule(vocab_id)
-        with self.assertRaises(QtConnectionError):
-            tag.create()
-
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_create(self, session):
-        dic = {'id': 'pzenqasrtm',
-               'title': None,
-               'get_phrases': None,
-               'maxTokenPerUtt': 35,
-               'minTokenPerUtt': 6,
-               'excludeUttWithoutEntities': True,
-               'searchDictionaries': [{'vocabId': 'some_id',
-                                       'vocabName': None,
-                                       'vocabValueType': None,
-                                       'language': 'ENGLISH',
-                                       'stopwordList': None,
-                                       'synonymList': None,
-                                       'searchMode': 'SPAN',
-                                       'analyzeStrategy': 'STEM',
-                                       'skipPatternBetweenKeyAndValue': None,
-                                       'skipPatternBetweenValues': None,
-                                       'phraseMatchingPattern': None,
-                                       'phraseMatchingGroups': None}
-                                      ],
-               'files': None,
-               'insights': {'number_documents_in': None,
-                            'number_documents_out': None,
-                            'number_of_results': None,
-                            'number_segments': None,
-                            'number_bytes_in': None,
-                            'took': None,
-                            'start_time': 1594213819088,
-                            'qtcurate_start': None,
-                            'qtcurate_process_start': None,
-                            'qtcurate_end': None
-                            },
-               'index': 'pzenqasrtm', 'stitle': None
-               }
-        mock = Mock()
-        response = Mock()
-        response.status_code = 200
-        response.json.return_value = dic
-        mock.post.return_value = response
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        vocab_id = "some_id"
-        urls = ["www.url.com"]
-        tag.urls(urls)
-        tag.search_rule(vocab_id)
-        self.assertEqual(tag.create(), dic)
+        with self.assertRaises(QtArgumentError):
+            tag.fetch(dp_id=[])
 
     def test_update_dp_id_arg_error(self):
         tag = DataProcess(API_KEY)
@@ -348,29 +347,6 @@ class TestDataProcess(TestCase):
         with self.assertRaises(QtArgumentError):
             tag.clone(dp_id="some_id", update_files="file")
 
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_update_connection_exception(self, session):
-        mock = Mock()
-        mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        with self.assertRaises(QtConnectionError):
-            tag.update(dp_id="some_id", update_files=['test.txt'])
-
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_update_not_authorized(self, session):
-        mock = Mock()
-        response = Mock()
-        response.status_code = 401
-        response.json.return_value = []
-        mock.post.return_value = response
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        with self.assertRaises(QtRestApiError):
-            tag.clone(dp_id="some_id", update_files=[])
-
     def test_clone_dp_id_arg_err(self):
         tag = DataProcess(API_KEY)
         with self.assertRaises(QtArgumentError):
@@ -381,112 +357,15 @@ class TestDataProcess(TestCase):
         with self.assertRaises(QtArgumentError):
             tag.clone(dp_id="some_id", update_files="file")
 
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_clone_conn_error(self, session):
-        mock = Mock()
-        mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        with self.assertRaises(QtConnectionError):
-            tag.clone(dp_id="some_id", update_files=[])
-
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_clone_not_authorized(self, session):
-        mock = Mock()
-        response = Mock()
-        response.status_code = 401
-        response.json.return_value = []
-        mock.post.return_value = response
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        with self.assertRaises(QtRestApiError):
-            tag.clone(dp_id="some_id", update_files=[])
-
-    def test_fetch_dp_id_arg_err(self):
-        tag = DataProcess(API_KEY)
-        with self.assertRaises(QtArgumentError):
-            tag.fetch(dp_id=[])
-
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_fetch_conn_error(self, session):
-        mock = Mock()
-        mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        with self.assertRaises(QtConnectionError):
-            tag.fetch(dp_id="some_id")
-
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_fetch_not_authorized(self, session):
-        mock = Mock()
-        response = Mock()
-        response.status_code = 401
-        response.json.return_value = []
-        mock.post.return_value = response
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        with self.assertRaises(QtRestApiError):
-            tag.fetch(dp_id="some_id")
-
     def test_delete_argument_type_error(self):
         tag = DataProcess(API_KEY)
         with self.assertRaises(QtArgumentError):
             tag.delete(dp_id=[])
 
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_delete_connection_exception(self, session):
-        mock = Mock()
-        mock.delete.side_effect = requests.exceptions.ConnectionError("Connection error")
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        with self.assertRaises(QtConnectionError):
-            tag.delete(dp_id="some_index")
-
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_delete_not_authorized(self, session):
-        mock = Mock()
-        response = Mock()
-        response.status_code = 401
-        response.json.return_value = []
-        mock.delete.return_value = response
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        with self.assertRaises(QtRestApiError):
-            tag.delete(dp_id="some_index")
-
     def test_progress_argument_type_error(self):
         tag = DataProcess(API_KEY)
         with self.assertRaises(QtArgumentError):
             tag.progress(dp_id=[])
-
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_progress_connection_exception(self, session):
-        mock = Mock()
-        mock.get.side_effect = requests.exceptions.ConnectionError("Connection error")
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        with self.assertRaises(QtConnectionError):
-            tag.progress(dp_id="some_index")
-
-    @patch("qtcurate.dataprocess.requests.Session")
-    def test_progress_not_authorized(self, session):
-        mock = Mock()
-        response = Mock()
-        response.status_code = 401
-        response.json.return_value = []
-        mock.get.return_value = response
-        session.return_value = mock
-
-        tag = DataProcess(API_KEY)
-        with self.assertRaises(QtRestApiError):
-            tag.progress(dp_id="some_index")
 
     def test_search_dp_id_arg(self):
         tag = DataProcess(API_KEY)

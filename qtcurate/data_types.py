@@ -14,8 +14,6 @@ class DataType(Enum):
     STRING = "STRING"
     DOUBLE = "DOUBLE"
     PERCENT = "PERCENT"
-    MONEY = "MONEY"
-    VERB = "VERB"
     NOUN = "NOUN"
 
 
