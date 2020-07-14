@@ -82,7 +82,7 @@ class DataProcess:
     def __repr__(self):
         return f"{self.temp_dict}"
 
-    def get_index(self):
+    def get_id(self):
         return self.index
 
     def title(self, title_name: str) -> None:
