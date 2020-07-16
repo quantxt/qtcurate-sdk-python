@@ -1,4 +1,5 @@
 from qtcurate.config import BASE_URL
+from qtcurate.qt import Qt
 import requests
 import json
 import os.path
@@ -6,13 +7,13 @@ from typing import Dict, List, Union
 from qtcurate.exceptions import QtArgumentError, QtDictError, QtConnectionError, QtRestApiError
 
 dic_entries = "entries"
-dic_name = "name" 
+dic_name = "name"
 
 
-class QtDict:
-    def __init__(self, api_key: str, environment: str = ""):
+class QtDict(Qt):
+    def __init__(self, environment: str = ""):
         self.session = requests.Session()
-        self.headers = {"X-API-Key": api_key}
+        self.headers = {"X-API-Key": Qt.api_key}
         self.temp_dict = dict()
         self.temp_dict[dic_entries] = []
         self.temp_dict[dic_name] = None

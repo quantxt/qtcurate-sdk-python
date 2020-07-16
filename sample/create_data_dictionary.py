@@ -1,4 +1,5 @@
 from qtcurate.qtdict import QtDict
+from qtcurate.qt import Qt
 from typing import List
 
 
@@ -18,7 +19,8 @@ def get_dictionary_entries(file_name: str) -> List:
     return entries
 
 
-dic = QtDict(API_KEY)
+Qt.init(API_KEY)
+dic = QtDict()
 dic.name("some_name")
 dic.add_entry("Apple Inc.", "AAPL")
 dic.add_entry("Amazon.com", "AMZN")
@@ -29,8 +31,8 @@ except Exception as e:
     print(e)
 dic.clear()
 
-dic = QtDict(API_KEY)
-revenue_entries = get_dictionary_entries("revenue.tsv")
+dic = QtDict()
+revenue_entries = get_dictionary_entries(FILE_NAME)
 dic.name("revenue")
 for entry in revenue_entries:
     dic.entries(entry)

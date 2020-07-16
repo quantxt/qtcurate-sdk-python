@@ -5,6 +5,7 @@ import re
 import json
 from typing import Dict, List
 import os.path
+from qtcurate.qt import Qt
 from qtcurate.exceptions import QtFileTypeError, QtArgumentError, QtConnectionError, QtRestApiError, QtDataProcessError
 from qtcurate.data_types import SearchMode, DictionaryType, AnalyzeMode
 
@@ -30,9 +31,9 @@ tag_sources = "source"
 
 
 class DataProcess:
-    def __init__(self, api_key: str, environment: str = ""):
+    def __init__(self, environment: str = ""):
         self.session = requests.Session()
-        self.headers = {"X-API-Key": api_key}
+        self.headers = {"X-API-Key": Qt.api_key}
         self.temp_dict = dict()
         self.temp_dict[tag_exclude_utt] = True
         self.temp_dict[tag_sort_by_position] = False
