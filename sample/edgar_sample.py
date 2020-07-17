@@ -38,9 +38,10 @@ dp = DataProcess("test")
 dp.title("Transcript labeling test")
 
 # 4- Set numWorkers
-dp.set_workers(32)
+dp.set_workers(16)
 
 # 5- Set data feed and query
+
 data_feeds = ["edgar_8k_full.json"]
 dp.set_chunk(ChunkMode.SENTENCE)
 dp.sources(data_feeds)
@@ -48,6 +49,7 @@ dp.query("1706524,1648636,1326089,1169561")
 
 # 6- Pass data dictionaries
 dic = QtDict("test")
+
 dic.fetch(clim_dic_id)
 dp.search_rule(dic.get_id())
 dic.fetch(disr_dic_id)
