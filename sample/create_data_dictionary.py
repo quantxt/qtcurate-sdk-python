@@ -1,9 +1,14 @@
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from qtcurate.qtdict import QtDict
 from qtcurate.qt import Qt
 from typing import List
 
 
 API_KEY = 'YOUR-API-KEY'
+API_KEY = "a5334f7d-2aac-44b3-aefc-a25cd9dd7bec"
+
 FILE_NAME = "resources/revenue.tsv"
 
 

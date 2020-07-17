@@ -28,41 +28,6 @@ class QtDict(Qt):
     def get_id(self) -> str:
         return str(self.id)
 
-    def connect(self, method: str, uri: str, data: Dict = None) -> Dict:
-        if method.lower() == 'get':
-            try:
-                res = self.session.get(uri, headers=self.headers)
-            except requests.exceptions.RequestException as e:
-                raise QtConnectionError(f"Connection error: {e}")
-            if res.status_code not in [200, 201, 202]:
-                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-        elif method.lower() == "delete":
-            try:
-                res = self.session.delete(uri, headers=self.headers)
-            except requests.exceptions.RequestException as e:
-                raise QtConnectionError(f"Connection error: {e}")
-            if res.status_code not in [200, 201, 202]:
-                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-        elif method.lower() == "post":
-            try:
-                res = self.session.post(uri, headers=self.headers, data=json.dumps(data))
-            except requests.exceptions.RequestException as e:
-                raise QtConnectionError(f"Connection error: {e}")
-            if res.status_code not in [200, 201, 202]:
-                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-        elif method.lower() == "put":
-            try:
-                res = self.session.put(uri, headers=self.headers, data=json.dumps(data))
-            except requests.exceptions.RequestException as e:
-                raise QtConnectionError(f"Connection error: {e}")
-            if res.status_code not in [200, 201, 202]:
-                raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                     f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-
-        return res
 
     def name(self, name: str) -> None:
         """Create a new name for dictionary"""
@@ -116,7 +81,13 @@ class QtDict(Qt):
     def list(self) -> Dict:
         """List all dictionaries"""
 
-        res = self.connect("get", self.url)
+        try:
+            res = self.session.get(self.url, headers=self.headers)
+        except requests.exceptions.RequestException as e:
+            raise QtConnectionError(f"Connection error: {e}")
+        if res.status_code not in [200, 201, 202]:
+            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
 
         return res.json()
 
@@ -126,7 +97,15 @@ class QtDict(Qt):
         if not isinstance(qt_id, str):
             raise QtArgumentError("Argument type error: String is expected as qt_id")
 
-        res = self.connect("get", f"{self.url}{qt_id}")
+        try:
+            res = self.session.get(f"{self.url}{qt_id}", headers=self.headers)
+
+        except requests.exceptions.RequestException as e:
+            raise QtConnectionError(f"Connection error: {e}")
+        if res.status_code not in [200, 201, 202]:
+            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+
         self.id = res.json()["id"]
         return res.json()
 
@@ -135,7 +114,13 @@ class QtDict(Qt):
 
         if not isinstance(qt_id, str):
             raise QtArgumentError("Argument type error: String is expected as qt_id")
-        res = self.connect("delete", f"{self.url}{qt_id}")
+        try:
+            res = self.session.delete( f"{self.url}{qt_id}", headers=self.headers)
+        except requests.exceptions.RequestException as e:
+            raise QtConnectionError(f"Connection error: {e}")
+        if res.status_code not in [200, 201, 202]:
+            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
 
         return res.ok
 
@@ -148,7 +133,14 @@ class QtDict(Qt):
             raise QtDictError("QtDict error: Please add dictionary using add_entry function")
         data = {'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]}
         self.headers['Content-Type'] = 'application/json'
-        res = self.connect("post", self.url, data)
+        try:
+            res = self.session.post(self.url, headers=self.headers, data=json.dumps(data))
+        except requests.exceptions.RequestException as e:
+            raise QtConnectionError(f"Connection error: {e}")
+        if res.status_code not in [200, 201, 202]:
+            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+
         self.id = res.json()["id"]
         del self.headers['Content-Type']
         return res.json()
@@ -163,8 +155,13 @@ class QtDict(Qt):
         if len(self.temp_dict[dic_entries]) == 0:
             raise QtDictError("QtDict error: Please add dictionary using add_entry function")
         data = {'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]}
-
-        res = self.connect("put", f"{self.url}{qt_id}", data)
+        try:
+            res = self.session.put( f"{self.url}{qt_id}", headers=self.headers, data=json.dumps(data))
+        except requests.exceptions.RequestException as e:
+            raise QtConnectionError(f"Connection error: {e}")
+        if res.status_code not in [200, 201, 202]:
+            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
 
         return res.ok
 
@@ -184,7 +181,14 @@ class QtDict(Qt):
             'name': (None, name),
             'file': open(file, 'rb')
         }
-        res = self.connect("post", f"{self.url}upload", files)
+        try:
+            res = self.session.post(f"{self.url}upload", headers=self.headers, files=files)
+        except requests.exceptions.RequestException as e:
+            raise QtConnectionError(f"Connection error: {e}")
+        if res.status_code not in [200, 201, 202]:
+            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
+                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+
         self.id = res.json()["id"]
 
         return res.json()
