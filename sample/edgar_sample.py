@@ -36,22 +36,26 @@ dp = DataProcess("test")
           
 # 3- Name the project
 dp.title("Test 10-K labeling")
-          
-# 3- Set data feed and query
+
+# 4- Set numWorkers
+dp.set_workers(16)
+
+# 5- Set data feed and query
 data_feeds = ["edgar_8k_full.json"]
 dp.sources(data_feeds)
 dp.query("1706524,1648636,1326089,1169561")
 
-# 4- Pass data dictionaries
+# 6- Pass data dictionaries
 dic = QtDict("test")
 dic.fetch(clim_dic_id)
 dp.search_rule(dic.get_id())
 dic.fetch(disr_dic_id)
 dp.search_rule(dic.get_id())
 
-# 5- Run and block until finish
+# 7- Run and block until finish
+print(dp)
 dp.create()
 dp.wait_for_completion()
 
-# 6- Export raw results
+# 8- Export raw results
 dp.report_to_json(dp.get_id(), "export.json")

@@ -31,7 +31,6 @@ except Exception as e:
     print(e)
 dic.clear()
 
-dic = QtDict()
 revenue_entries = get_dictionary_entries(FILE_NAME)
 dic.name("revenue")
 for entry in revenue_entries:
