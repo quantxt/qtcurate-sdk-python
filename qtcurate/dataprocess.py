@@ -6,11 +6,13 @@ import json
 from typing import Dict, List
 import os.path
 from qtcurate.qt import Qt
+from qtcurate.data_types import ChunkMode
 from qtcurate.exceptions import QtFileTypeError, QtArgumentError, QtConnectionError, QtRestApiError, QtDataProcessError
 from qtcurate.data_types import SearchMode, DictionaryType, AnalyzeMode
 
 
 tag_files = "files"
+chunk = "chunk"
 num_workers = "numWorkers"
 tag_urls = "urls"
 tag_title = "title"
@@ -28,7 +30,7 @@ analyze_mod = "analyzeMode"
 stop_word_list = "stopwordList"
 synonym_l = "synonymList"
 tag_query = "query"
-tag_sources = "source"
+tag_sources = "sources"
 
 
 class DataProcess:
@@ -39,6 +41,7 @@ class DataProcess:
         self.temp_dict[tag_exclude_utt] = True
         self.temp_dict[tag_sort_by_position] = False
         self.temp_dict[num_workers] = 4
+        self.temp_dict[chunk] = None
         self.temp_dict[tag_search_dict] = []
         self.index = None
         self.uuid = None
@@ -52,10 +55,13 @@ class DataProcess:
         return f"{self.temp_dict}"
 
     def get_id(self):
-        return self.index
+        return str(self.id)
+
+    def set_chunk(self, value: ChunkMode) -> None:
+        self.temp_dict[chunk] = value.value
 
     def get_uuid(self):
-        return self.uuid
+        return str(self.uuid)
 
     def title(self, title_name: str) -> None:
         """Create title for mining data"""
@@ -263,6 +269,8 @@ class DataProcess:
         if correct != 1:
             raise QtDataProcessError("DataProcess error: You must choose one kind of data: files, URLs or source")
         data[tag_exclude_utt] = self.temp_dict[tag_exclude_utt]
+        data[num_workers] = self.temp_dict[num_workers]
+        data[chunk] = self.temp_dict[chunk]
         if len(self.temp_dict[tag_search_dict]) != 0:
             data[tag_search_dict] = self.temp_dict[tag_search_dict]
         if tag_title in self.temp_dict:
@@ -275,7 +283,7 @@ class DataProcess:
             raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
                                  f"HTTP status code: {res.status_code}. Server message: {res.json()}")
 
-        self.index = res.json()['index']
+        self.id = res.json()['id']
         del self.headers['Content-Type']
 
         return res.json()
@@ -339,7 +347,7 @@ class DataProcess:
             raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
                                  f"HTTP status code: {res.status_code}. Server message: {res.json()}")
 
-        self.index = res.json()['index']
+        self.id = res.json()['id']
         del self.headers['Content-Type']
 
         return res.json()
@@ -375,13 +383,12 @@ class DataProcess:
         if res.status_code not in [200, 201, 202]:
             raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
                                  f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-
         return res.json()
 
     def wait_for_completion(self):
         percentage = 0
         while percentage < 100:
-            result = self.progress(self.index)
+            result = self.progress(self.id)
             percentage = result['progress']
             print(f"Search progress {percentage}%")
             if percentage < 100:
@@ -418,11 +425,9 @@ class DataProcess:
                                  f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         return res.json()
 
-    def report_to_xlsx(self, dp_id: str, path: str) -> bool:
+    def report_to_xlsx(self, path: str) -> bool:
         """Exporting in Excel format"""
 
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
         if not isinstance(path, str):
             raise QtArgumentError("Argument type error: String is expected as path")
         directory = os.path.dirname(path)
@@ -434,7 +439,7 @@ class DataProcess:
         if extension != ".xlsx":
             raise QtFileTypeError("File type error: Please use xlsx extension saving file")
         try:
-            res = self.session.get(f"{self.url}reports/{dp_id}/xlsx", headers=self.headers)
+            res = self.session.get(f"{self.url}reports/{self.id}/xlsx", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
@@ -444,11 +449,9 @@ class DataProcess:
             excel_file.write(res.content)
         return res.ok
 
-    def report_to_json(self, dp_id: str, path: str) -> bool:
+    def report_to_json(self, path: str) -> bool:
         """Exporting in Excel format"""
 
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
         if not isinstance(path, str):
             raise QtArgumentError("Argument type error: String is expected as path")
         directory = os.path.dirname(path)
@@ -460,7 +463,7 @@ class DataProcess:
         if extension != ".json":
             raise QtFileTypeError("File type error: Please use json extension saving file")
         try:
-            res = self.session.get(f"{self.url}reports/{dp_id}/json", headers=self.headers)
+            res = self.session.get(f"{self.url}reports/{self.id}/json", headers=self.headers)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202]:
