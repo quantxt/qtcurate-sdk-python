@@ -41,21 +41,24 @@ dp.title("Test 10-K labeling")
 dp.set_workers(16)
 
 # 5- Set data feed and query
+
 data_feeds = ["edgar_8k_full.json"]
 dp.sources(data_feeds)
 dp.query("1706524,1648636,1326089,1169561")
 
 # 6- Pass data dictionaries
 dic = QtDict("test")
+
 dic.fetch(clim_dic_id)
 dp.search_rule(dic.get_id())
 dic.fetch(disr_dic_id)
 dp.search_rule(dic.get_id())
 
 # 7- Run and block until finish
-print(dp)
+
 dp.create()
 dp.wait_for_completion()
 
 # 8- Export raw results
 dp.report_to_json(dp.get_id(), "export.json")
+
