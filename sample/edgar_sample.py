@@ -1,7 +1,7 @@
 from qtcurate.qtdict import QtDict
 from qtcurate.dataprocess import DataProcess
 from qtcurate.qt import Qt
-
+from qtcurate.data_types import ChunkMode
 
 API_KEY = 'YOUR-API-KEY'
 
@@ -35,7 +35,7 @@ clim_dic_id, disr_dic_id = create_phrases_table()
 dp = DataProcess("test")
           
 # 3- Name the project
-dp.title("Test 10-K labeling")
+dp.title("Transcript labeling test")
 
 # 4- Set numWorkers
 dp.set_workers(16)
@@ -43,6 +43,7 @@ dp.set_workers(16)
 # 5- Set data feed and query
 
 data_feeds = ["edgar_8k_full.json"]
+dp.set_chunk(ChunkMode.SENTENCE)
 dp.sources(data_feeds)
 dp.query("1706524,1648636,1326089,1169561")
 
@@ -55,10 +56,8 @@ dic.fetch(disr_dic_id)
 dp.search_rule(dic.get_id())
 
 # 7- Run and block until finish
-
 dp.create()
 dp.wait_for_completion()
 
 # 8- Export raw results
-dp.report_to_json(dp.get_id(), "export.json")
-
+dp.report_to_json("export.json")
