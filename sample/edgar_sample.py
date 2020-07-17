@@ -1,12 +1,13 @@
 from qtcurate.qtdict import QtDict
 from qtcurate.dataprocess import DataProcess
+from qtcurate.qt import Qt
 
 
 API_KEY = 'YOUR-API-KEY'
 
 
-def create_phrases_table(key: str):
-    qt_dict = QtDict(key, "test")
+def create_phrases_table():
+    qt_dict = QtDict("test")
     qt_dict.name("Climate")
     qt_dict.add_entry("weather conditions", "Climate Conditions")
     qt_dict.add_entry("climate change", "Climate Change")
@@ -25,30 +26,39 @@ def create_phrases_table(key: str):
     return climate_dictionary_id, disruption_dictionary_id
 
 
+Qt.init(API_KEY)
+
 # 1- Run once and use the dictionary IDs in future runs
-# clim_dic_id, disr_dic_id = create_phrases_table(API_KEY)
+clim_dic_id, disr_dic_id = create_phrases_table()
 
 # 2- Initialize the API - Test environment
-dp = DataProcess(API_KEY, "test")
+dp = DataProcess("test")
           
 # 3- Name the project
 dp.title("Test 10-K labeling")
-          
-# 4- Set data feed and query
+
+# 4- Set numWorkers
+dp.set_workers(16)
+
+# 5- Set data feed and query
+
 data_feeds = ["edgar_8k_full.json"]
 dp.sources(data_feeds)
 dp.query("1706524,1648636,1326089,1169561")
 
-# 5- Pass data dictionaries
-dic = QtDict(API_KEY, "test")
+# 6- Pass data dictionaries
+dic = QtDict("test")
+
 dic.fetch(clim_dic_id)
 dp.search_rule(dic.get_id())
 dic.fetch(disr_dic_id)
 dp.search_rule(dic.get_id())
 
-# 6- Submit the job and block until finish
+# 7- Run and block until finish
+
 dp.create()
 dp.wait_for_completion()
 
-# 7- Export results
-dp.report_to_json(dp.get_index(), "export.json")
+# 8- Export raw results
+dp.report_to_json(dp.get_id(), "export.json")
+

@@ -1,5 +1,6 @@
 from qtcurate.dataprocess import DataProcess, DictionaryType
 from qtcurate.qtdict import QtDict
+from qtcurate.qt import Qt
 from typing import List
 
 API_KEY = 'YOUR-API-KEY'
@@ -25,12 +26,13 @@ def get_links() -> List:
     return list(unique_links)
 
 
-d = QtDict(API_KEY, "test")
+Qt.init(API_KEY)
 
+d = QtDict("test")
 loss_entries = get_dictionary_entries("resources/loss.tsv")
 revenue_entries = get_dictionary_entries("resources/revenue.tsv")
 
-t = DataProcess(API_KEY, "test")
+t = DataProcess("test")
 t.title("Test Large SDK with URLS")
 
 d.name("loss")
@@ -57,4 +59,4 @@ t.search_rule(d.get_id(), DictionaryType.NUMBER)
 t.urls(get_links())
 t.create()
 t.wait_for_completion()
-t.report_to_json(t.get_index(), "report.json")
+t.report_to_json(t.get_id(), "report.json")

@@ -78,6 +78,10 @@ pip install qtcurate
 
 Valid API key is required for all operations.
 
+```js
+Qt.init("YOUR-API-KEY")
+```
+
 If API key is valid, than the response will be `HTTP 200` containing user profile data.
 
 If API key is missing or not valid, the endpoint will return `HTTP 401`
@@ -89,10 +93,6 @@ optional `category`.  Once a phrase is found **Theia** produces an extraction ob
 used for searching in input documents. Each entry of a dictionary has a `str` and an optional `category`.  Once a phrase
  is found **Theia** produces an extraction object:
 
-Authentication with API KEY
-```
-dic = QtDict(api_key=YOUR-API-KEY)
-```
 Dictionaries are a list of phrases used for searching in input documents. Each entry of a dictionary has a `str` and an optional `category`.  Once a phrase is found **Theia** produces an extraction object:
 
 ```json
@@ -229,11 +229,6 @@ Data Extraction is the process of identifying search phrases found in the input 
 (date, number or regex) and producing structured data. Input documents can be streamed from content files, data APIs or 
 directly from public URLs.
 
-Authenticate with API_KEY
-
-```
-dp = DataProcess(api_key="1234")
-```
 
 #### Processing Files
 
