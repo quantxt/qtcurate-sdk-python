@@ -29,6 +29,9 @@ dp.files([dp.get_uuid()])
 dp.create()
 dp.wait_for_completion()
 
-# Export raw results
+# Export raw results to JSON
 dp.report_to_json("export_sample.json")
+
+# Export raw results to XLSX
+dp.report_to_xlsx("export_sample.xlsx")
 
