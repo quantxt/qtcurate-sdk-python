@@ -3,7 +3,7 @@ from qtcurate.dataprocess import DataProcess
 from qtcurate.qt import Qt
 from qtcurate.data_types import ChunkMode
 
-API_KEY = "a5334f7d-2aac-44b3-aefc-a25cd9dd7bec"
+API_KEY = "YOUR-API-KEY"
 PDF = "resources/upload_sample.pdf"
 
 # Initialise with api key
