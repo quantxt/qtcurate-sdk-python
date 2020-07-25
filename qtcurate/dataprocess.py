@@ -1,3 +1,4 @@
+from qtcurate.connect import connect
 from qtcurate.config import BASE_URL
 from time import sleep
 import requests
@@ -49,7 +50,6 @@ class DataProcess:
         if environment != "":
             environment = f"{environment}."
         self.url = f"http://{environment}{BASE_URL}"
-
 
     def __repr__(self):
         return f"{self.temp_dict}"
@@ -235,14 +235,8 @@ class DataProcess:
         if not os.path.exists(file):
             raise QtArgumentError(f"Argument error: File {file} does not exist")
         files = {'file': open(file, 'rb')}
+        res = connect("post", f"{self.url}search/file", self.headers, "files", files)
 
-        try:
-            res = self.session.post(f"{self.url}search/file", headers=self.headers, files=files)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
         self.uuid = res.json()['uuid']
         return res.json()
 
@@ -275,17 +269,10 @@ class DataProcess:
             data[tag_search_dict] = self.temp_dict[tag_search_dict]
         if tag_title in self.temp_dict:
             data[tag_title] = self.temp_dict[tag_title]
-        try:
-            res = self.session.post(f"{self.url}search/new", headers=self.headers, data=json.dumps(data))
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = connect("post", f"{self.url}search/new", self.headers, json.dumps(data))
 
         self.id = res.json()['id']
         del self.headers['Content-Type']
-
         return res.json()
 
     def fetch(self, dp_id: str) -> Dict:
@@ -294,15 +281,8 @@ class DataProcess:
         self.headers["Content-Type"] = "application/json"
         if not isinstance(dp_id, str):
             raise QtArgumentError("Argument type error: String is expected as dp_id")
-        try:
-            res = self.session.get(f"{self.url}search/{dp_id}", headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = connect("get", f"{self.url}search/{dp_id}", self.headers)
         del self.headers['Content-Type']
-
         return res.json()
 
     def update(self, dp_id: str, update_files: List) -> Dict:
@@ -316,16 +296,8 @@ class DataProcess:
         else:
             self.clear()
             data = {tag_files: update_files}
-        try:
-            res = self.session.post(f"{self.url}search/update/{dp_id}", headers=self.headers, data=json.dumps(data))
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-
+        res = connect("post", f"{self.url}search/update/{dp_id}", self.headers, "data", json.dumps(data))
         del self.headers['Content-Type']
-
         return res.json()
 
     def clone(self, dp_id: str, update_files: List) -> Dict:
@@ -339,17 +311,9 @@ class DataProcess:
         else:
             self.clear()
             data = {tag_files: update_files}
-        try:
-            res = self.session.post(f"{self.url}search/new/{dp_id}", headers=self.headers, data=json.dumps(data))
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-
+        res = connect("post", f"{self.url}search/new/{dp_id}", self.headers, "data", json.dumps(data))
         self.id = res.json()['id']
         del self.headers['Content-Type']
-
         return res.json()
 
     def delete(self, dp_id: str) -> bool:
@@ -357,14 +321,7 @@ class DataProcess:
 
         if not isinstance(dp_id, str):
             raise QtArgumentError("Argument type error: String is expected as dp_id")
-        try:
-            res = self.session.delete(f"{self.url}search/{dp_id}", headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-
+        res = connect("delete", f"{self.url}search/{dp_id}", self.headers)
         return res.ok
 
     def progress(self, dp_id: str = None) -> Dict:
@@ -376,13 +333,7 @@ class DataProcess:
                 url_path = f"{url_path}/{dp_id}"
             else:
                 raise QtArgumentError("Expected string")
-        try:
-            res = self.session.get(f"{self.url}search/{url_path}", headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = connect("get", f"{self.url}search/{url_path}", self.headers)
         return res.json()
 
     def wait_for_completion(self):
@@ -416,13 +367,8 @@ class DataProcess:
             pass
         else:
             raise QtArgumentError("Argument error: Query filters must be used in pairs")
-        try:
-            res = self.session.get(f"{self.url}search/{dp_id}", headers=self.headers, params=parameters)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = connect("get", f"{self.url}search/{dp_id}", self.headers, "params", parameters)
+
         return res.json()
 
     def report_to_xlsx(self, path: str) -> bool:
@@ -438,13 +384,8 @@ class DataProcess:
         extension = os.path.splitext(path)[1].lower()
         if extension != ".xlsx":
             raise QtFileTypeError("File type error: Please use xlsx extension saving file")
-        try:
-            res = self.session.get(f"{self.url}reports/{self.id}/xlsx", headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = connect("get", f"{self.url}reports/{self.id}/xlsx", self.headers)
+
         with open(path, 'wb') as excel_file:
             excel_file.write(res.content)
         return res.ok
@@ -462,13 +403,7 @@ class DataProcess:
         extension = os.path.splitext(path)[1].lower()
         if extension != ".json":
             raise QtFileTypeError("File type error: Please use json extension saving file")
-        try:
-            res = self.session.get(f"{self.url}reports/{self.id}/json", headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
+        res = connect("get", f"{self.url}reports/{self.id}/json", self.headers)
         with open(path, "w") as json_file:
             json.dump(res.json(), json_file)
         return res.ok
