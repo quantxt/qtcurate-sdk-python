@@ -57,6 +57,9 @@ class DataProcess:
     def get_id(self):
         return str(self.id)
 
+    def set_id(self, id: str) -> None:
+        self.id = id
+
     def set_chunk(self, value: ChunkMode) -> None:
         self.temp_dict[chunk] = value.value
 
@@ -269,7 +272,7 @@ class DataProcess:
             data[tag_search_dict] = self.temp_dict[tag_search_dict]
         if tag_title in self.temp_dict:
             data[tag_title] = self.temp_dict[tag_title]
-        res = connect("post", f"{self.url}search/new", self.headers, json.dumps(data))
+        res = connect("post", f"{self.url}search/new", self.headers, "data", json.dumps(data))
 
         self.id = res.json()['id']
         del self.headers['Content-Type']
@@ -300,17 +303,14 @@ class DataProcess:
         del self.headers['Content-Type']
         return res.json()
 
-    def clone(self, dp_id: str, update_files: List) -> Dict:
+    def clone(self, dp_id: str) -> Dict:
         """ Update dataprocess where dp_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
         if not isinstance(dp_id, str):
             raise QtArgumentError("Argument type error: String is expected as dp_id")
-        if not isinstance(update_files, List):
-            raise QtArgumentError("Argument type error: List is expected as update file")
         else:
-            self.clear()
-            data = {tag_files: update_files}
+            data = {tag_files: self.temp_dict[tag_files]}
         res = connect("post", f"{self.url}search/new/{dp_id}", self.headers, "data", json.dumps(data))
         self.id = res.json()['id']
         del self.headers['Content-Type']
