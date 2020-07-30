@@ -36,13 +36,14 @@ t = DataProcess("test")
 t.title("Test Large SDK with URLS")
 
 d.name("loss")
+dic = {}
 for entry in loss_entries:
     d.entries(entry)
 try:
-    d.create()
+    dic1 = d.create()
 except Exception as e:
     print(e)
-t.search_rule(d.get_id(), DictionaryType.NUMBER)
+t.search_rule(dic1.id, DictionaryType.NUMBER)
 d.clear()
 
 d.name("revenue")

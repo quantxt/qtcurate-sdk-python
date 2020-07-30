@@ -4,6 +4,7 @@ from typing import List
 
 
 API_KEY = "YOUR-API-KEY"
+
 FILE_NAME = "resources/revenue.tsv"
 
 
@@ -58,8 +59,8 @@ except Exception as e:
 print(dic.fetch(dic.get_id()))
 
 # Fetch from known dictionary
-print(dic.fetch(entry_dic["id"]))
+print(dic.fetch(entry_dic.id))
 
 # List all existing dictionaries
 print(dic.list())
-print(dic.delete(entry_dic["id"]))
+print(dic.delete(entry_dic.id))

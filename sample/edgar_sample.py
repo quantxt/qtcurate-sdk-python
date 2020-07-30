@@ -48,8 +48,8 @@ dp.query("1706524,1648636,1326089,1169561")
 
 # 6- Pass data dictionaries
 dic = QtDict("test")
-dic.fetch(clim_dic_id)
-dp.search_rule(dic.get_id())
+dic1 = dic.fetch(clim_dic_id)
+dp.search_rule(dic1.id)
 dic.fetch(disr_dic_id)
 dp.search_rule(dic.get_id())
 
