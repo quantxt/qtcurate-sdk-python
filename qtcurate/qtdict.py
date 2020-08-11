@@ -1,11 +1,10 @@
 from qtcurate.config import BASE_URL
 from qtcurate.qt import Qt
-import requests
 import json
 import os.path
 from typing import Dict, List, Union
-from qtcurate.exceptions import QtArgumentError, QtDictError, QtConnectionError, QtRestApiError
-from qtcurate.connect import connect
+from qtcurate.exceptions import QtArgumentError, QtDictError
+from qtcurate.utilities import connect, json_to_tuple
 
 dic_entries = "entries"
 dic_name = "name"
@@ -13,7 +12,6 @@ dic_name = "name"
 
 class QtDict(Qt):
     def __init__(self, environment: str = ""):
-        self.session = requests.Session()
         self.headers = {"X-API-Key": Qt.api_key}
         self.temp_dict = dict()
         self.temp_dict[dic_entries] = []
@@ -79,7 +77,7 @@ class QtDict(Qt):
             else:
                 self.temp_dict[dic_entries].append({'str': str_key})
 
-    def list(self) -> Dict:
+    def list(self) -> List:
         """List all dictionaries"""
         res = connect("get", self.url, self.headers)
         return res.json()
@@ -91,7 +89,8 @@ class QtDict(Qt):
             raise QtArgumentError("Argument type error: String is expected as qt_id")
 
         res = connect("get", f"{self.url}{qt_id}", self.headers)
-        return res.json()
+        return json_to_tuple(res.json())
+
 
     def delete(self, qt_id: str) -> bool:
         """Delete existing dictionary"""
@@ -115,11 +114,12 @@ class QtDict(Qt):
 
         self.id = res.json()["id"]
         del self.headers['Content-Type']
-        return res.json()
+
+        return json_to_tuple(res.json())
 
     def update(self, qt_id: str) -> bool:
         """Update existing dictionary"""
-
+        self.headers['Content-Type'] = 'application/json'
         if not isinstance(qt_id, str):
             raise QtArgumentError("Argument type error: String is expected as qt_id")
         if self.temp_dict[dic_name] is None:
@@ -127,9 +127,10 @@ class QtDict(Qt):
         if len(self.temp_dict[dic_entries]) == 0:
             raise QtDictError("QtDict error: Please add dictionary using add_entry function")
         data = {'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]}
-        res = connect("put", f"{self.url}{qt_id}", self.headers, "data", json.dumps((data)))
+        res = connect("put", f"{self.url}{qt_id}", self.headers, "data", json.dumps(data))
+        del self.headers['Content-Type']
 
-        return res.ok
+        return json_to_tuple(res.json())
 
     def upload(self, file: str, name: str) -> Dict:
         """Upload dictionary data from TSV files"""
@@ -148,14 +149,5 @@ class QtDict(Qt):
             'file': open(file, 'rb')
         }
         res = connect("post", f"{self.url}upload", self.headers, "files", files)
-        try:
-            res = self.session.post(f"{self.url}upload", headers=self.headers, files=files)
-        except requests.exceptions.RequestException as e:
-            raise QtConnectionError(f"Connection error: {e}")
-        if res.status_code not in [200, 201, 202]:
-            raise QtRestApiError(f"HTTP error: Full authentication is required to access this resource. "
-                                 f"HTTP status code: {res.status_code}. Server message: {res.json()}")
-
         self.id = res.json()["id"]
-
-        return res.json()
+        return json_to_tuple(res.json())

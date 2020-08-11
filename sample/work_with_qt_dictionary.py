@@ -4,7 +4,6 @@ from typing import List
 
 
 API_KEY = "YOUR-API-KEY"
-
 FILE_NAME = "resources/revenue.tsv"
 
 
@@ -61,6 +60,15 @@ print(dic.fetch(dic.get_id()))
 # Fetch from known dictionary
 print(dic.fetch(entry_dic.id))
 
+# Update dictionary, name and entries are mandatory options
+new_dic = QtDict()
+new_dic.add_entry("mima", "masha")
+new_dic.name("updated name")
+res = new_dic.update(entry_dic.id)
+print(res.id)
+
 # List all existing dictionaries
 print(dic.list())
 print(dic.delete(entry_dic.id))
+
+print(entry_dic)

@@ -1,14 +1,13 @@
-from qtcurate.connect import connect
+from qtcurate.utilities import connect, json_to_tuple
 from qtcurate.config import BASE_URL
 from time import sleep
-import requests
 import re
 import json
 from typing import Dict, List
 import os.path
 from qtcurate.qt import Qt
 from qtcurate.data_types import ChunkMode
-from qtcurate.exceptions import QtFileTypeError, QtArgumentError, QtConnectionError, QtRestApiError, QtDataProcessError
+from qtcurate.exceptions import QtFileTypeError, QtArgumentError, QtDataProcessError
 from qtcurate.data_types import SearchMode, DictionaryType, AnalyzeMode
 
 
@@ -36,7 +35,6 @@ tag_sources = "sources"
 
 class DataProcess:
     def __init__(self, environment: str = ""):
-        self.session = requests.Session()
         self.headers = {"X-API-Key": Qt.api_key}
         self.temp_dict = dict()
         self.temp_dict[tag_exclude_utt] = True
@@ -241,7 +239,7 @@ class DataProcess:
         res = connect("post", f"{self.url}search/file", self.headers, "files", files)
 
         self.uuid = res.json()['uuid']
-        return res.json()
+        return json_to_tuple(res.json())
 
     def create(self) -> Dict:
         """Mine data via dictionaries"""
@@ -276,7 +274,7 @@ class DataProcess:
 
         self.id = res.json()['id']
         del self.headers['Content-Type']
-        return res.json()
+        return json_to_tuple(res.json())
 
     def fetch(self, dp_id: str) -> Dict:
         """ Fetch dataprocess where dp_id is existing ID"""
@@ -286,7 +284,7 @@ class DataProcess:
             raise QtArgumentError("Argument type error: String is expected as dp_id")
         res = connect("get", f"{self.url}search/{dp_id}", self.headers)
         del self.headers['Content-Type']
-        return res.json()
+        return json_to_tuple(res.json())
 
     def update(self, dp_id: str, update_files: List) -> Dict:
         """ Update dataprocess where dp_id is existing ID"""
@@ -301,7 +299,7 @@ class DataProcess:
             data = {tag_files: update_files}
         res = connect("post", f"{self.url}search/update/{dp_id}", self.headers, "data", json.dumps(data))
         del self.headers['Content-Type']
-        return res.json()
+        return json_to_tuple(res.json())
 
     def clone(self, dp_id: str) -> Dict:
         """ Update dataprocess where dp_id is existing ID"""
@@ -314,7 +312,7 @@ class DataProcess:
         res = connect("post", f"{self.url}search/new/{dp_id}", self.headers, "data", json.dumps(data))
         self.id = res.json()['id']
         del self.headers['Content-Type']
-        return res.json()
+        return json_to_tuple(res.json())
 
     def delete(self, dp_id: str) -> bool:
         """Delete data container"""
@@ -334,13 +332,13 @@ class DataProcess:
             else:
                 raise QtArgumentError("Expected string")
         res = connect("get", f"{self.url}search/{url_path}", self.headers)
-        return res.json()
+        return json_to_tuple(res.json())
 
     def wait_for_completion(self):
         percentage = 0
         while percentage < 100:
             result = self.progress(self.id)
-            percentage = result['progress']
+            percentage = result.progress
             print(f"Search progress {percentage}%")
             if percentage < 100:
                 sleep(1)
@@ -369,7 +367,7 @@ class DataProcess:
             raise QtArgumentError("Argument error: Query filters must be used in pairs")
         res = connect("get", f"{self.url}search/{dp_id}", self.headers, "params", parameters)
 
-        return res.json()
+        return json_to_tuple(res.json())
 
     def report_to_xlsx(self, path: str) -> bool:
         """Exporting in Excel format"""

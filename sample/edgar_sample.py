@@ -1,9 +1,13 @@
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from qtcurate.qtdict import QtDict
 from qtcurate.dataprocess import DataProcess
 from qtcurate.qt import Qt
 from qtcurate.data_types import ChunkMode
 
 API_KEY = 'YOUR-API-KEY'
+API_KEY = "a5334f7d-2aac-44b3-aefc-a25cd9dd7bec"
 
 
 def create_phrases_table():
@@ -12,18 +16,16 @@ def create_phrases_table():
     qt_dict.add_entry("weather conditions", "Climate Conditions")
     qt_dict.add_entry("climate change", "Climate Change")
     qt_dict.add_entry("global warming", "Climate Change")
-    qt_dict.create()
-    climate_dictionary_id = qt_dict.get_id()
+    climate_dictionary = qt_dict.create()
     qt_dict.clear()
 
     qt_dict.name("Disruption")
     qt_dict.add_entry("business disruption", "Business Disruptions")
     qt_dict.add_entry("competition", "Competition")
-    qt_dict.create()
-    disruption_dictionary_id = qt_dict.get_id()
+    disruption_dictionary = qt_dict.create()
     qt_dict.clear()
 
-    return climate_dictionary_id, disruption_dictionary_id
+    return climate_dictionary.id, disruption_dictionary.id
 
 
 Qt.init(API_KEY)
@@ -46,7 +48,7 @@ dp.set_chunk(ChunkMode.SENTENCE)
 dp.sources(data_feeds)
 dp.query("1706524,1648636,1326089,1169561")
 
-# 6- Pass data dictionaries
+# 6- Pass data dictionaries, two ways, directly from object and from response
 dic = QtDict("test")
 dic1 = dic.fetch(clim_dic_id)
 dp.search_rule(dic1.id)

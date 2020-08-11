@@ -1,122 +1,17 @@
 from unittest import TestCase, main
-import requests
-from unittest.mock import patch, Mock
 from qtcurate.qtdict import QtDict
 from qtcurate.exceptions import *
 
 
-API_KEY = 'some_key'
+API_KEY = 'a5334f7d-2aac-44b3-aefc-a25cd9dd7bec'
 
 
 class TestQtDict(TestCase):
 
-    @patch("qtcurate.qtdict.requests.Session")
-    def test_connect_get_conn_error(self, session):
-        mock = Mock()
-        mock.get.side_effect = requests.exceptions.ConnectionError("Connection error")
-        session.return_value = mock
-
-        method = "get"
-        url = "some url"
+    def test_get_id(self):
         dic = QtDict(API_KEY)
-        with self.assertRaises(QtConnectionError):
-            dic.connect(method, url)
-
-    @patch("qtcurate.qtdict.requests.Session")
-    def test_connect_get_not_authorized(self, session):
-        mock = Mock()
-        response = Mock()
-        response.status_code = 401
-        response.json.return_value = []
-        mock.get.return_value = response
-        session.return_value = mock
-
-        dic = QtDict(API_KEY)
-        method = "get"
-        url = "some url"
-        with self.assertRaises(QtRestApiError):
-            dic.connect(method, url)
-
-    @patch("qtcurate.qtdict.requests.Session")
-    def test_connect_delete_conn_error(self, session):
-        mock = Mock()
-        mock.delete.side_effect = requests.exceptions.ConnectionError("Connection error")
-        session.return_value = mock
-
-        method = "delete"
-        url = "some url"
-        dic = QtDict(API_KEY)
-        with self.assertRaises(QtConnectionError):
-            dic.connect(method, url)
-
-    @patch("qtcurate.qtdict.requests.Session")
-    def test_connect_delete_not_authorized(self, session):
-        mock = Mock()
-        response = Mock()
-        response.status_code = 401
-        response.json.return_value = []
-        mock.delete.return_value = response
-        session.return_value = mock
-
-        dic = QtDict(API_KEY)
-        method = "delete"
-        url = "some url"
-        with self.assertRaises(QtRestApiError):
-            dic.connect(method, url)
-
-    @patch("qtcurate.qtdict.requests.Session")
-    def test_connect_post_conn_error(self, session):
-        mock = Mock()
-        mock.post.side_effect = requests.exceptions.ConnectionError("Connection error")
-        session.return_value = mock
-
-        method = "post"
-        url = "some url"
-        dic = QtDict(API_KEY)
-        with self.assertRaises(QtConnectionError):
-            dic.connect(method, url)
-
-    @patch("qtcurate.qtdict.requests.Session")
-    def test_connect_post_not_authorized(self, session):
-        mock = Mock()
-        response = Mock()
-        response.status_code = 401
-        response.json.return_value = []
-        mock.post.return_value = response
-        session.return_value = mock
-
-        dic = QtDict(API_KEY)
-        method = "post"
-        url = "some url"
-        with self.assertRaises(QtRestApiError):
-            dic.connect(method, url)
-
-    @patch("qtcurate.qtdict.requests.Session")
-    def test_connect_put_conn_error(self, session):
-        mock = Mock()
-        mock.put.side_effect = requests.exceptions.ConnectionError("Connection error")
-        session.return_value = mock
-
-        method = "put"
-        url = "some url"
-        dic = QtDict(API_KEY)
-        with self.assertRaises(QtConnectionError):
-            dic.connect(method, url)
-
-    @patch("qtcurate.qtdict.requests.Session")
-    def test_connect_put_not_authorized(self, session):
-        mock = Mock()
-        response = Mock()
-        response.status_code = 401
-        response.json.return_value = []
-        mock.put.return_value = response
-        session.return_value = mock
-
-        dic = QtDict(API_KEY)
-        method = "put"
-        url = "some url"
-        with self.assertRaises(QtRestApiError):
-            dic.connect(method, url)
+        some_id = None
+        self.assertEqual(dic.get_id(), str(some_id))
 
     def test_name_name(self):
         name = "some name"
@@ -150,6 +45,12 @@ class TestQtDict(TestCase):
 
     def test_entries_dict_content(self):
         test_dict = {"test": "str", "category": "category"}
+        dic = QtDict(API_KEY)
+        with self.assertRaises(QtArgumentError):
+            dic.entries(test_dict)
+
+    def test_entries_dict_content_2(self):
+        test_dict = {"str": "str", "test": "category"}
         dic = QtDict(API_KEY)
         with self.assertRaises(QtArgumentError):
             dic.entries(test_dict)
@@ -196,6 +97,8 @@ class TestQtDict(TestCase):
         dic.add_entry(key, value)
         self.assertEqual(list_entries, dic.temp_dict['entries'])
 
+    # def test_list????
+
     def test_fetch_arg(self):
         dict_id = 123
         dic = QtDict(API_KEY)
@@ -215,7 +118,7 @@ class TestQtDict(TestCase):
         with self.assertRaises(QtDictError):
             dic.create()
 
-    def test_create_entry(self):
+    def test_create_miss_entry(self):
         name = "some name"
         dic = QtDict(API_KEY)
         dic.name(name)

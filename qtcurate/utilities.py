@@ -1,6 +1,19 @@
 from qtcurate.exceptions import QtConnectionError, QtRestApiError, QtArgumentError
 import requests
-from typing import Dict
+from typing import Dict, Tuple
+import json
+from collections import namedtuple
+
+
+def json_to_tuple(data: [str, Dict]) -> Tuple:
+    if "global" in data.keys():
+        data["Global"] = data.pop("global")
+    if isinstance(data, Dict):
+        data = json.dumps(data)
+    if not isinstance(data, str):
+        raise QtArgumentError("This is not valid type of object")
+
+    return json.loads(data, object_hook=lambda d: namedtuple('Object', d.keys())(*d.values()))
 
 
 def connect(method: str, uri: str, headers: str, data_type: str = None, data: Dict = None) -> Dict:
@@ -26,7 +39,6 @@ def connect(method: str, uri: str, headers: str, data_type: str = None, data: Di
     elif method.lower() == "delete":
         try:
             res = requests.delete(uri, headers=headers)
-            print(res)
         except requests.exceptions.RequestException as e:
             raise QtConnectionError(f"Connection error: {e}")
         if res.status_code not in [200, 201, 202, 204]:

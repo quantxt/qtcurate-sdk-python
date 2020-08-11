@@ -8,11 +8,13 @@ Python SDK for Search and Data extraction
  
  ### Dictionary
 
-In the simplest case, a dictionary is a list of phrases. Theia searches for every phrase in the dictionary in the input documents and based on the _extraction type_ decides to extract data. 
+In the simplest case, a dictionary is a list of phrases. Theia searches for every phrase in the dictionary in the input 
+documents and based on the _extraction type_ decides to extract data. 
 At a minimum, a dictionary must have a Name and at least one entry, one search phrase.
 Users can also assign categories to dictionary entries. 
 
-Searching for dictionary phrases in the content is based on the techniques used in modern full-text search engines. Users can use various text analyzers, synonyms, stop words and fuzziness.
+Searching for dictionary phrases in the content is based on the techniques used in modern full-text search engines. 
+Users can use various text analyzers, synonyms, stop words and fuzziness.
 
 
 ### Extraction Types
@@ -25,7 +27,9 @@ Each dictionary can have one optional extraction type:
 
 Without setting an extraction type the dictionary will essentially be used for tagging documentnts.
 
-Search phrases and types should appear in reading order, either in a sentence or in a table. By default **Theia** expects the phrase and the type to appear close (but not necessarily next) to each other. Users can configure the allowable gap between dictionary phrases and types using regular expressions.
+Search phrases and types should appear in reading order, either in a sentence or in a table. By default **Theia** 
+expects the phrase and the type to appear close (but not necessarily next) to each other. Users can configure the 
+allowable gap between dictionary phrases and types using regular expressions.
 
 
 ### Examples
@@ -39,7 +43,8 @@ Gas Consumption is 23.1 L per 100km| Consumption | Regex ([\d\\.]+) .*?100km| `2
 The car consumes 24 litre of gas per 100km| Consumption | Regex ([\d\\.]+) .*?100km| `24`|
 
 
-In the following we will cover the details of configuring and submitting extraction jobs via our REST API. Extensive end-to-end examples can be found in our Java and Python SDK repositories.
+In the following we will cover the details of configuring and submitting extraction jobs via our REST API. Extensive 
+end-to-end examples can be found in our Java and Python SDK repositories.
 
 
 
@@ -93,7 +98,8 @@ optional `category`.  Once a phrase is found **Theia** produces an extraction ob
 used for searching in input documents. Each entry of a dictionary has a `str` and an optional `category`.  Once a phrase
  is found **Theia** produces an extraction object:
 
-Dictionaries are a list of phrases used for searching in input documents. Each entry of a dictionary has a `str` and an optional `category`.  Once a phrase is found **Theia** produces an extraction object:
+Dictionaries are a list of phrases used for searching in input documents. Each entry of a dictionary has a `str` and an 
+optional `category`.  Once a phrase is found **Theia** produces an extraction object:
 
 ```json
 {
@@ -113,7 +119,10 @@ Dictionaries are a list of phrases used for searching in input documents. Each e
 `dict_id` returned by **Theia** once a dictionary is created.
 
 
-**Theia** uses various strategies for matching on dictionary phrases allowing users to configure the fuzziness of search. User can also provide a list synonyms and stop phrases for the value matching. For example, user can only have "Apple Inc" as one phrase in the dictionary and provide "inc", "corp", "corporation" and "company" as synonyms, allowing you to find all occurrences of "Apple the Company", "Apple Corporations" and "Apple Corp" in the content.
+**Theia** uses various strategies for matching on dictionary phrases allowing users to configure the fuzziness of 
+search. User can also provide a list synonyms and stop phrases for the value matching. For example, user can only have 
+"Apple Inc" as one phrase in the dictionary and provide "inc", "corp", "corporation" and "company" as synonyms, 
+allowing you to find all occurrences of "Apple the Company", "Apple Corporations" and "Apple Corp" in the content.
 
 
 Dictionaries can be created in two ways: 
@@ -125,13 +134,13 @@ Create data dictionaries with create() function
 First we prepare data
 Name is required.
 ```
-dic.name("Name of QtDict)
+dic.name("Name of QtDict")
 ```
 Two ways to create entries
 ```
 qt_str = "some str"
 category = "some category"
-dic.add_entry(str, category)
+dic.add_entry(qt_str, category)
 ```
 or
 ```
@@ -141,24 +150,20 @@ dic.entries(tmp_dictionary)
 where method entries take a Python dictionary with 2 elements where KEYS have string value "str" and "category"
 After that we can create our QtDict
 ```
-dic.create()
+ret = dic.create()
 ```
 #### Return
 
 ```
-{
-  "id": "58608b1f-a0ff-45d0-b12a-2fb93af1a9ad",
-  "name": "Name of dictionary",
-  "global": false,
-  "entries": [
-  {
-     "str": "some str",
-     "category": "some category"
-  }
-  ]
-}
+Object(id='23632e71-a282-4319-9d8b-5531849d80bd', name='Name of QtDict', _2=False, entries=[Object(str='some key', category='some value')])
 ```
-
+You can directly access elements of namedtuple:
+```
+ret.id
+ret.name
+ret._2
+ret.entries
+```
 #### Upload a TSV Dictionary File
 
 Upload TSV data dictionaries with upload function:
@@ -193,11 +198,10 @@ Return is a list of dictionaries
 ```
 [
 {
-"id": "58608b1f-a0ff-45d0-b12a-2fb93af1a9ad",
-"key": "user-example-com/58608b1f-a0ff-45d0-b12a-2fb93af1a9ad.csv.gz",
-"name": "My dictionary",
-"global": false,
-"entries": []
+'id': '58608b1f-a0ff-45d0-b12a-2fb93af1a9ad',
+'name': 'My dictionary',
+'global': False,
+'entries': []
 }
 {
 ...
@@ -214,13 +218,7 @@ We use ID as argument of function.
 
 Return
 ```
-{
-"id": "58608b1f-a0ff-45d0-b12a-2fb93af1a9ad",
-"key": "user-example-com/58608b1f-a0ff-45d0-b12a-2fb93af1a9ad.csv.gz",
-"name": "My dictionary",
-"global": false,
-"entries": []
-}
+Object(id='58608b1f-a0ff-45d0-b12a-2fb93af1a9ad', name='My dictionary', _2=False, entries=[])
 ```
 
 ### Data Extraction
@@ -243,14 +241,7 @@ will automatically run through OCR before data extraction.
 #### Return
 
 ```
-{
-"uuid": "c351283c-330c-418b-8fb7-44cf3c7a09d5",
-"fileName": "file.pdf",
-"link": "http://portal.document.quantxt.amazonaws.com/user@example.com/c351283c-330c-418b-8fb7-44cf3c7a09d5",
-"date": "2019-10-25T20:14:41.925+02:00",
-"contentType": "application/pdf",
-"source": "file.pdf"
-}
+Object(uuid='c351283c-330c-418b-8fb7-44cf3c7a09d5', username='user@example.com', fileName='file.pdf', link='http://portal.document.quantxt.amazonaws.com/user@example.com/c351283c-330c-418b-8fb7-44cf3c7a09d5', date='2020-08-09T19:52:46.094724', contentType='application/pdf', source='file.pdf')
 ```
 `uuid`s along with dictionaries are provided for the exraction engine.
 
@@ -270,24 +261,12 @@ dp.files(uuid)
 dp.title("My data mining with files and dictionaries")
 dp.search_rule("758345h-a0ff-45d0-b12a-2fb93af1a9ad", vocab_value_type_input=DictionaryType.REGEX, 
                 phrase_matching_pattern="(\d{3}-\d{2}-\d{4})")
-
 dp.create()
 ```
 #### Return
 
 ```
-{
-    "id": "puvqrjfhqq",
-    "title": "My data mining with files and dictionaries",
-    "excludeUttWithoutEntities": true,
-    "files": ["c351283c-330c-418b-8fb7-44cf3c7a09d5"],
-    "searchDictionaries": [
-        { 
-            "vocabId": "58608b1f-a0ff-45d0-b12a-2fb93af1a9ad",
-            "vocabValueType": "NUMBER"
-        }
-    ]
-}
+Object(id='puvqrjfhqq', title='My data mining with files and dictionaries', get_phrases=None, maxTokenPerUtt=500, minTokenPerUtt=6, excludeUttWithoutEntities=True, searchDictionaries=[Object(vocabId='58608b1f-a0ff-45d0-b12a-2fb93af1a9ad', vocabName='Regular expressions', vocabValueType=NUMBER, dataType=None, language='ENGLISH', stopwordList=None, synonymList=None, searchMode='SPAN', analyzeStrategy='STEM', skipPatternBetweenKeyAndValue=None, skipPatternBetweenValues=None, phraseMatchingPattern=None, phraseMatchingGroups=None)], files=['c351283c-330c-418b-8fb7-44cf3c7a09d5'], insights=Object(number_documents_in=1, number_documents_out=None, number_of_results=1, number_segments=None, number_bytes_in=None, took=4885, start_time=1597005113808, qtcurate_start=None, qtcurate_process_start=None, qtcurate_end=1597005118749), index='qimtgsbmfi', stitle=None)
 ```
 
 `id` is the extraction job id. You can use it to monitor status of the job or retrieve the results once completed.

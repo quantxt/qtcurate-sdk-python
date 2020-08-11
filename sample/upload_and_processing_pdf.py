@@ -1,9 +1,14 @@
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from qtcurate.qtdict import QtDict
 from qtcurate.dataprocess import DataProcess
 from qtcurate.qt import Qt
 from qtcurate.data_types import ChunkMode
 
 API_KEY = "YOUR-API-KEY"
+API_KEY = "a5334f7d-2aac-44b3-aefc-a25cd9dd7bec"
+
 PDF = "resources/upload_sample.pdf"
 
 list_of_files = []
@@ -30,7 +35,6 @@ dp.files(list_of_files)
 # Run and block until finish
 dp.create()
 dp.wait_for_completion()
-print(dp.get_id())
 
 # Export raw results to JSON
 dp.report_to_json("export_sample.json")

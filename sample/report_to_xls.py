@@ -3,6 +3,7 @@ from qtcurate.dataprocess import DataProcess
 
 
 API_KEY = "YOUR_API_KEY"
+
 file_name = "report.xlsx"
 
 Qt.init(API_KEY)
