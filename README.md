@@ -332,15 +332,6 @@ To append fresh data to an already completed project:
 ```js
 dp.update(ID, list_of_files)
 ```
-#### Return
-
-```
-{
-    "index": "cjaejhvtao",
-    "progress": 36,
-    "progress_msg": "Collecting data..."
-}
-```
 
 #### Re-Use Data Processing Pipelines
 
@@ -370,15 +361,10 @@ dp.progress()
 The search result is an array of all active data processing jobs:
 
 ```
-[
-{
-"dp_id": "cjaejhvtao",
-"progress": 36,
-"progress_msg": "Collecting data..."
-}
-]
+Object(id='some-dataprocess-id', progress='30%", progress_msg='message')
 
 ```
+
 
 `dp_id` Unique ID of the running job
 
@@ -393,16 +379,6 @@ It is also possible to check the progress of a specific data mining job:
 
 ```
 dp.progress("cjaejhvtao")
-```
-
-#### Return
-
-```
-{
-"dp_id": "cjaejhvtao",
-"progress": 36,
-"progress_msg": "Collecting data..."
-}
 ```
 
 ### Searching in the Results
@@ -435,36 +411,6 @@ To include results that are labeled with `Ford` or `BMW` from the `Vehicle` dict
 (Optional, int) Number of results to return. Maximum is 200.
 
 
-#### Return
-
-```
-{
-"Total": 2610,
-"results": [
-{
-"title": "The Federal Reserve Bank of New York provides gold custody to several central banks, governments and official international organizations on behalf of the Federal Reserve System.",
-"id": "Wv8fBG4Bc3WI8L9MbaO2",
-"link": "https://www.hamilton.edu/news/story/hamilton-nyc-program-tours-federal-reserve-museum",
-"score": 0.10268514747565982,
-"source": "abc15.com",
-"date": "2018-05-24T00:00:00.000Z",
-"tags": [
-"Federal Reserve",
-"New York"
-]
-}
-],
-"aggs": {
-"Tag": [{
-"key": "Central bank",
-"count": 878
-}, {
-"key": "Gold",
-"count": 523
-}
-}
-}
-```
 
 `Total`: Number of results.
 
