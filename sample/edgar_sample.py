@@ -1,4 +1,4 @@
-from qtcurate.qtdict import QtDict
+from qtcurate.vocabulary import Vocabulary
 from qtcurate.dataprocess import DataProcess
 from qtcurate.qt import Qt
 from qtcurate.data_types import ChunkMode
@@ -7,19 +7,19 @@ API_KEY = 'YOUR-API-KEY'
 
 
 def create_phrases_table():
-    qt_dict = QtDict("test")
-    qt_dict.name("Climate")
-    qt_dict.add_entry("weather conditions", "Climate Conditions")
-    qt_dict.add_entry("climate change", "Climate Change")
-    qt_dict.add_entry("global warming", "Climate Change")
-    climate_dictionary = qt_dict.create()
-    qt_dict.clear()
+    voc = Vocabulary("test")
+    voc.name("Climate")
+    voc.add_entry("weather conditions", "Climate Conditions")
+    voc.add_entry("climate change", "Climate Change")
+    voc.add_entry("global warming", "Climate Change")
+    climate_dictionary = voc.create()
+    voc.clear()
 
-    qt_dict.name("Disruption")
-    qt_dict.add_entry("business disruption", "Business Disruptions")
-    qt_dict.add_entry("competition", "Competition")
-    disruption_dictionary = qt_dict.create()
-    qt_dict.clear()
+    voc.name("Disruption")
+    voc.add_entry("business disruption", "Business Disruptions")
+    voc.add_entry("competition", "Competition")
+    disruption_dictionary = voc.create()
+    voc.clear()
 
     return climate_dictionary.id, disruption_dictionary.id
 
@@ -45,11 +45,11 @@ dp.sources(data_feeds)
 dp.query("1706524,1648636,1326089,1169561")
 
 # 6- Pass data dictionaries, two ways, directly from object and from response
-dic = QtDict("test")
-dic1 = dic.fetch(clim_dic_id)
+voc = Vocabulary("test")
+dic1 = voc.fetch(clim_dic_id)
 dp.search_rule(dic1.id)
-dic.fetch(disr_dic_id)
-dp.search_rule(dic.get_id())
+voc.fetch(disr_dic_id)
+dp.search_rule(voc.get_id())
 
 # 7- Run and block until finish
 dp.create()

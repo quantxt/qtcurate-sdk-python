@@ -10,13 +10,14 @@ dic_entries = "entries"
 dic_name = "name"
 
 
-class QtDict(Qt):
+class Vocabulary(Qt):
     def __init__(self, environment: str = ""):
         self.headers = {"X-API-Key": Qt.api_key}
         self.temp_dict = dict()
         self.temp_dict[dic_entries] = []
         self.temp_dict[dic_name] = None
         self.id = None
+        self.input_stream = None
         if environment != "":
             environment = environment + "."
         self.url = f"http://{environment}{BASE_URL}dictionaries/"
@@ -27,14 +28,13 @@ class QtDict(Qt):
     def get_id(self) -> str:
         return str(self.id)
 
-
     def name(self, name: str) -> None:
         """Create a new name for dictionary"""
-
         if isinstance(name, str):
             self.temp_dict[dic_name] = name
         else:
             raise QtArgumentError("Argument type error: String is expected as name")
+        return self
 
     def entries(self, entry: Dict) -> None:
         """Create dictionary data"""
@@ -54,6 +54,7 @@ class QtDict(Qt):
                                   "Example {'str': 'some str', 'category': 'some category'} or just {'str':'some str'}")
         else:
             self.temp_dict[dic_entries].append(entry)
+        return self
 
     def clear(self) -> None:
         """Remove all temporary data"""
@@ -61,6 +62,7 @@ class QtDict(Qt):
         self.temp_dict[dic_entries] = []
         self.temp_dict[dic_name] = None
         self.id = None
+        self.input_stream = None
 
     def add_entry(self, str_key: Union[str, int, float], category: Union[str, int, float] = None) -> None:
         """Create dictionary data"""
@@ -76,8 +78,9 @@ class QtDict(Qt):
                 self.temp_dict[dic_entries].append({'str': str_key, 'category': category})
             else:
                 self.temp_dict[dic_entries].append({'str': str_key})
+        return self
 
-    def list(self) -> List:
+    def read(self) -> List:
         """List all dictionaries"""
         res = connect("get", self.url, self.headers)
         return res.json()
@@ -101,21 +104,39 @@ class QtDict(Qt):
 
         return res.ok
 
+    def source(self, file: str) -> None:
+        if not isinstance(file, str):
+            raise QtArgumentError("Argument type error: String is expected as file")
+        extension = os.path.splitext(file)[1].lower()
+        if extension != ".tsv":
+            raise QtArgumentError("Argument type error: TSV file expected")
+        if not os.path.exists(file):
+            raise QtArgumentError(f"Argument error: File {file} does not exist")
+        self.input_stream = file
+        return self
+
     def create(self) -> Dict:
         """Create dictionary data"""
 
         if self.temp_dict[dic_name] is None:
             raise QtDictError("QtDict error: Please add name using name function")
-        if len(self.temp_dict[dic_entries]) == 0:
-            raise QtDictError("QtDict error: Please add dictionary using add_entry function")
-        data = {'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]}
-        self.headers['Content-Type'] = 'application/json'
-        res = connect("post", self.url, self.headers, "data", json.dumps(data))
 
-        self.id = res.json()["id"]
-        del self.headers['Content-Type']
-
-        return json_to_tuple(res.json())
+        if self.input_stream is None:
+            self.headers['Content-Type'] = 'application/json'
+            if len(self.temp_dict[dic_entries]) == 0:
+                raise QtDictError("QtDict error: Please add dictionary using add_entry function")
+            data = {'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]}
+            res = connect("post", self.url, self.headers, "data", json.dumps(data))
+            self.id = res.json()["id"]
+            return json_to_tuple(res.json())
+        else:
+            files = {
+                'name': (None, self.temp_dict[dic_name]),
+                'file': open(self.input_stream, 'rb')
+            }
+            res = connect("post", f"{self.url}upload", self.headers, "files", files)
+            self.id = res.json()["id"]
+            return json_to_tuple(res.json())
 
     def update(self, qt_id: str) -> bool:
         """Update existing dictionary"""
@@ -130,24 +151,4 @@ class QtDict(Qt):
         res = connect("put", f"{self.url}{qt_id}", self.headers, "data", json.dumps(data))
         del self.headers['Content-Type']
 
-        return json_to_tuple(res.json())
-
-    def upload(self, file: str, name: str) -> Dict:
-        """Upload dictionary data from TSV files"""
-
-        if not isinstance(file, str):
-            raise QtArgumentError("Argument type error: String is expected as file")
-        if not isinstance(name, str):
-            raise QtArgumentError("Argument type error: String is expected as name")
-        extension = os.path.splitext(file)[1].lower()
-        if extension != ".tsv":
-            raise QtArgumentError("Argument type error: TSV file expected")
-        if not os.path.exists(file):
-            raise QtArgumentError(f"Argument error: File {file} does not exist")
-        files = {
-            'name': (None, name),
-            'file': open(file, 'rb')
-        }
-        res = connect("post", f"{self.url}upload", self.headers, "files", files)
-        self.id = res.json()["id"]
         return json_to_tuple(res.json())

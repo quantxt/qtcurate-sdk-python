@@ -162,7 +162,7 @@ class DataProcess:
                 if re_phrase_matching_pattern is not None:
                     if isinstance(re_phrase_matching_pattern, str):
                         try:
-                            re.compile(re_phrase_matching_pattern)
+                            compile(re_phrase_matching_pattern)
                             valid = True
                         except re.error:
                             valid = False

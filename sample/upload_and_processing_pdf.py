@@ -1,4 +1,4 @@
-from qtcurate.qtdict import QtDict
+from qtcurate.vocabulary import Vocabulary
 from qtcurate.dataprocess import DataProcess
 from qtcurate.qt import Qt
 from qtcurate.data_types import ChunkMode
@@ -10,18 +10,18 @@ PDF = "resources/upload_sample.pdf"
 list_of_files = []
 # Initialise with api key
 Qt.init(API_KEY)
-dic = QtDict()
-dic.name("Regular expressions")
+voc = Vocabulary()
+voc.name("Regular expressions")
 # Create entries of dictionaries
-dic.add_entry("Regular expressions", "Regular expressions")
+voc.add_entry("Regular expressions", "Regular expressions")
 # Create QtDict
-dic.create()
+voc.create()
 
 dp = DataProcess()
 # Name the project
 dp.title("testPdf")
 # Add dictionary id
-dp.search_rule(dic.get_id())
+dp.search_rule(voc.get_id())
 # Set parameter for splitting documents
 dp.set_chunk(ChunkMode.PAGE)
 # Upload file for processing
