@@ -13,8 +13,6 @@ class DataType(Enum):
     DATETIME = "DATETIME"
     STRING = "STRING"
     DOUBLE = "DOUBLE"
-    PERCENT = "PERCENT"
-    NOUN = "NOUN"
 
 
 class HtmlParseMode(Enum):

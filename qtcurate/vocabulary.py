@@ -1,4 +1,4 @@
-from qtcurate.config import BASE_URL
+from __future__ import annotations
 from qtcurate.qt import Qt
 import json
 import os.path
@@ -11,16 +11,14 @@ dic_name = "name"
 
 
 class Vocabulary(Qt):
-    def __init__(self, environment: str = ""):
+    def __init__(self):
         self.headers = {"X-API-Key": Qt.api_key}
         self.temp_dict = dict()
         self.temp_dict[dic_entries] = []
         self.temp_dict[dic_name] = None
         self.id = None
         self.input_stream = None
-        if environment != "":
-            environment = environment + "."
-        self.url = f"http://{environment}{BASE_URL}dictionaries/"
+        self.url = f"{Qt.url}dictionaries/"
 
     def __repr__(self):
         return str({'name': self.temp_dict[dic_name], 'entries': self.temp_dict[dic_entries]})
@@ -28,7 +26,7 @@ class Vocabulary(Qt):
     def get_id(self) -> str:
         return str(self.id)
 
-    def name(self, name: str) -> None:
+    def name(self, name: str) -> Vocabulary:
         """Create a new name for dictionary"""
         if isinstance(name, str):
             self.temp_dict[dic_name] = name
@@ -36,7 +34,7 @@ class Vocabulary(Qt):
             raise QtArgumentError("Argument type error: String is expected as name")
         return self
 
-    def entries(self, entry: Dict) -> None:
+    def entries(self, entry: Dict) -> Vocabulary:
         """Create dictionary data"""
         if not isinstance(entry, Dict):
             raise QtArgumentError("Argument type error: QtDict is expected as entry")
@@ -104,7 +102,7 @@ class Vocabulary(Qt):
 
         return res.ok
 
-    def source(self, file: str) -> None:
+    def source(self, file: str) -> Vocabulary:
         if not isinstance(file, str):
             raise QtArgumentError("Argument type error: String is expected as file")
         extension = os.path.splitext(file)[1].lower()
