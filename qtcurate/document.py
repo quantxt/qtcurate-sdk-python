@@ -11,19 +11,16 @@ class Document:
         self.headers = {"X-API-Key": Qt.api_key}
         self.url = Qt.url
 
-    def create(self, file: str, name: str) -> Dict:
+    def create(self, file: str) -> Dict:
         """Upload files for data mining"""
         if not isinstance(file, str):
             raise QtArgumentError("Argument type error: String is expected as file path")
-        if not isinstance(name, str):
-            raise QtArgumentError("Argument type error: String is expected as name")
         extension = os.path.splitext(file)[1].lower()
         if extension not in [".pdf", ".txt", ".html", ".xls", ".xlsx", ".csv", ".tiff", ".png"]:
             raise QtArgumentError("Argument type error: PDF, TXT, XLS, XLSX, CSV, TIFF, PNG or HTML file expected")
         if not os.path.exists(file):
             raise QtArgumentError(f"Argument error: File {file} does not exist")
-        files = {'name': (None, name),
-                 'file': open(file, 'rb')}
+        files = {'file': open(file, 'rb')}
         res = connect("post", f"{self.url}search/file", self.headers, "files", files)
-
-        return json_to_tuple(res.json())
+        doc = json_to_tuple(res.json())
+        return doc.uuid

@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Tuple
+from typing import List
 from qtcurate.exceptions import QtArgumentError, QtFileTypeError
 from qtcurate.qt import Qt
 from qtcurate.utilities import connect, json_to_tuple
@@ -13,7 +13,7 @@ class Result:
         self.url = Qt.url
 
 
-    def raw_exporter(self, path: str) -> bool:
+    def raw_exporter(self, path: str) -> None:
         """Exporting in JSON format"""
 
         if not isinstance(path, str):
@@ -30,7 +30,7 @@ class Result:
         with open(path, "w") as json_file:
             json.dump(res.json(), json_file)
 
-    def  result_xlsx_exporter(self, path: str) -> bool:
+    def  result_xlsx_exporter(self, path: str) -> None:
         """Exporting in Excel format"""
 
         if not isinstance(path, str):
@@ -48,8 +48,8 @@ class Result:
         with open(path, 'wb') as excel_file:
             excel_file.write(res.content)
 
-    def read(self) -> Tuple:
+    def read(self) -> List:
         """Convert to Object namedtuple"""
 
         res = connect("get", f"{self.url}reports/{self.id}/json", self.headers)
-        return json_to_tuple(res.json())
+        return res.json()

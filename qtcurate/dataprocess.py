@@ -1,5 +1,6 @@
+from __future__ import annotations
+from qtcurate.extractor import Extractor
 from qtcurate.utilities import connect, json_to_tuple
-from qtcurate.config import BASE_URL
 from time import sleep
 import re
 import json
@@ -7,8 +8,7 @@ from typing import Dict, List
 import os.path
 from qtcurate.qt import Qt
 from qtcurate.data_types import ChunkMode
-from qtcurate.exceptions import QtFileTypeError, QtArgumentError, QtDataProcessError
-from qtcurate.data_types import SearchMode, DictionaryType, AnalyzeMode
+from qtcurate.exceptions import  QtArgumentError, QtDataProcessError
 
 
 tag_files = "files"
@@ -19,35 +19,34 @@ tag_title = "title"
 tag_stitle = "stitle"
 vocab_id = "vocabId"
 vocab_value_type = "vocabValueType"
+validator = "validator"
 tag_exclude_utt = "excludeUttWithoutEntities"
 tag_search_dict = "searchDictionaries"
 tag_sort_by_position = "sortByPosition"
-phrase_matching_pattern = "phraseMatchingPattern"
-between_key_and_value = "skipPatternBetweenKeyAndValue"
-between_values = "skipPatternBetweenValues"
+between_values = "patternBetweenMultipleValues"
 search_mod = "searchMode"
 analyze_mod = "analyzeMode"
 stop_word_list = "stopwordList"
 synonym_l = "synonymList"
 tag_query = "query"
 tag_sources = "sources"
+qt_type = "type"
+mode = "mode"
 
 
 class DataProcess:
-    def __init__(self, environment: str = ""):
+    def __init__(self):
         self.headers = {"X-API-Key": Qt.api_key}
         self.temp_dict = dict()
         self.temp_dict[tag_exclude_utt] = True
         self.temp_dict[tag_sort_by_position] = False
-        self.temp_dict[num_workers] = 4
-        self.temp_dict[chunk] = None
+        self.temp_dict[num_workers] = 8
+        self.temp_dict[chunk] = ChunkMode.PAGE.value
         self.temp_dict[tag_search_dict] = []
         self.index = None
         self.uuid = None
         self.id = None
-        if environment != "":
-            environment = f"{environment}."
-        self.url = f"http://{environment}{BASE_URL}"
+        self.url = Qt.url
 
     def __repr__(self):
         return f"{self.temp_dict}"
@@ -110,7 +109,7 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: Integer is expected as num_workers")
 
-    def files(self, list_of_files: list) -> None:
+    def withDocuments(self, list_of_files: list) -> None:
         """Create a list of existing files"""
 
         if isinstance(list_of_files, list):
@@ -134,86 +133,42 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: Expected list of urls")
 
-    def search_rule(self, vocab_id_input: str,
-                    vocab_value_type_input: DictionaryType = None,
-                    skip_pattern_between_key_and_value: str = None,
-                    skip_pattern_between_values: str = None,
-                    re_phrase_matching_pattern: str = None,
-                    stopword_list: str = None,
-                    synonim_list: str = None,
-                    search_mode: SearchMode = None,
-                    analyze_mode: AnalyzeMode = None
-                    ) -> None:
+    def with_extractor(self, extractor: Extractor) -> DataProcess:
         """Prepare dictionary for searching"""
-
         vocab_dict = dict()
-        if isinstance(vocab_id_input, str):
-            vocab_dict[vocab_id] = vocab_id_input
-        else:
-            raise QtArgumentError("Argument type error: String is expected as dictionary_path id")
-
-        if vocab_value_type_input is not None:
-            if isinstance(vocab_value_type_input, DictionaryType):
-                vocab_dict[vocab_value_type] = vocab_value_type_input.value
+        if extractor.get_vocab_id() is not None:
+            vocab_dict[vocab_id] = extractor.get_vocab_id()
+        if extractor.get_vocab_value_type() is not None:
+            vocab_dict[vocab_value_type] = extractor.get_vocab_value_type()
+        if extractor.get_type() is not None:
+            vocab_dict[qt_type] = extractor.get_type()
+        vocab_dict[mode] = extractor.get_mode()
+        if extractor.get_stop_word_list() is not None:
+            vocab_dict[stop_word_list] = extractor.get_stop_word_list()
+        if extractor.get_synonym_list() is not None:
+            vocab_dict[synonym_l] = extractor.get_synonym_list()
+        if extractor.get_vocab_value_type() == "REGEX":
+            try:
+                compile(extractor.get_between_values())
+                valid = True
+            except re.error:
+                valid = False
+            if valid is False:
+                raise QtArgumentError("Argument type error: Please write valid regular expression for "
+                                      "patternBetweenMultipleValues.")
             else:
-                raise QtArgumentError("Argument type error: DictionaryType object is expected as vocab_value_type")
-
-            if vocab_value_type_input.value == "REGEX":
-                if re_phrase_matching_pattern is not None:
-                    if isinstance(re_phrase_matching_pattern, str):
-                        try:
-                            compile(re_phrase_matching_pattern)
-                            valid = True
-                        except re.error:
-                            valid = False
-                        if valid is False:
-                            raise QtArgumentError("Argument type error: Please write valid regular expression.")
-                        else:
-                            vocab_dict[re_phrase_matching_pattern] = re_phrase_matching_pattern
-                    else:
-                        raise QtArgumentError(
-                            "Argument type error: String is expected as re_phrase_matching_pattern")
-                else:
-                    raise QtArgumentError("Argument type error: If you use regex you have to add "
-                                          "phrase_matching_pattern")
-
-        if skip_pattern_between_key_and_value is not None:
-            if isinstance(skip_pattern_between_key_and_value, str):
-                vocab_dict[between_key_and_value] = skip_pattern_between_key_and_value
+                vocab_dict[between_values] = extractor.get_between_values()
+            try:
+                compile(extractor.get_validator())
+                ok = True
+            except re.error:
+                ok = False
+            if ok is False:
+                raise QtArgumentError("Argument type error: Please write valid regular expression for validator.")
             else:
-                raise QtArgumentError("Argument type error: String is expected as skip_pattern_between_key_and_value")
-
-        if skip_pattern_between_values is not None:
-            if isinstance(skip_pattern_between_values, str):
-                vocab_dict[between_values] = skip_pattern_between_values
-            else:
-                raise QtArgumentError("Argument type error: String is expected as skip_pattern_between_values")
-
-        if stopword_list is not None:
-            if isinstance(stopword_list, str):
-                vocab_dict[stop_word_list] = stopword_list
-            else:
-                raise QtArgumentError("Argument type error: String is expected as stopword_list")
-
-        if synonim_list is not None:
-            if isinstance(synonim_list, str):
-                vocab_dict[synonym_l] = synonim_list
-            else:
-                raise QtArgumentError("Argument type error: String is expected as synonim_list")
-
-        if search_mode is not None:
-            if isinstance(search_mode, SearchMode):
-                vocab_dict[search_mod] = search_mode.value
-            else:
-                raise QtArgumentError("Argument type error: SearchMode object is expected as search_mode")
-
-        if analyze_mode is not None:
-            if isinstance(analyze_mode, AnalyzeMode):
-                vocab_dict[analyze_mod] = analyze_mode.value
-            else:
-                raise QtArgumentError("Argument type error: AnalyzeMode object is expected as analyze_mode")
-
+                vocab_dict[between_values] = extractor.get_between_values()
         self.temp_dict[tag_search_dict].append(vocab_dict)
+        return self
 
     def clear(self) -> None:
         """Remove all temporary data"""
@@ -225,29 +180,13 @@ class DataProcess:
         self.temp_dict.pop(tag_search_dict, None)
         self.index = None
 
-    def upload(self, file: str) -> Dict:
-        """Upload files for data mining"""
-        if not isinstance(file, str):
-            raise QtArgumentError("Argument type error: String is expected as file path")
-
-        extension = os.path.splitext(file)[1].lower()
-        if extension not in [".pdf", ".txt", ".html", ".xls", ".xlsx", ".csv", ".tiff", ".png"]:
-            raise QtArgumentError("Argument type error: PDF, TXT, XLS, XLSX, CSV, TIFF, PNG or HTML file expected")
-        if not os.path.exists(file):
-            raise QtArgumentError(f"Argument error: File {file} does not exist")
-        files = {'file': open(file, 'rb')}
-        res = connect("post", f"{self.url}search/file", self.headers, "files", files)
-
-        self.uuid = res.json()['uuid']
-        return json_to_tuple(res.json())
-
     def create(self) -> Dict:
         """Mine data via dictionaries"""
 
         self.headers["Content-Type"] = "application/json"
         correct = 0
         if len(self.temp_dict[tag_search_dict]) == 0:
-            raise QtDataProcessError("DataProcess error: Please add parameters using search_rule function")
+            raise QtDataProcessError("DataProcess error: Please add parameters using with_extractor function")
         if tag_files in self.temp_dict and len(self.temp_dict[tag_files]) > 0:
             data = {tag_files: self.temp_dict[tag_files]}
             correct += 1
@@ -369,39 +308,3 @@ class DataProcess:
 
         return json_to_tuple(res.json())
 
-    def report_to_xlsx(self, path: str) -> bool:
-        """Exporting in Excel format"""
-
-        if not isinstance(path, str):
-            raise QtArgumentError("Argument type error: String is expected as path")
-        directory = os.path.dirname(path)
-        if len(directory) == 0:
-            directory = "."
-        if not (os.access(directory, os.W_OK) and os.access(directory, os.X_OK)):
-            raise QtArgumentError("Argument error: No write permission")
-        extension = os.path.splitext(path)[1].lower()
-        if extension != ".xlsx":
-            raise QtFileTypeError("File type error: Please use xlsx extension saving file")
-        res = connect("get", f"{self.url}reports/{self.id}/xlsx", self.headers)
-
-        with open(path, 'wb') as excel_file:
-            excel_file.write(res.content)
-        return res.ok
-
-    def report_to_json(self, path: str) -> bool:
-        """Exporting in Excel format"""
-
-        if not isinstance(path, str):
-            raise QtArgumentError("Argument type error: String is expected as path")
-        directory = os.path.dirname(path)
-        if len(directory) == 0:
-            directory = "."
-        if not (os.access(directory, os.W_OK) and os.access(directory, os.X_OK)):
-            raise QtArgumentError("Argument error: No write permission")
-        extension = os.path.splitext(path)[1].lower()
-        if extension != ".json":
-            raise QtFileTypeError("File type error: Please use json extension saving file")
-        res = connect("get", f"{self.url}reports/{self.id}/json", self.headers)
-        with open(path, "w") as json_file:
-            json.dump(res.json(), json_file)
-        return res.ok

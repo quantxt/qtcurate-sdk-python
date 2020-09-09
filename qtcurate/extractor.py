@@ -32,9 +32,16 @@ class Extractor:
         self.between_values = None
         self.stop_word_list = None
         self.synonym_list = None
+        self.data_type = None
 
+    def set_data_type(self, data_type: DataType) -> None:
+        if isinstance(data_type, DataType) is not None:
+            self.data_type = data_type
 
-    def set_mode(self, analyze_mode: AnalyzeMode, search_mode: SearchMode)-> None:
+    def get_data_type(self) -> str:
+        return self.data_type.value
+
+    def set_mode(self, analyze_mode: AnalyzeMode, search_mode: SearchMode) -> Extractor:
         if analyze_mode == "SIMPLE" and search_mode == "SPAN":
             self.mode = Mode.UNORDERED
         elif analyze_mode == "STEM" and search_mode == "ORDERED_SPAN":
@@ -45,11 +52,14 @@ class Extractor:
             self.mode = Mode.FUZZY_UNORDERED_STEM
         else:
             self.mode = Mode.SIMPLE
+        return self
 
+    def get_mode(self) -> str:
+        return self.mode.value
 
-    def set_vocab_id(self, vocab_id: str) -> Extractor:
-        if isinstance(vocab_id, str):
-            self.vocab_id = vocab_id
+    def set_vocabulary(self, vocabulary: str) -> Extractor:
+        if isinstance(vocabulary, str):
+            self.vocab_id = vocabulary
         else:
             raise QtArgumentError("Argument type error: String is expected as vocab_id")
         return self
