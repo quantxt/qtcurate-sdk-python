@@ -17,7 +17,7 @@ SEARCH_PDF = "resources/sample.pdf"
 
 list_of_files = []
 # Initialise with api key
-Qt.init(API_KEY
+Qt.init(API_KEY)
 voc = Vocabulary()
 voc.name("Regular expressions")
 # Create entries of dictionaries
