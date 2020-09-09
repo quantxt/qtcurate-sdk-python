@@ -7,8 +7,8 @@ from qtcurate.utilities import connect, json_to_tuple
 
 class Result:
 
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, dp_id):
+        self.id = dp_id
         self.headers = {"X-API-Key": Qt.api_key}
         self.url = Qt.url
 
