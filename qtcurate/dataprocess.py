@@ -1,13 +1,12 @@
 from __future__ import annotations
-from qtcurate.extractor import Extractor
+from qtcurate.extractor import Extractor, Mode
 from qtcurate.utilities import connect, json_to_tuple
 from time import sleep
 import re
 import json
 from typing import Dict, List
-import os.path
 from qtcurate.qt import Qt
-from qtcurate.data_types import ChunkMode
+from qtcurate.data_types import ChunkMode, SearchMode, AnalyzeMode
 from qtcurate.exceptions import  QtArgumentError, QtDataProcessError
 
 
@@ -16,23 +15,20 @@ chunk = "chunk"
 num_workers = "numWorkers"
 tag_urls = "urls"
 tag_title = "title"
-tag_stitle = "stitle"
 vocab_id = "vocabId"
 vocab_value_type = "vocabValueType"
-validator = "validator"
+validator = "phraseMatchingPattern"
 tag_exclude_utt = "excludeUttWithoutEntities"
 tag_search_dict = "searchDictionaries"
 tag_sort_by_position = "sortByPosition"
 between_values = "patternBetweenMultipleValues"
 search_mod = "searchMode"
-analyze_mod = "analyzeMode"
+analyze_strategy = "analyzeStrategy"
 stop_word_list = "stopwordList"
 synonym_l = "synonymList"
 tag_query = "query"
 tag_sources = "sources"
 qt_type = "type"
-mode = "mode"
-
 
 class DataProcess:
     def __init__(self):
@@ -63,13 +59,13 @@ class DataProcess:
     def get_uuid(self):
         return str(self.uuid)
 
-    def title(self, title_name: str) -> None:
+    def set_description(self, title: str) -> None:
         """Create title for mining data"""
 
-        if isinstance(title_name, str):
-            self.temp_dict[tag_title] = title_name
+        if isinstance(title, str):
+            self.temp_dict[tag_title] = title
         else:
-            raise QtArgumentError("Argument type error: String is expected as title")
+            raise QtArgumentError("Argument type error: String is expected as description")
 
     def query(self, value: str) -> None:
         """Create query for mining data"""
@@ -78,14 +74,6 @@ class DataProcess:
             self.temp_dict[tag_query] = value
         else:
             raise QtArgumentError("Argument type error: String is expected as query")
-
-    def stitle(self, value: str) -> None:
-        """Create title for mining data"""
-
-        if isinstance(value, str):
-            self.temp_dict[tag_stitle] = value
-        else:
-            raise QtArgumentError("Argument type error: String is expected as title")
 
     def sort_by_position(self, value: bool) -> None:
         """Set sortByPosition for mining data, this is optional parameter"""
@@ -109,7 +97,7 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: Integer is expected as num_workers")
 
-    def withDocuments(self, list_of_files: list) -> None:
+    def with_documents(self, list_of_files: list) -> None:
         """Create a list of existing files"""
 
         if isinstance(list_of_files, list):
@@ -133,7 +121,7 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: Expected list of urls")
 
-    def with_extractor(self, extractor: Extractor) -> DataProcess:
+    def add_extractor(self, extractor: Extractor) -> DataProcess:
         """Prepare dictionary for searching"""
         vocab_dict = dict()
         if extractor.get_vocab_id() is not None:
@@ -142,31 +130,47 @@ class DataProcess:
             vocab_dict[vocab_value_type] = extractor.get_vocab_value_type()
         if extractor.get_type() is not None:
             vocab_dict[qt_type] = extractor.get_type()
-        vocab_dict[mode] = extractor.get_mode()
+        if extractor.get_mode() == Mode.SIMPLE:
+            vocab_dict[search_mod] = SearchMode.ORDERED_SPAN.value
+            vocab_dict[analyze_strategy] = AnalyzeMode.SIMPLE.value
+        elif extractor.get_mode() == Mode.UNORDERED:
+            vocab_dict[search_mod] = SearchMode.SPAN.value
+            vocab_dict[analyze_strategy] = AnalyzeMode.SIMPLE.value
+        elif extractor.get_mode() == Mode.STEM:
+            vocab_dict[search_mod] = SearchMode.ORDERED_SPAN.value
+            vocab_dict[analyze_strategy] = AnalyzeMode.STEM.value
+        elif extractor.get_mode() == Mode.UNORDERED_STEM:
+            vocab_dict[search_mod] = SearchMode.SPAN.value
+            vocab_dict[analyze_strategy] = AnalyzeMode.STEM.value
+        elif extractor.get_mode() == Mode.FUZZY_UNORDERED_STEM:
+            vocab_dict[search_mod] = SearchMode.FUZZY_SPAN.value
+            vocab_dict[analyze_strategy] = AnalyzeMode.STEM.value
         if extractor.get_stop_word_list() is not None:
             vocab_dict[stop_word_list] = extractor.get_stop_word_list()
         if extractor.get_synonym_list() is not None:
             vocab_dict[synonym_l] = extractor.get_synonym_list()
         if extractor.get_vocab_value_type() == "REGEX":
-            try:
-                compile(extractor.get_between_values())
-                valid = True
-            except re.error:
-                valid = False
-            if valid is False:
-                raise QtArgumentError("Argument type error: Please write valid regular expression for "
-                                      "patternBetweenMultipleValues.")
-            else:
-                vocab_dict[between_values] = extractor.get_between_values()
-            try:
-                compile(extractor.get_validator())
-                ok = True
-            except re.error:
-                ok = False
-            if ok is False:
-                raise QtArgumentError("Argument type error: Please write valid regular expression for validator.")
-            else:
-                vocab_dict[between_values] = extractor.get_between_values()
+            if extractor.get_between_values() is not None:
+                try:
+                    re.compile(extractor.get_between_values())
+                    valid = True
+                except re.error:
+                    valid = False
+                if valid is False:
+                    raise QtArgumentError("Argument type error: Please write valid regular expression for "
+                                          "patternBetweenMultipleValues.")
+                else:
+                    vocab_dict[between_values] = extractor.get_between_values()
+            if extractor.get_validator() is not None:
+                try:
+                    re.compile(extractor.get_validator())
+                    ok = True
+                except re.error:
+                    ok = False
+                if ok is False:
+                    raise QtArgumentError("Argument type error: Please write valid regular expression for validator.")
+                else:
+                    vocab_dict[validator] = extractor.get_validator()
         self.temp_dict[tag_search_dict].append(vocab_dict)
         return self
 

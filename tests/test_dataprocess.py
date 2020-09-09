@@ -110,14 +110,14 @@ class TestDataProcess(TestCase):
     def test_files(self):
         list_files = ["file1", "file2"]
         tag = DataProcess(API_KEY)
-        tag.withDocuments(list_files)
+        tag.with_documents(list_files)
         self.assertEqual(list_files, tag.temp_dict['files'])
 
     def test_files_arg_error(self):
         list_files = "string"
         tag = DataProcess(API_KEY)
         with self.assertRaises(QtArgumentError):
-            tag.withDocuments(list_files)
+            tag.with_documents(list_files)
 
     def test_sources(self):
         list_files = ["file1", "file2"]
@@ -253,7 +253,7 @@ class TestDataProcess(TestCase):
     def test_crete_choose_one_kind(self):
         vocab_id = "some_id"
         tag = DataProcess(API_KEY)
-        tag.withDocuments(["file1"])
+        tag.with_documents(["file1"])
         tag.urls(["123"])
         tag.search_rule(vocab_id)
         with self.assertRaises(QtDataProcessError):

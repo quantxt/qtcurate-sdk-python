@@ -34,18 +34,21 @@ class Extractor:
         self.synonym_list = None
         self.data_type = None
 
+    def __repr__(self):
+        return f"{self.validator} {self.mode}, {self.type}, {self.vocab_id}, {self.vocab_value_type} {self.data_type}"
+
     def set_data_type(self, data_type: DataType) -> None:
         if isinstance(data_type, DataType) is not None:
             self.data_type = data_type
 
     def get_data_type(self) -> str:
-        return self.data_type.value
+        return self.data_type
 
-    def set_mode(self, analyze_mode: AnalyzeMode, search_mode: SearchMode) -> Extractor:
+    def create_mode(self, analyze_mode: AnalyzeMode, search_mode: SearchMode) -> Extractor:
         if analyze_mode == "SIMPLE" and search_mode == "SPAN":
             self.mode = Mode.UNORDERED
         elif analyze_mode == "STEM" and search_mode == "ORDERED_SPAN":
-            self.mode = Mode.STEM
+            self.mode = Mode.STEM.value
         elif analyze_mode == "STEM" and search_mode == "SPAN":
             self.mode - Mode.UNORDERED_STEM
         elif analyze_mode == "STEM" and search_mode == "FUZZY_SPAN":
@@ -54,8 +57,11 @@ class Extractor:
             self.mode = Mode.SIMPLE
         return self
 
-    def get_mode(self) -> str:
-        return self.mode.value
+    def set_mode(self, mode: Mode) -> None:
+        self.mode = mode
+
+    def get_mode(self) -> Mode:
+        return self.mode
 
     def set_vocabulary(self, vocabulary: str) -> Extractor:
         if isinstance(vocabulary, str):

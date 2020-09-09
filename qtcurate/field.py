@@ -7,10 +7,6 @@ class Field:
             self.title = result["title"]
         else:
             self.title = ""
-        if "id" in result:
-            self.id = result["id"]
-        else:
-            self.id = ""
         if "source" in result:
             self.source = result["source"]
         else:
@@ -23,10 +19,6 @@ class Field:
             self.date = result["date"]
         else:
             self.date = ""
-        if "language" in result:
-            self.language = result["language"]
-        else:
-            self.language = ""
         if "position" in result:
             self.position = result["position"]
         else:
@@ -36,16 +28,11 @@ class Field:
         else:
             self.values = ""
 
-    def get_search_id(self):
+    def get_id(self):
         return self.search_id
 
     def get_title(self):
         return self.title
-
-    def get_id(self):
-        if self.id is not None:
-            return self.id
-        return None
 
     def get_source(self):
         return self.source
@@ -56,13 +43,23 @@ class Field:
     def get_date(self):
         return self.date
 
-    def get_language(self):
-        return self.language
-
     def get_position(self):
         return self.position
 
     def get_values(self):
         return self.values
 
+class FieldValues:
+
+    def __init__(self, values: List):
+        if "dict_name" in values:
+            self.vocab_name = values["dict_name"]
+        if "dict_id" in values:
+            self.vocab_id = values["dict_id"]
+        if "category" in values:
+            self.category = values["category"]
+        if "type" in values:
+            self.type = values["type"]
+        if "str" in values:
+            self.str = values["str"]
 

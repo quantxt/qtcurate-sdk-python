@@ -2,7 +2,7 @@ from __future__ import annotations
 from qtcurate.qt import Qt
 import json
 import os.path
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 from qtcurate.exceptions import QtArgumentError, QtDictError
 from qtcurate.utilities import connect, json_to_tuple
 
@@ -136,7 +136,7 @@ class Vocabulary(Qt):
             self.id = res.json()["id"]
             return json_to_tuple(res.json())
 
-    def update(self, qt_id: str) -> bool:
+    def update(self, qt_id: str) -> Tuple:
         """Update existing dictionary"""
         self.headers['Content-Type'] = 'application/json'
         if not isinstance(qt_id, str):

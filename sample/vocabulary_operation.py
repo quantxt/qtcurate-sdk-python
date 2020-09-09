@@ -6,7 +6,7 @@ API_KEY = "YOUR-API-KEY"
 FILE_NAME = "resources/revenue.tsv"
 
 # Initialise with api key
-Qt.init(API_KEY)
+Qt.init(API_KEY, "test")
 
 vocabulary = Vocabulary()
 # Set name of the Vocabulary
@@ -37,7 +37,7 @@ try:
     tsv_voc = vocabulary.create()
 except Exception as e:
     print(e)
-print(tsv_voc.id)
+print(tsv_voc)
 
 # Fetch from known dictionary
 print(vocabulary.fetch(entry_voc.id))
