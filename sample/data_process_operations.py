@@ -13,7 +13,6 @@ from qtcurate.result import Field, FieldValues
 
 
 API_KEY = "YOUR-API-KEY"
-API_KEY = "a5334f7d-2aac-44b3-aefc-a25cd9dd7bec"
 DOCUMENT = "resources/sample.pdf"
 
 # Initialise with api key
