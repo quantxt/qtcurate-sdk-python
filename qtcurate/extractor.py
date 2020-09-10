@@ -1,15 +1,37 @@
 from __future__ import annotations
 from enum import Enum
-from qtcurate.data_types import SearchMode, AnalyzeMode, DictionaryType
 from qtcurate.exceptions import QtArgumentError
 from typing import List
 
 
+class ChunkMode(Enum):
+    NONE = "NONE"
+    SENTENCE = "SENTENCE"
+    PAGE = "PAGE"
+
+
+class SearchMode(Enum):
+    ORDERED_SPAN = "ORDERED_SPAN"
+    FUZZY_ORDERED_SPAN = "FUZZY_ORDERED_SPAN"
+    SPAN = "SPAN"
+    FUZZY_SPAN = "FUZZY_SPAN"
+    PARTIAL_SPAN = "PARTIAL_SPAN"
+    PARTIAL_FUZZY_SPAN = "PARTIAL_FUZZY_SPAN"
+
+
+class AnalyzeMode(Enum):
+    EXACT = "EXACT"
+    EXACT_CI = "EXACT_CI"
+    WHITESPACE = "WHITESPACE"
+    SIMPLE = "SIMPLE"
+    STANDARD = "STANDARD"
+    LETTER = "LETTER"
+    STEM = "STEM"
+
+
 class DataType(Enum):
     LONG = "LONG"
-    KEYWORD = "KEYWORD"
     DATETIME = "DATETIME"
-    STRING = "STRING"
     DOUBLE = "DOUBLE"
 
 
@@ -73,13 +95,6 @@ class Extractor:
     def get_vocab_id(self) -> str:
         return self.vocab_id
 
-    def set_vocab_value_type(self, vocab_value_type: DictionaryType) -> Extractor:
-        if isinstance(vocab_value_type, DictionaryType):
-            self.vocab_value_type = vocab_value_type.value
-        else:
-            raise QtArgumentError("Argument type error: DictionaryType object is expected as vocab_value_type")
-        return self
-
     def get_vocab_value_type(self) -> str:
         return self.vocab_value_type
 
@@ -103,9 +118,9 @@ class Extractor:
     def get_type(self) -> DataType:
         return self.type
 
-    def set_stop_word_list(self, stop_word_List: List) -> Extractor:
-        if isinstance(stop_word_List, list):
-            self.stop_word_list = stop_word_List
+    def set_stop_word_list(self, stop_word_list: List) -> Extractor:
+        if isinstance(stop_word_list, list):
+            self.stop_word_list = stop_word_list
         else:
             raise QtArgumentError("Argument type error: List is expected as stop_word_list")
         return self
@@ -127,6 +142,7 @@ class Extractor:
     def set_validator(self, validator: str) -> Extractor:
         if isinstance(validator, str):
             self.validator = validator
+            self.vocab_value_type = "REGEX"
         else:
             raise QtArgumentError("Argument type error: String is expected as validator")
         return self

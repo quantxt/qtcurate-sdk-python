@@ -1,13 +1,12 @@
 from __future__ import annotations
-from qtcurate.extractor import Extractor, Mode
+from qtcurate.extractor import Extractor, Mode, ChunkMode, SearchMode, AnalyzeMode
 from qtcurate.utilities import connect, json_to_tuple
 from time import sleep
 import re
 import json
 from typing import Dict, List
 from qtcurate.qt import Qt
-from qtcurate.data_types import ChunkMode, SearchMode, AnalyzeMode
-from qtcurate.exceptions import  QtArgumentError, QtDataProcessError
+from qtcurate.exceptions import QtArgumentError, QtDataProcessError
 
 
 tag_files = "files"
@@ -30,6 +29,7 @@ tag_query = "query"
 tag_sources = "sources"
 qt_type = "type"
 
+
 class DataProcess:
     def __init__(self):
         self.headers = {"X-API-Key": Qt.api_key}
@@ -50,8 +50,8 @@ class DataProcess:
     def get_id(self):
         return str(self.id)
 
-    def set_id(self, id: str) -> None:
-        self.id = id
+    def set_id(self, vocabulary_id: str) -> None:
+        self.id = vocabulary_id
 
     def set_chunk(self, value: ChunkMode) -> None:
         self.temp_dict[chunk] = value.value
@@ -149,28 +149,17 @@ class DataProcess:
             vocab_dict[stop_word_list] = extractor.get_stop_word_list()
         if extractor.get_synonym_list() is not None:
             vocab_dict[synonym_l] = extractor.get_synonym_list()
-        if extractor.get_vocab_value_type() == "REGEX":
-            if extractor.get_between_values() is not None:
-                try:
-                    re.compile(extractor.get_between_values())
-                    valid = True
-                except re.error:
-                    valid = False
-                if valid is False:
-                    raise QtArgumentError("Argument type error: Please write valid regular expression for "
-                                          "patternBetweenMultipleValues.")
-                else:
-                    vocab_dict[between_values] = extractor.get_between_values()
-            if extractor.get_validator() is not None:
-                try:
-                    re.compile(extractor.get_validator())
-                    ok = True
-                except re.error:
-                    ok = False
-                if ok is False:
-                    raise QtArgumentError("Argument type error: Please write valid regular expression for validator.")
-                else:
-                    vocab_dict[validator] = extractor.get_validator()
+        if extractor.get_validator() is not None:
+            try:
+                re.compile(extractor.get_validator())
+                ok = True
+            except re.error:
+                ok = False
+            if ok is False:
+                raise QtArgumentError("Argument type error: Please write valid regular expression for validator.")
+            else:
+                vocab_dict[validator] = extractor.get_validator()
+                vocab_dict[vocab_value_type] = extractor.get_vocab_value_type()
         self.temp_dict[tag_search_dict].append(vocab_dict)
         return self
 

@@ -9,7 +9,7 @@ from qtcurate.qt import Qt
 from qtcurate.document import Document
 from qtcurate.result import Result
 from qtcurate.extractor import DataType
-from qtcurate.field import Field, FieldValues
+from qtcurate.result import Field, FieldValues
 
 
 API_KEY = "YOUR-API-KEY"
