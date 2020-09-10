@@ -301,3 +301,10 @@ class DataProcess:
 
         return json_to_tuple(res.json())
 
+    def read(self):
+        """ Fetch dataprocess where dp_id is existing ID"""
+
+        self.headers["Content-Type"] = "application/json"
+        res = connect("get", f"{self.url}search", self.headers)
+        del self.headers['Content-Type']
+        return res.json()

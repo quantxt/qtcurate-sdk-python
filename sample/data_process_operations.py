@@ -32,24 +32,24 @@ vocabulary.add_entry("Quasi-Governments")
 vocabulary.add_entry("Governments")
 vocabulary.name("Allocations (%)").create()
 
-# 3- Creater Extractor - Regex must have 1 capturing group
+# 3- Creator Extractor - Regex must have 1 capturing group
 extractor = Extractor()
 extractor.set_vocabulary(vocabulary.get_id())
 extractor.set_validator("^ +(\\d[\\d\\.\\,]+\\d)")
 extractor.set_data_type(DataType.DOUBLE)
 
 # 4- Run
-dp = DataProcess()
-dp.set_description("test data process")
-dp.add_extractor(extractor)
-dp.with_documents(list_of_documents)
-dp.create()
+dataprocess = DataProcess()
+dataprocess.set_description("test data process")
+dataprocess.add_extractor(extractor)
+dataprocess.with_documents(list_of_documents)
+dataprocess.create()
 
 # 5- Wait to finish
-dp.wait_for_completion()
+dataprocess.wait_for_completion()
 
 # 6- Export Field results
-result = Result(dp.get_id())
+result = Result(dataprocess.get_id())
 for i in result.read():
     field = Field(i)
     if field.get_values() != "":
@@ -61,4 +61,4 @@ result.result_xlsx_exporter("sample.xlsx")
 
 # 8- Clean up
 vocabulary.delete(vocabulary.get_id())
-dp.delete(dp.get_id())
+dataprocess.delete(dataprocess.get_id())
