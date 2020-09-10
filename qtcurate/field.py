@@ -28,6 +28,9 @@ class Field:
         else:
             self.values = ""
 
+    def __repr__(self):
+        return f"{self.search_id}, {self.source}, {self.values}"
+
     def get_id(self):
         return self.search_id
 
@@ -49,17 +52,40 @@ class Field:
     def get_values(self):
         return self.values
 
+
 class FieldValues:
 
     def __init__(self, values: List):
-        if "dict_name" in values:
-            self.vocab_name = values["dict_name"]
-        if "dict_id" in values:
-            self.vocab_id = values["dict_id"]
-        if "category" in values:
-            self.category = values["category"]
-        if "type" in values:
-            self.type = values["type"]
-        if "str" in values:
-            self.str = values["str"]
+        self.vocab_name = []
+        self.vocab_id = []
+        self.category = []
+        self.type = []
+        self.str = []
+        if values is not None:
+            for value in values:
+                if "dict_name" in value:
+                    self.vocab_name.append(value["dict_name"])
+                if "dict_id" in value:
+                    self.vocab_id.append(value["dict_id"])
+                if "category" in value:
+                    self.category.append(value["category"])
+                if "type" in value:
+                    self.type.append(value["type"])
+                if "str" in value:
+                    self.str.append(value["str"])
+    def __repr__(self):
+        return f"{self.vocab_name}, {self.str}"
+    def get_vocab_id(self) -> List:
+        return self.vocab_id
 
+    def get_vocab_name(self) -> List:
+        return self.vocab_name
+
+    def get_category(self) -> List:
+        return self.category
+
+    def get_str(self) -> List:
+        return self.str
+
+    def get_type(self) -> str:
+        return self.type

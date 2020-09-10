@@ -9,7 +9,7 @@ from qtcurate.qt import Qt
 from qtcurate.document import Document
 from qtcurate.result import Result
 from qtcurate.extractor import DataType
-from qtcurate.field import Field
+from qtcurate.field import Field, FieldValues
 from qtcurate.data_types import DictionaryType
 
 
@@ -53,7 +53,9 @@ dp.wait_for_completion()
 result = Result(dp.get_id())
 for i in result.read():
     field = Field(i)
-    print(f"{field.get_id()} {field.get_title()}")
+    if field.get_values() != "":
+        field_value = FieldValues(field.get_values())
+        print(f"{field.get_id()} {field_value.get_str()[0]}")
 
 # 7- Export raw results to XLSX
 result.result_xlsx_exporter("sample.xlsx")
