@@ -12,16 +12,12 @@ class QtFileTypeError(Exception):
     pass
 
 
-class QtDictIdError(Exception):
-    """ Invalid resource"""
-    pass
-
 
 class QtArgumentError(Exception):
     pass
 
 
-class QtDictError(Exception):
+class QtVocabularyError(Exception):
     pass
 
 class QtDataProcessError(Exception):
