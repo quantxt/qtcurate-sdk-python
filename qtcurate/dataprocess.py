@@ -12,22 +12,19 @@ from qtcurate.exceptions import QtArgumentError, QtDataProcessError
 tag_files = "files"
 chunk = "chunk"
 num_workers = "numWorkers"
-tag_urls = "urls"
 tag_title = "title"
 vocab_id = "vocabId"
 vocab_value_type = "vocabValueType"
 validator = "phraseMatchingPattern"
 tag_exclude_utt = "excludeUttWithoutEntities"
 tag_search_dict = "searchDictionaries"
-tag_sort_by_position = "sortByPosition"
-between_values = "patternBetweenMultipleValues"
+between_values = "skipPatternBetweenValuess"
 search_mod = "searchMode"
 analyze_strategy = "analyzeStrategy"
 stop_word_list = "stopwordList"
 synonym_l = "synonymList"
-tag_query = "query"
-tag_sources = "sources"
-qt_type = "type"
+type = "dataType"
+
 
 
 class DataProcess:
@@ -35,7 +32,6 @@ class DataProcess:
         self.headers = {"X-API-Key": Qt.api_key}
         self.temp_dict = dict()
         self.temp_dict[tag_exclude_utt] = True
-        self.temp_dict[tag_sort_by_position] = False
         self.temp_dict[num_workers] = 8
         self.temp_dict[chunk] = ChunkMode.PAGE.value
         self.temp_dict[tag_search_dict] = []
@@ -67,22 +63,6 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: String is expected as description")
 
-    def query(self, value: str) -> None:
-        """Create query for mining data"""
-
-        if isinstance(value, str):
-            self.temp_dict[tag_query] = value
-        else:
-            raise QtArgumentError("Argument type error: String is expected as query")
-
-    def sort_by_position(self, value: bool) -> None:
-        """Set sortByPosition for mining data, this is optional parameter"""
-
-        if isinstance(value, bool):
-            self.temp_dict[tag_sort_by_position] = value
-        else:
-            raise QtArgumentError("Argument type error: Boolean is expected as sortByPosition")
-
     def exclude_utt_without_entities(self, value: bool) -> None:
         """Set exclude utt for mining data, this is optional parameter"""
 
@@ -105,22 +85,6 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: Expected list of file IDs")
 
-    def sources(self, list_of_files: list) -> None:
-        """Create a list of existing files"""
-
-        if isinstance(list_of_files, list):
-            self.temp_dict[tag_sources] = list_of_files
-        else:
-            raise QtArgumentError("Argument type error: Expected list of file IDs")
-
-    def urls(self, list_of_urls: list) -> None:
-        """Create a list of existing files"""
-
-        if isinstance(list_of_urls, list):
-            self.temp_dict[tag_urls] = list_of_urls
-        else:
-            raise QtArgumentError("Argument type error: Expected list of urls")
-
     def add_extractor(self, extractor: Extractor) -> DataProcess:
         """Prepare dictionary for searching"""
         vocab_dict = dict()
@@ -129,7 +93,7 @@ class DataProcess:
         if extractor.get_vocab_value_type() is not None:
             vocab_dict[vocab_value_type] = extractor.get_vocab_value_type()
         if extractor.get_type() is not None:
-            vocab_dict[qt_type] = extractor.get_type()
+            vocab_dict[type] = extractor.get_type()
         if extractor.get_mode() == Mode.SIMPLE:
             vocab_dict[search_mod] = SearchMode.ORDERED_SPAN.value
             vocab_dict[analyze_strategy] = AnalyzeMode.SIMPLE.value
@@ -161,12 +125,12 @@ class DataProcess:
                 vocab_dict[validator] = extractor.get_validator()
                 vocab_dict[vocab_value_type] = extractor.get_vocab_value_type()
         self.temp_dict[tag_search_dict].append(vocab_dict)
+        # print(self.temp_dict[tag_search_dict])
         return self
 
     def clear(self) -> None:
         """Remove all temporary data"""
         self.temp_dict.pop(tag_files, None)
-        self.temp_dict.pop(tag_urls, None)
         self.temp_dict.pop(tag_title, None)
         self.temp_dict[tag_exclude_utt] = True
         self.temp_dict[num_workers] = 4
@@ -182,19 +146,6 @@ class DataProcess:
             raise QtDataProcessError("DataProcess error: Please add parameters using with_extractor function")
         if tag_files in self.temp_dict and len(self.temp_dict[tag_files]) > 0:
             data = {tag_files: self.temp_dict[tag_files]}
-            correct += 1
-        if tag_urls in self.temp_dict and len(self.temp_dict[tag_urls]) > 0:
-            data = {tag_urls: self.temp_dict[tag_urls]}
-            correct += 1
-        if tag_sources in self.temp_dict and len(self.temp_dict[tag_sources]) > 0:
-            if len(self.temp_dict[tag_query]) > 0:
-                data = {tag_sources: self.temp_dict[tag_sources], tag_query: self.temp_dict[tag_query]}
-            else:
-                raise QtDataProcessError("DataProcess error: Query is requested parameter for sources")
-            correct += 1
-
-        if correct != 1:
-            raise QtDataProcessError("DataProcess error: You must choose one kind of data: files, URLs or source")
         data[tag_exclude_utt] = self.temp_dict[tag_exclude_utt]
         data[num_workers] = self.temp_dict[num_workers]
         data[chunk] = self.temp_dict[chunk]

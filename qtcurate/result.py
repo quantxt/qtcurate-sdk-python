@@ -1,9 +1,114 @@
+from __future__ import annotations
 import json
 import os
 from typing import List
 from qtcurate.exceptions import QtArgumentError, QtFileTypeError
 from qtcurate.qt import Qt
 from qtcurate.utilities import connect
+
+
+category = "category"
+vocab_name = "dict_name"
+vocab_id = "dict_id"
+type_field = "type"
+str_field = "str"
+double_value = "doubleValue"
+int_value = "intValue"
+datetime_value = "datetimeValue"
+
+
+class FieldValue:
+    def __init__(self):
+        self.str_value = None
+        self.double_value = None
+        self.int_value = None
+        self.datetime_value = None
+
+    def __repr__(self):
+        return f"{self.double_value}, {self.str_value}"
+
+    def set_str(self, str_val: str) -> FieldValue:
+        self.str_value = str_val
+        return self
+
+    def get_str(self) -> str:
+        return self.str_value
+
+    def set_double_value(self, double: float) -> FieldValue:
+        self.double_value = double
+        return self
+
+    def get_double_value(self) -> float:
+        return self.double_value
+
+    def set_int_value(self, int_val: int) -> FieldValue:
+        self.int_value = int_val
+        return self
+
+    def get_int_value(self) -> int:
+        return self.int_value
+
+    def set_datetime_value(self, date_time: str) -> FieldValue:
+        self.datetime_value = date_time
+        return self
+
+    def get_datetime_value(self) -> str:
+        return self.datetime_value
+
+
+class Field:
+
+    def __init__(self):
+        self.vocab_name = None
+        self.vocab_id = None
+        self.category = None
+        self.type = None
+        self.str = None
+        self.values = None
+
+    def __repr__(self):
+        return f"{self.vocab_id}, {self.str}"
+
+    def set_values(self, val : List) -> None:
+        self.values = val
+
+    def get_values(self) -> List:
+        return self.values
+
+    def set_str(self, str_value: str) -> Field:
+        self.str = str_value
+        return self
+
+    def set_type(self, type_value: str) -> Field:
+        self.type = type_value
+        return self
+
+    def set_vocab_name(self, name: str) -> Field:
+        self.vocab_name = name
+        return self
+
+    def set_category(self, cat: str) -> Field:
+        self.category = cat
+        return self
+
+    def set_vocab_id(self, voc_id: str) -> Field:
+        self.vocab_id = voc_id
+        return self
+
+    def get_vocab_id(self) -> str:
+        return self.vocab_id
+
+    def get_vocab_name(self) -> str:
+        return self.vocab_name
+
+    def get_category(self) -> str:
+        return self.category
+
+    def get_str(self) -> str:
+        return self.str
+
+    def get_type(self) -> str:
+        return self.type
 
 
 class Result:
@@ -50,99 +155,32 @@ class Result:
 
     def read(self) -> List:
         """Convert to Object namedtuple"""
-
+        lista = []
         res = connect("get", f"{self.url}reports/{self.id}/json", self.headers)
-        return res.json()
+        for item in res.json():
+            # print(item)
 
+            if "values" in item:
+                # print(type(item["value"]))
 
-class Field:
-    def __init__(self, result: List):
-        self.search_id = result["searchId"]
-        if "title" in result:
-            self.title = result["title"]
-        else:
-            self.title = ""
-        if "source" in result:
-            self.source = result["source"]
-        else:
-            self.source = ""
-        if "link" in result:
-            self.link = result["link"]
-        else:
-            self.link = ""
-        if "date" in result:
-            self.date = result["date"]
-        else:
-            self.date = ""
-        if "position" in result:
-            self.position = result["position"]
-        else:
-            self.position = ""
-        if "values" in result:
-            self.values = result["values"]
-        else:
-            self.values = ""
+                for i in item["values"]:
 
-    def __repr__(self):
-        return f"{self.search_id}, {self.source}, {self.values}"
+                    field = Field()
+                    field.set_str(i[str_field])
+                    field.set_type(i[type_field])
+                    field.set_category(i[category])
+                    field.set_vocab_name(i[vocab_name])
+                    field.set_vocab_id(i[vocab_id])
+                    if len(i["extIntervalSimples"]) != 0:
+                        lista_vrednosti = []
+                        for j in i["extIntervalSimples"]:
+                            field_value = FieldValue()
+                            field_value.set_str(j[str_field])
+                            field_value.set_int_value(j[int_value])
+                            field_value.set_datetime_value(j[datetime_value])
+                            field_value.set_double_value(j[double_value])
+                            lista_vrednosti.append(field_value)
+                    field.set_values(lista_vrednosti)
+                    lista.append(field)
+        return lista
 
-    def get_id(self):
-        return self.search_id
-
-    def get_title(self):
-        return self.title
-
-    def get_source(self):
-        return self.source
-
-    def get_link(self):
-        return self.source
-
-    def get_date(self):
-        return self.date
-
-    def get_position(self):
-        return self.position
-
-    def get_values(self):
-        return self.values
-
-
-class FieldValues:
-
-    def __init__(self, values: List):
-        self.vocab_name = []
-        self.vocab_id = []
-        self.category = []
-        self.type = []
-        self.str = []
-        if values is not None:
-            for value in values:
-                if "dict_name" in value:
-                    self.vocab_name.append(value["dict_name"])
-                if "dict_id" in value:
-                    self.vocab_id.append(value["dict_id"])
-                if "category" in value:
-                    self.category.append(value["category"])
-                if "type" in value:
-                    self.type.append(value["type"])
-                if "str" in value:
-                    self.str.append(value["str"])
-
-    def __repr__(self):
-        return f"{self.vocab_name}, {self.str}"
-
-    def get_vocab_id(self) -> List:
-        return self.vocab_id
-
-    def get_vocab_name(self) -> List:
-        return self.vocab_name
-
-    def get_category(self) -> List:
-        return self.category
-
-    def get_str(self) -> List:
-        return self.str
-
-    def get_type(self) -> str:
-        return self.type

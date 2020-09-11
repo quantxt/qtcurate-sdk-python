@@ -2,17 +2,17 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
-from qtcurate.extractor import Extractor, Mode
+from qtcurate.extractor import Extractor, Type
 from qtcurate.vocabulary import Vocabulary
 from qtcurate.dataprocess import DataProcess
 from qtcurate.qt import Qt
 from qtcurate.document import Document
 from qtcurate.result import Result
-from qtcurate.extractor import DataType
-from qtcurate.result import Field, FieldValues
+from qtcurate.result import Field, FieldValue
 
 
 API_KEY = "YOUR-API-KEY"
+API_KEY = "a5334f7d-2aac-44b3-aefc-a25cd9dd7bec"
 DOCUMENT = "resources/sample.pdf"
 
 # Initialise with api key
@@ -35,7 +35,7 @@ vocabulary.name("Allocations (%)").create()
 extractor = Extractor()
 extractor.set_vocabulary(vocabulary.get_id())
 extractor.set_validator("^ +(\\d[\\d\\.\\,]+\\d)")
-extractor.set_data_type(DataType.DOUBLE)
+extractor.set_type(Type.DOUBLE)
 
 # 4- Run
 dataprocess = DataProcess()
@@ -49,11 +49,10 @@ dataprocess.wait_for_completion()
 
 # 6- Export Field results
 result = Result(dataprocess.get_id())
-for i in result.read():
-    field = Field(i)
-    if field.get_values() != "":
-        field_value = FieldValues(field.get_values())
-        print(f"{field.get_id()} {field_value.get_str()[0]}")
+# print(result.read())
+for item in result.read():
+    field_value = item.get_values()[0]
+    print(f"{item.get_str()} -> {field_value.get_str()}")
 
 # 7- Export raw results to XLSX
 result.result_xlsx_exporter("sample.xlsx")

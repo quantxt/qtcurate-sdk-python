@@ -7,7 +7,7 @@ from qtcurate.exceptions import QtArgumentError, QtVocabularyError
 from qtcurate.utilities import connect, json_to_tuple
 
 dic_entries = "entries"
-dic_name = "name"
+vocab_name = "vocab_name"
 
 
 class Vocabulary(Qt):
@@ -15,13 +15,13 @@ class Vocabulary(Qt):
         self.headers = {"X-API-Key": Qt.api_key}
         self.temp_dictionary = dict()
         self.temp_dictionary[dic_entries] = []
-        self.temp_dictionary[dic_name] = None
+        self.temp_dictionary[vocab_name] = None
         self.id = None
         self.input_stream = None
         self.url = f"{Qt.url}dictionaries/"
 
     def __repr__(self):
-        return str({'name': self.temp_dictionary[dic_name], 'entries': self.temp_dictionary[dic_entries]})
+        return str({'name': self.temp_dictionary[vocab_name], 'entries': self.temp_dictionary[dic_entries]})
 
     def get_id(self) -> str:
         return str(self.id)
@@ -29,7 +29,7 @@ class Vocabulary(Qt):
     def name(self, name: str) -> Vocabulary:
         """Create a new name for dictionary"""
         if isinstance(name, str):
-            self.temp_dictionary[dic_name] = name
+            self.temp_dictionary[vocab_name] = name
         else:
             raise QtArgumentError("Argument type error: String is expected as name")
         return self
@@ -58,7 +58,7 @@ class Vocabulary(Qt):
         """Remove all temporary data"""
 
         self.temp_dictionary[dic_entries] = []
-        self.temp_dictionary[dic_name] = None
+        self.temp_dictionary[vocab_name] = None
         self.id = None
         self.input_stream = None
 
@@ -116,20 +116,20 @@ class Vocabulary(Qt):
     def create(self) -> Dict:
         """Create dictionary data"""
 
-        if self.temp_dictionary[dic_name] is None:
+        if self.temp_dictionary[vocab_name] is None:
             raise QtVocabularyError("QtDict error: Please add name using name function")
 
         if self.input_stream is None:
             self.headers['Content-Type'] = 'application/json'
             if len(self.temp_dictionary[dic_entries]) == 0:
                 raise QtVocabularyError("QtDict error: Please add dictionary using add_entry function")
-            data = {'name': self.temp_dictionary[dic_name], 'entries': self.temp_dictionary[dic_entries]}
+            data = {'name': self.temp_dictionary[vocab_name], 'entries': self.temp_dictionary[dic_entries]}
             res = connect("post", self.url, self.headers, "data", json.dumps(data))
             self.id = res.json()["id"]
             return json_to_tuple(res.json())
         else:
             files = {
-                'name': (None, self.temp_dictionary[dic_name]),
+                'name': (None, self.temp_dictionary[vocab_name]),
                 'file': open(self.input_stream, 'rb')
             }
             res = connect("post", f"{self.url}upload", self.headers, "files", files)
@@ -141,11 +141,11 @@ class Vocabulary(Qt):
         self.headers['Content-Type'] = 'application/json'
         if not isinstance(qt_id, str):
             raise QtArgumentError("Argument type error: String is expected as qt_id")
-        if self.temp_dictionary[dic_name] is None:
+        if self.temp_dictionary[vocab_name] is None:
             raise QtVocabularyError("QtDict error: Please add name using name function")
         if len(self.temp_dictionary[dic_entries]) == 0:
             raise QtVocabularyError("QtDict error: Please add dictionary using add_entry function")
-        data = {'name': self.temp_dictionary[dic_name], 'entries': self.temp_dictionary[dic_entries]}
+        data = {'name': self.temp_dictionary[vocab_name], 'entries': self.temp_dictionary[dic_entries]}
         res = connect("put", f"{self.url}{qt_id}", self.headers, "data", json.dumps(data))
         del self.headers['Content-Type']
 

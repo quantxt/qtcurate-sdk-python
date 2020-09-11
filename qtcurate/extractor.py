@@ -29,7 +29,7 @@ class AnalyzeMode(Enum):
     STEM = "STEM"
 
 
-class DataType(Enum):
+class Type(Enum):
     LONG = "LONG"
     DATETIME = "DATETIME"
     DOUBLE = "DOUBLE"
@@ -59,13 +59,6 @@ class Extractor:
     def __repr__(self):
         return f"{self.validator} {self.mode}, {self.type}, {self.vocab_id}, {self.vocab_value_type} {self.data_type}"
 
-    def set_data_type(self, data_type: DataType) -> None:
-        if isinstance(data_type, DataType) is not None:
-            self.data_type = data_type
-
-    def get_data_type(self) -> str:
-        return self.data_type
-
     def create_mode(self, analyze_mode: AnalyzeMode, search_mode: SearchMode) -> Extractor:
         if analyze_mode == "SIMPLE" and search_mode == "SPAN":
             self.mode = Mode.UNORDERED
@@ -83,7 +76,7 @@ class Extractor:
         self.mode = mode
 
     def get_mode(self) -> Mode:
-        return self.mode
+        return self.mode.value
 
     def set_vocabulary(self, vocabulary: str) -> Extractor:
         if isinstance(vocabulary, str):
@@ -108,15 +101,15 @@ class Extractor:
     def get_between_values(self) -> str:
         return self.between_values
 
-    def set_type(self, qt_type: DataType) -> Extractor:
-        if isinstance(qt_type, str):
-            self.type = qt_type
+    def set_type(self, data_type: Type) -> Extractor:
+        if isinstance(data_type, Type):
+            self.type = data_type
         else:
             raise QtArgumentError("Argument type error: String is expected as qt_type")
         return self
 
-    def get_type(self) -> DataType:
-        return self.type
+    def get_type(self) -> Type:
+        return self.type.value
 
     def set_stop_word_list(self, stop_word_list: List) -> Extractor:
         if isinstance(stop_word_list, list):
