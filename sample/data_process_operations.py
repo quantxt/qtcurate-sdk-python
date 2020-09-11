@@ -1,7 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
-
 from qtcurate.extractor import Extractor, Type
 from qtcurate.vocabulary import Vocabulary
 from qtcurate.dataprocess import DataProcess
@@ -12,7 +8,6 @@ from qtcurate.result import Field, FieldValue
 
 
 API_KEY = "YOUR-API-KEY"
-API_KEY = "a5334f7d-2aac-44b3-aefc-a25cd9dd7bec"
 DOCUMENT = "resources/sample.pdf"
 
 # Initialise with api key
@@ -29,7 +24,7 @@ vocabulary = Vocabulary()
 vocabulary.add_entry("Industrials")
 vocabulary.add_entry("Quasi-Governments")
 vocabulary.add_entry("Governments")
-vocabulary.name("Allocations (%)").create()
+vocabulary.set_vocab_name("Allocations (%)").create()
 
 # 3- Creator Extractor - Regex must have 1 capturing group
 extractor = Extractor()

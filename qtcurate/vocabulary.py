@@ -7,7 +7,7 @@ from qtcurate.exceptions import QtArgumentError, QtVocabularyError
 from qtcurate.utilities import connect, json_to_tuple
 
 dic_entries = "entries"
-vocab_name = "vocab_name"
+vocab_name = "name"
 
 
 class Vocabulary(Qt):
@@ -26,10 +26,10 @@ class Vocabulary(Qt):
     def get_id(self) -> str:
         return str(self.id)
 
-    def name(self, name: str) -> Vocabulary:
+    def set_vocab_name(self, voc_name: str) -> Vocabulary:
         """Create a new name for dictionary"""
-        if isinstance(name, str):
-            self.temp_dictionary[vocab_name] = name
+        if isinstance(vocab_name, str):
+            self.temp_dictionary[vocab_name] = voc_name
         else:
             raise QtArgumentError("Argument type error: String is expected as name")
         return self
@@ -117,7 +117,7 @@ class Vocabulary(Qt):
         """Create dictionary data"""
 
         if self.temp_dictionary[vocab_name] is None:
-            raise QtVocabularyError("QtDict error: Please add name using name function")
+            raise QtVocabularyError("Vocab error: Please add name using name function")
 
         if self.input_stream is None:
             self.headers['Content-Type'] = 'application/json'
