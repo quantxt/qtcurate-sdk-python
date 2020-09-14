@@ -20,7 +20,7 @@ entry_voc = None
 tsv_voc = None
 # Create Vocabulary
 try:
-    entry_voc = vocabulary.set_vocab_name("some name").add_entry("Apple Inc.", "AAPL").create()
+    entry_voc = vocabulary.name("some name").add_entry("Apple Inc.", "AAPL").create()
 except Exception as e:
     print(e)
 print(entry_voc)
@@ -31,7 +31,7 @@ vocabulary.clear()
 
 # Create list of dictionaries from tsv file
 # Name the project
-vocabulary.set_vocab_name("revenue")
+vocabulary.name("revenue")
 vocabulary.source(FILE_NAME)
 # Create QtDict
 try:
@@ -46,7 +46,7 @@ print(vocabulary.fetch(entry_voc.id))
 # Update vocabulary, name and entries are mandatory options
 new_dic = Vocabulary()
 new_dic.add_entry("Lenovo", "Thinkpad")
-new_dic.set_vocab_name("updated name")
+new_dic.name("updated name")
 res = new_dic.update(entry_voc.id)
 print(res.id)
 

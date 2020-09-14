@@ -23,7 +23,7 @@ vocabulary = Vocabulary()
 vocabulary.add_entry("Industrials")
 vocabulary.add_entry("Quasi-Governments")
 vocabulary.add_entry("Governments")
-vocabulary.set_vocab_name("Allocations (%)").create()
+vocabulary.name("Allocations (%)").create()
 
 # 3- Creator Extractor - Regex must have 1 capturing group
 extractor = Extractor()

@@ -1,4 +1,8 @@
 from __future__ import annotations
+
+import ast
+
+from qtcurate.document import Document
 from qtcurate.extractor import Extractor, Mode, ChunkMode, SearchMode, AnalyzeMode
 from qtcurate.utilities import connect, json_to_tuple
 from time import sleep
@@ -16,6 +20,7 @@ tag_title = "title"
 vocab_id = "vocabId"
 vocab_value_type = "vocabValueType"
 validator = "phraseMatchingPattern"
+phrase_groups = "phraseMatchingGroups"
 tag_exclude_utt = "excludeUttWithoutEntities"
 tag_search_dict = "searchDictionaries"
 between_values = "skipPatternBetweenValuess"
@@ -24,7 +29,7 @@ analyze_strategy = "analyzeStrategy"
 stop_word_list = "stopwordList"
 synonym_l = "synonymList"
 type = "dataType"
-
+language = "language"
 
 
 class DataProcess:
@@ -41,7 +46,7 @@ class DataProcess:
         self.url = Qt.url
 
     def __repr__(self):
-        return f"{self.temp_dict}"
+        return f"{self.id}"
 
     def get_id(self):
         return str(self.id)
@@ -125,7 +130,10 @@ class DataProcess:
                 vocab_dict[validator] = extractor.get_validator()
                 vocab_dict[vocab_value_type] = extractor.get_vocab_value_type()
         self.temp_dict[tag_search_dict].append(vocab_dict)
-        # print(self.temp_dict[tag_search_dict])
+        return self
+
+    def extractor_from_json(self, dictionary: Dict) -> DataProcess:
+        self.temp_dict[tag_search_dict].append(dictionary)
         return self
 
     def clear(self) -> None:
@@ -256,6 +264,28 @@ class DataProcess:
         """ Fetch dataprocess where dp_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
-        res = connect("get", f"{self.url}search", self.headers)
+        res = connect("get", f"{self.url}users/profile", self.headers)
+        re_dict = res.json()
         del self.headers['Content-Type']
-        return res.json()
+        if "settings" in re_dict:
+
+            dataprocess_list = []
+            for i in re_dict["settings"]:
+                dataprocess = DataProcess()
+                if "files" in i:
+                    document_list = []
+                    for f in i["files"]:
+                        document = Document()
+                        document.set_id(f)
+                        document_list.append(document)
+                dataprocess.with_documents(document_list)
+                dataprocess.set_id(i["id"])
+                dataprocess.set_description(i["title"])
+                dataprocess.set_workers(i["numWorkers"])
+                extractor_list = []
+                if "searchDictionaries" in i:
+                    for ex in i["searchDictionaries"]:
+                        dataprocess.extractor_from_json(ex)
+                dataprocess_list.append(dataprocess)
+
+        return dataprocess_list

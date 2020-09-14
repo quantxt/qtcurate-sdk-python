@@ -26,7 +26,7 @@ class Vocabulary(Qt):
     def get_id(self) -> str:
         return str(self.id)
 
-    def set_vocab_name(self, voc_name: str) -> Vocabulary:
+    def name(self, voc_name: str) -> Vocabulary:
         """Create a new name for dictionary"""
         if isinstance(vocab_name, str):
             self.temp_dictionary[vocab_name] = voc_name

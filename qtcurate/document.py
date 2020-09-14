@@ -10,6 +10,16 @@ class Document:
     def __init__(self):
         self.headers = {"X-API-Key": Qt.api_key}
         self.url = Qt.url
+        self.id = None
+
+    def __repr__(self):
+        return f"{self.id}"
+
+    def set_id(self, uuid: str):
+        self.id = uuid
+
+    def get_id(self) -> str:
+        return self.id
 
     def create(self, file: str) -> Dict:
         """Upload files for data mining"""

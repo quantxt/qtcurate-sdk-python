@@ -13,14 +13,14 @@ class TestQtDict(TestCase):
     def test_name_name(self):
         name = "some name"
         vocabulary = Vocabulary()
-        vocabulary.set_vocab_name(name)
+        vocabulary.name(name)
         self.assertEqual(name, vocabulary.temp_dictionary["name"])
 
     def test_name_type(self):
         name = 12345
         vocabulary = Vocabulary()
         with self.assertRaises(QtArgumentError):
-            vocabulary.set_vocab_name(name)
+            vocabulary.name(name)
 
     def test_entries_type(self):
         test_vocabulary = "string"
@@ -116,7 +116,7 @@ class TestQtDict(TestCase):
     def test_create_miss_entry(self):
         name = "some name"
         vocabulary = Vocabulary()
-        vocabulary.set_vocab_name(name)
+        vocabulary.name(name)
         with self.assertRaises(QtVocabularyError):
             vocabulary.create()
 
@@ -138,7 +138,7 @@ class TestQtDict(TestCase):
         vocabulary_id = "string"
         name = "name"
         vocabulary = Vocabulary()
-        vocabulary.set_vocab_name(name)
+        vocabulary.name(name)
         with self.assertRaises(QtVocabularyError):
             vocabulary.update(vocabulary_id)
 
