@@ -76,7 +76,7 @@ class Extractor:
         self.mode = mode
 
     def get_mode(self) -> Mode:
-        return self.mode.value
+        return self.mode
 
     def set_vocabulary(self, vocabulary: str) -> Extractor:
         if isinstance(vocabulary, str):
@@ -109,7 +109,7 @@ class Extractor:
         return self
 
     def get_type(self) -> Type:
-        return self.type.value
+        return self.type
 
     def set_stop_word_list(self, stop_word_list: List) -> Extractor:
         if isinstance(stop_word_list, list):

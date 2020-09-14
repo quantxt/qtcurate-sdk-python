@@ -4,7 +4,6 @@ from qtcurate.dataprocess import DataProcess
 from qtcurate.qt import Qt
 from qtcurate.document import Document
 from qtcurate.result import Result
-from qtcurate.result import Field, FieldValue
 
 
 API_KEY = "YOUR-API-KEY"

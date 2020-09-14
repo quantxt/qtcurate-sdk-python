@@ -93,7 +93,7 @@ class DataProcess:
         if extractor.get_vocab_value_type() is not None:
             vocab_dict[vocab_value_type] = extractor.get_vocab_value_type()
         if extractor.get_type() is not None:
-            vocab_dict[type] = extractor.get_type()
+            vocab_dict[type] = extractor.get_type().value
         if extractor.get_mode() == Mode.SIMPLE:
             vocab_dict[search_mod] = SearchMode.ORDERED_SPAN.value
             vocab_dict[analyze_strategy] = AnalyzeMode.SIMPLE.value

@@ -155,32 +155,36 @@ class Result:
 
     def read(self) -> List:
         """Convert to Object namedtuple"""
-        lista = []
+        result_list = []
         res = connect("get", f"{self.url}reports/{self.id}/json", self.headers)
         for item in res.json():
-            # print(item)
-
             if "values" in item:
-                # print(type(item["value"]))
-
                 for i in item["values"]:
-
                     field = Field()
-                    field.set_str(i[str_field])
-                    field.set_type(i[type_field])
-                    field.set_category(i[category])
-                    field.set_vocab_name(i[vocab_name])
-                    field.set_vocab_id(i[vocab_id])
+                    if str_field in i:
+                        field.set_str(i[str_field])
+                    if type_field in i:
+                        field.set_type(i[type_field])
+                    if category in i:
+                        field.set_category(i[category])
+                    if vocab_name in i:
+                        field.set_vocab_name(i[vocab_name])
+                    if vocab_id in i:
+                        field.set_vocab_id(i[vocab_id])
                     if len(i["extIntervalSimples"]) != 0:
-                        lista_vrednosti = []
-                        for j in i["extIntervalSimples"]:
+                        list_field_ext = []
+                        for ext_int_item in i["extIntervalSimples"]:
                             field_value = FieldValue()
-                            field_value.set_str(j[str_field])
-                            field_value.set_int_value(j[int_value])
-                            field_value.set_datetime_value(j[datetime_value])
-                            field_value.set_double_value(j[double_value])
-                            lista_vrednosti.append(field_value)
-                    field.set_values(lista_vrednosti)
-                    lista.append(field)
-        return lista
+                            if str_field in ext_int_item:
+                                field_value.set_str(ext_int_item[str_field])
+                            if int_value in ext_int_item:
+                                field_value.set_int_value(ext_int_item[int_value])
+                            if datetime_value in ext_int_item:
+                                field_value.set_datetime_value(ext_int_item[datetime_value])
+                            if double_value in ext_int_item:
+                                field_value.set_double_value(ext_int_item[double_value])
+                            list_field_ext.append(field_value)
+                    field.set_values(list_field_ext)
+                    result_list.append(field)
+        return result_list
 
