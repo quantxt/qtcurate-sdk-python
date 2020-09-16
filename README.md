@@ -15,9 +15,7 @@ Theia can process documents in various formats including PDF, TIFF, PNG, TXT and
 - Python 3.5 or later
 
 
-### PyPi users
-
-Install from PyPi
+### Installation
 
 ```
 pip install qtcurate
@@ -25,7 +23,7 @@ pip install qtcurate
 
 [quantxt]: http://quantxt.com
 
-Look at the [Samples](sample) for examples
+Refer to the [Samples](sample) for examples
 
 [Official documentation](http://quantxt.com/pages/documentation.html)
 
