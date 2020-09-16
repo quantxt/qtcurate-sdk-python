@@ -9,10 +9,10 @@ from qtcurate.result import Result
 API_KEY = "YOUR-API-KEY"
 DOCUMENT = "resources/sample.pdf"
 
-# Initialise with api key
-Qt.init(API_KEY, "test")
+# Initialize with api key
+Qt.init(API_KEY)
 
-# 1- Upload the sample document for processing
+# 1- Upload the sample document
 list_of_documents = []
 document = Document()
 doc = document.create(DOCUMENT)
@@ -25,7 +25,7 @@ vocabulary.add_entry("Quasi-Governments")
 vocabulary.add_entry("Governments")
 vocabulary.name("Allocations (%)").create()
 
-# 3- Creator Extractor - Regex must have 1 capturing group
+# 3- Creator Extractor - Validator regex must have 1 capturing group
 extractor = Extractor()
 extractor.set_vocabulary(vocabulary.get_id())
 extractor.set_validator("^ +(\\d[\\d\\.\\,]+\\d)")
@@ -48,7 +48,7 @@ for item in result.read():
     field_value = item.get_values()[0]
     print(f"{item.get_str()} -> {field_value.get_str()}")
 
-# 7- Export raw results to XLSX
+# 7- Export results into Excel
 result.result_xlsx_exporter("sample.xlsx")
 
 # 8- Clean up
