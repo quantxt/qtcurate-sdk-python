@@ -171,7 +171,7 @@ class Result:
                         field.set_vocab_name(i[vocab_name])
                     if vocab_id in i:
                         field.set_vocab_id(i[vocab_id])
-                    if len(i["extIntervalSimples"]) != 0:
+                    if "extIntervalSimples" in i:
                         list_field_ext = []
                         for ext_int_item in i["extIntervalSimples"]:
                             field_value = FieldValue()

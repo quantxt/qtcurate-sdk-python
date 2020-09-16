@@ -1,7 +1,4 @@
 from __future__ import annotations
-
-import ast
-
 from qtcurate.document import Document
 from qtcurate.extractor import Extractor, Mode, ChunkMode, SearchMode, AnalyzeMode
 from qtcurate.utilities import connect, json_to_tuple
@@ -132,8 +129,10 @@ class DataProcess:
         self.temp_dict[tag_search_dict].append(vocab_dict)
         return self
 
-    def extractor_from_json(self, dictionary: Dict) -> DataProcess:
-        self.temp_dict[tag_search_dict].append(dictionary)
+    def get_extractor(self, dictionary: Dict) -> DataProcess:
+        if tag_search_dict in dictionary:
+            for i in dictionary[tag_search_dict]:
+                self.temp_dict[tag_search_dict].append(i)
         return self
 
     def clear(self) -> None:
@@ -173,9 +172,9 @@ class DataProcess:
         self.headers["Content-Type"] = "application/json"
         if not isinstance(dp_id, str):
             raise QtArgumentError("Argument type error: String is expected as dp_id")
-        res = connect("get", f"{self.url}search/{dp_id}", self.headers)
+        res = connect("get", f"{self.url}search/config/{dp_id}", self.headers)
         del self.headers['Content-Type']
-        return json_to_tuple(res.json())
+        return res.json()
 
     def update(self, dp_id: str, update_files: List) -> Dict:
         """ Update dataprocess where dp_id is existing ID"""
@@ -285,7 +284,7 @@ class DataProcess:
                 extractor_list = []
                 if "searchDictionaries" in i:
                     for ex in i["searchDictionaries"]:
-                        dataprocess.extractor_from_json(ex)
+                        dataprocess.get_extractor(ex)
                 dataprocess_list.append(dataprocess)
 
         return dataprocess_list
