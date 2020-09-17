@@ -54,6 +54,11 @@ class DataProcess:
     def set_chunk(self, value: ChunkMode) -> None:
         self.temp_dict[chunk] = value.value
 
+    def set_language(self, lang: str) -> DataProcess:
+        self.temp_dict[language] = lang
+        return self
+
+
     def get_uuid(self):
         return str(self.uuid)
 
@@ -96,21 +101,34 @@ class DataProcess:
             vocab_dict[vocab_value_type] = extractor.get_vocab_value_type()
         if extractor.get_type() is not None:
             vocab_dict[type] = extractor.get_type().value
-        if extractor.get_mode() == Mode.SIMPLE:
+        if extractor.get_mode() is None and extractor.get_analyze_mode() is None and extractor.get_search_mode() is None:
             vocab_dict[search_mod] = SearchMode.ORDERED_SPAN.value
             vocab_dict[analyze_strategy] = AnalyzeMode.SIMPLE.value
-        elif extractor.get_mode() == Mode.UNORDERED:
-            vocab_dict[search_mod] = SearchMode.SPAN.value
-            vocab_dict[analyze_strategy] = AnalyzeMode.SIMPLE.value
-        elif extractor.get_mode() == Mode.STEM:
-            vocab_dict[search_mod] = SearchMode.ORDERED_SPAN.value
-            vocab_dict[analyze_strategy] = AnalyzeMode.STEM.value
-        elif extractor.get_mode() == Mode.UNORDERED_STEM:
-            vocab_dict[search_mod] = SearchMode.SPAN.value
-            vocab_dict[analyze_strategy] = AnalyzeMode.STEM.value
-        elif extractor.get_mode() == Mode.FUZZY_UNORDERED_STEM:
-            vocab_dict[search_mod] = SearchMode.FUZZY_SPAN.value
-            vocab_dict[analyze_strategy] = AnalyzeMode.STEM.value
+        elif extractor.get_mode() is not None and extractor.get_analyze_mode() is None and extractor.get_search_mode() is None:
+            if extractor.get_mode() == Mode.SIMPLE:
+                vocab_dict[search_mod] = SearchMode.ORDERED_SPAN.value
+                vocab_dict[analyze_strategy] = AnalyzeMode.SIMPLE.value
+            elif extractor.get_mode() == Mode.UNORDERED:
+                vocab_dict[search_mod] = SearchMode.SPAN.value
+                vocab_dict[analyze_strategy] = AnalyzeMode.SIMPLE.value
+            elif extractor.get_mode() == Mode.STEM:
+                vocab_dict[search_mod] = SearchMode.ORDERED_SPAN.value
+                vocab_dict[analyze_strategy] = AnalyzeMode.STEM.value
+            elif extractor.get_mode() == Mode.UNORDERED_STEM:
+                vocab_dict[search_mod] = SearchMode.SPAN.value
+                vocab_dict[analyze_strategy] = AnalyzeMode.STEM.value
+            elif extractor.get_mode() == Mode.FUZZY_UNORDERED_STEM:
+                vocab_dict[search_mod] = SearchMode.FUZZY_SPAN.value
+                vocab_dict[analyze_strategy] = AnalyzeMode.STEM.value
+        elif extractor.get_mode() is None and extractor.get_search_mode() is not None and extractor.get_analyze_mode() is not None:
+            vocab_dict[search_mod] = extractor.get_search_mode().value
+            vocab_dict[search_mod] = extractor.get_analyze_mode().value
+        elif extractor.get_mode() is None and extractor.get_search_mode() is None and extractor.get_analyze_mode() is not None:
+            vocab_dict[search_mod] = extractor.get_analyze_mode().value
+        elif extractor.get_mode() is None and extractor.get_search_mode() is not None and extractor.get_analyze_mode() is None:
+            vocab_dict[search_mod] = extractor.get_search_mode().value
+        else:
+            raise QtDataProcessError("QtDataProcess error: Please do not set DataMode and (AnalyzeMode and SearchMode) in same time")
         if extractor.get_stop_word_list() is not None:
             vocab_dict[stop_word_list] = extractor.get_stop_word_list()
         if extractor.get_synonym_list() is not None:
@@ -150,7 +168,7 @@ class DataProcess:
         self.headers["Content-Type"] = "application/json"
         correct = 0
         if len(self.temp_dict[tag_search_dict]) == 0:
-            raise QtDataProcessError("DataProcess error: Please add parameters using with_extractor function")
+            raise QtDataProcessError("DataProcess error: Please add parameters using add_extractor function")
         if tag_files in self.temp_dict and len(self.temp_dict[tag_files]) > 0:
             data = {tag_files: self.temp_dict[tag_files]}
         data[tag_exclude_utt] = self.temp_dict[tag_exclude_utt]
@@ -161,7 +179,6 @@ class DataProcess:
         if tag_title in self.temp_dict:
             data[tag_title] = self.temp_dict[tag_title]
         res = connect("post", f"{self.url}search/new", self.headers, "data", json.dumps(data))
-
         self.id = res.json()['id']
         del self.headers['Content-Type']
         return json_to_tuple(res.json())

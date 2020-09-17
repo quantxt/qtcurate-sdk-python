@@ -7,6 +7,7 @@ from qtcurate.result import Result
 
 
 API_KEY = "YOUR-API-KEY"
+#https://github.com/quantxt/qtcurate-sdk-python/blob/master/sample/resources/sample.pdf
 DOCUMENT = "resources/sample.pdf"
 
 # Initialize with api key

@@ -17,7 +17,8 @@ class TestQtDict(TestCase):
         self.assertEqual(name, vocabulary.temp_dictionary["name"])
 
     def test_name_type(self):
-        name = 12345
+        name = []
+        print(type(name))
         vocabulary = Vocabulary()
         with self.assertRaises(QtArgumentError):
             vocabulary.name(name)

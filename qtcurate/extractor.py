@@ -47,7 +47,9 @@ class Extractor:
 
     def __init__(self):
         self.validator = None
-        self.mode = Mode.SIMPLE
+        self.mode = None
+        self.search_mode = None
+        self.analyze_mode = None
         self.type = None
         self.vocab_id = None
         self.vocab_value_type = None
@@ -72,8 +74,22 @@ class Extractor:
             self.mode = Mode.SIMPLE
         return self
 
-    def set_mode(self, mode: Mode) -> None:
+    def set_search_mode(self, search_mode: SearchMode) -> Extractor:
+        self.search_mode = search_mode
+        return self
+
+    def get_search_mode(self) -> SearchMode:
+        return self.search_mode
+
+    def get_analyze_mode(self) -> AnalyzeMode:
+        return self.analyze_mode
+
+    def set_analyze_mode(self, analyze_mode: AnalyzeMode):
+        self.analyze_mode = analyze_mode
+
+    def set_mode(self, mode: Mode) -> Extractor:
         self.mode = mode
+        return self
 
     def get_mode(self) -> Mode:
         return self.mode
