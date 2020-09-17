@@ -28,7 +28,8 @@ class Vocabulary(Qt):
 
     def name(self, voc_name: str) -> Vocabulary:
         """Create a new name for dictionary"""
-        if isinstance(vocab_name, str):
+
+        if isinstance(voc_name, str):
             self.temp_dictionary[vocab_name] = voc_name
         else:
             raise QtArgumentError("Argument type error: String is expected as name")
