@@ -1,6 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from qtcurate.extractor import Extractor, Type
 from qtcurate.vocabulary import Vocabulary
 from qtcurate.dataprocess import DataProcess
@@ -10,12 +7,11 @@ from qtcurate.result import Result
 
 
 API_KEY = "YOUR-API-KEY"
-API_KEY = "a5334f7d-2aac-44b3-aefc-a25cd9dd7bec"
-
+#https://github.com/quantxt/qtcurate-sdk-python/blob/master/sample/resources/sample.pdf
 DOCUMENT = "resources/sample.pdf"
 
-# Initialise with api key
-Qt.init(API_KEY, "test")
+# Initialize with api key
+Qt.init(API_KEY)
 
 # 1- Upload the sample document for processing
 list_of_documents = []
