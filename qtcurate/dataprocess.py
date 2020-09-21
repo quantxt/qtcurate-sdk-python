@@ -146,29 +146,25 @@ class DataProcess:
 
     def create(self) -> Dict:
         """Mine data via dictionaries"""
-
         self.headers["Content-Type"] = "application/json"
-        correct = 0
-        if len(self.temp_dict[tag_search_dict]) == 0:
+        if not self.temp_dict.get(tag_search_dict):
             raise QtDataProcessError("DataProcess error: Please add parameters using with_extractor function")
-        if tag_files in self.temp_dict and len(self.temp_dict[tag_files]) > 0:
+        if tag_files in self.temp_dict and self.temp_dict.get(tag_search_dict):
             data = {tag_files: self.temp_dict[tag_files]}
         data[tag_exclude_utt] = self.temp_dict[tag_exclude_utt]
         data[num_workers] = self.temp_dict[num_workers]
         data[chunk] = self.temp_dict[chunk]
-        if len(self.temp_dict[tag_search_dict]) != 0:
+        if self.temp_dict.get(tag_search_dict):
             data[tag_search_dict] = self.temp_dict[tag_search_dict]
         if tag_title in self.temp_dict:
             data[tag_title] = self.temp_dict[tag_title]
         res = connect("post", f"{self.url}search/new", self.headers, "data", json.dumps(data))
-
         self.id = res.json()['id']
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
 
     def fetch(self, dp_id: str) -> Dict:
         """ Fetch dataprocess where dp_id is existing ID"""
-
         self.headers["Content-Type"] = "application/json"
         if not isinstance(dp_id, str):
             raise QtArgumentError("Argument type error: String is expected as dp_id")
@@ -267,7 +263,6 @@ class DataProcess:
         re_dict = res.json()
         del self.headers['Content-Type']
         if "settings" in re_dict:
-
             dataprocess_list = []
             for i in re_dict["settings"]:
                 dataprocess = DataProcess()
@@ -281,10 +276,10 @@ class DataProcess:
                 dataprocess.set_id(i["id"])
                 dataprocess.set_description(i["title"])
                 dataprocess.set_workers(i["numWorkers"])
-                extractor_list = []
                 if "searchDictionaries" in i:
                     for ex in i["searchDictionaries"]:
                         dataprocess.get_extractor(ex)
                 dataprocess_list.append(dataprocess)
-
+        else:
+            dataprocess_list = []
         return dataprocess_list

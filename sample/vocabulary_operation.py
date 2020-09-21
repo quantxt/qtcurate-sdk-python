@@ -3,14 +3,12 @@ from qtcurate.qt import Qt
 
 
 API_KEY = "YOUR-API-KEY"
-
 FILE_NAME = "resources/revenue.tsv"
 
 # Initialise with api key
 Qt.init(API_KEY, "test")
 
 vocabulary = Vocabulary()
-# Set name of the Vocabulary
 # Create entries of vocabulary
 vocabulary.add_entry("Apple Inc.", "AAPL")
 vocabulary.add_entry("Amazon.com", "AMZN")
@@ -24,12 +22,13 @@ try:
 except Exception as e:
     print(e)
 print(entry_voc)
+print("1111*****************************")
 
 # Fetch from current object
 print(vocabulary.fetch(vocabulary.get_id()))
 vocabulary.clear()
 
-# Create list of dictionaries from tsv file
+# Create list of vocabulary from tsv file
 # Name the project
 vocabulary.name("revenue")
 vocabulary.source(FILE_NAME)
@@ -39,8 +38,8 @@ try:
 except Exception as e:
     print(e)
 print(tsv_voc)
-
-# Fetch from known dictionary
+print("2222*****************************")
+# Fetch from known vocabulary
 print(vocabulary.fetch(entry_voc.id))
 
 # Update vocabulary, name and entries are mandatory options
@@ -50,7 +49,7 @@ new_dic.name("updated name")
 res = new_dic.update(entry_voc.id)
 print(res.id)
 
-# List all existing dictionaries
+# List all existing vocabularies
 print(vocabulary.read())
+# Delete vocabulary
 print(vocabulary.delete(entry_voc.id))
-print(entry_voc)

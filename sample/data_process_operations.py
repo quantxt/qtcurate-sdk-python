@@ -1,3 +1,6 @@
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from qtcurate.extractor import Extractor, Type
 from qtcurate.vocabulary import Vocabulary
 from qtcurate.dataprocess import DataProcess
@@ -7,7 +10,9 @@ from qtcurate.result import Result
 
 
 API_KEY = "YOUR-API-KEY"
+API_KEY = "a5334f7d-2aac-44b3-aefc-a25cd9dd7bec"
 DOCUMENT = "resources/sample.pdf"
+DOCUMENT = "https://sowa-audio.com/sample.pdf"
 
 # Initialise with api key
 Qt.init(API_KEY, "test")
@@ -17,7 +22,6 @@ list_of_documents = []
 document = Document()
 doc = document.create(DOCUMENT)
 list_of_documents.append(doc)
-
 # 2- Create vocabulary
 vocabulary = Vocabulary()
 vocabulary.add_entry("Industrials")

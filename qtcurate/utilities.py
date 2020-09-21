@@ -16,7 +16,7 @@ def json_to_tuple(data: [str, Dict]) -> Tuple:
     return json.loads(data, object_hook=lambda d: namedtuple('Object', d.keys())(*d.values()))
 
 
-def connect(method: str, uri: str, headers: str, data_type: str = None, data: Dict = None) -> Dict:
+def connect(method: str, uri: str, headers: str, data_type: str = None, data=None) -> Dict:
     if data_type not in [None, "data", "files", "params"]:
         raise QtArgumentError("Unknown data type. params, data and files are allowed")
     if method.lower() == 'get':

@@ -14,7 +14,7 @@ class TestQtDict(TestCase):
         name = "some name"
         vocabulary = Vocabulary()
         vocabulary.name(name)
-        self.assertEqual(name, vocabulary.temp_dictionary["name"])
+        self.assertEqual(name, vocabulary.temp_vocabulary["name"])
 
     def test_name_type(self):
         name = 12345
@@ -56,13 +56,13 @@ class TestQtDict(TestCase):
         test_vocabulary = {"str": "str", "category": "category"}
         vocabulary = Vocabulary()
         vocabulary.entries(test_vocabulary)
-        self.assertEqual([test_vocabulary], vocabulary.temp_dictionary['entries'])
+        self.assertEqual([test_vocabulary], vocabulary.temp_vocabulary['entries'])
 
     def test_entries_1(self):
         test_vocabulary = {"str": "str"}
         vocabulary = Vocabulary()
         vocabulary.entries(test_vocabulary)
-        self.assertEqual([test_vocabulary], vocabulary.temp_dictionary['entries'])
+        self.assertEqual([test_vocabulary], vocabulary.temp_vocabulary['entries'])
 
     def test_add_entry(self):
         key = "New York"
@@ -70,7 +70,7 @@ class TestQtDict(TestCase):
         list_entries = [{"str": key, "category": value}]
         vocabulary = Vocabulary()
         vocabulary.add_entry(key, value)
-        self.assertEqual(list_entries, vocabulary.temp_dictionary['entries'])
+        self.assertEqual(list_entries, vocabulary.temp_vocabulary['entries'])
 
     def test_add_entry_key_type(self):
         key = ["test"]
@@ -92,7 +92,7 @@ class TestQtDict(TestCase):
         list_entries = [{"str": key}]
         vocabulary = Vocabulary()
         vocabulary.add_entry(key, value)
-        self.assertEqual(list_entries, vocabulary.temp_dictionary['entries'])
+        self.assertEqual(list_entries, vocabulary.temp_vocabulary['entries'])
 
     def test_fetch_arg(self):
         vocabulary_id = 123
