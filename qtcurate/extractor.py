@@ -1,7 +1,7 @@
 from __future__ import annotations
 from enum import Enum
 from qtcurate.exceptions import QtArgumentError
-from typing import List, Dict
+from typing import List
 
 
 class ChunkMode(Enum):

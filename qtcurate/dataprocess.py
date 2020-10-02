@@ -25,7 +25,7 @@ search_mod = "searchMode"
 analyze_strategy = "analyzeStrategy"
 stop_word_list = "stopwordList"
 synonym_l = "synonymList"
-type = "dataType"
+data_type = "dataType"
 language = "language"
 
 
@@ -45,7 +45,7 @@ class DataProcess:
     def __repr__(self):
         return f"{self.id}"
 
-    def get_id(self):
+    def get_id(self) -> str:
         return str(self.id)
 
     def set_id(self, vocabulary_id: str) -> None:
@@ -54,7 +54,7 @@ class DataProcess:
     def set_chunk(self, value: ChunkMode) -> None:
         self.temp_dict[chunk] = value.value
 
-    def get_uuid(self):
+    def get_uuid(self) -> str:
         return str(self.uuid)
 
     def set_description(self, title: str) -> None:
@@ -79,7 +79,7 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: Integer is expected as num_workers")
 
-    def with_documents(self, list_of_files: list) -> None:
+    def with_documents(self, list_of_files: List) -> None:
         """Create a list of existing files"""
 
         if isinstance(list_of_files, list):
@@ -95,7 +95,7 @@ class DataProcess:
         if extractor.get_vocab_value_type() is not None:
             vocab_dict[vocab_value_type] = extractor.get_vocab_value_type()
         if extractor.get_type() is not None:
-            vocab_dict[type] = extractor.get_type().value
+            vocab_dict[data_type] = extractor.get_type().value
         if extractor.get_mode() == Mode.SIMPLE:
             vocab_dict[search_mod] = SearchMode.ORDERED_SPAN.value
             vocab_dict[analyze_strategy] = AnalyzeMode.SIMPLE.value
@@ -144,17 +144,18 @@ class DataProcess:
         self.temp_dict.pop(tag_search_dict, None)
         self.index = None
 
-    def create(self) -> Dict:
+    def create(self):
         """Mine data via dictionaries"""
         self.headers["Content-Type"] = "application/json"
-        if not self.temp_dict.get(tag_search_dict):
-            raise QtDataProcessError("DataProcess error: Please add parameters using with_extractor function")
-        if tag_files in self.temp_dict and self.temp_dict.get(tag_search_dict):
-            data = {tag_files: self.temp_dict[tag_files]}
+        data = {}
+        if not self.temp_dict[tag_search_dict]:
+            raise QtDataProcessError("DataProcess error: Please add parameters using add_extractor function")
+        if tag_files in self.temp_dict and tag_search_dict in self.temp_dict:
+            data[tag_files] = self.temp_dict[tag_files]
         data[tag_exclude_utt] = self.temp_dict[tag_exclude_utt]
         data[num_workers] = self.temp_dict[num_workers]
         data[chunk] = self.temp_dict[chunk]
-        if self.temp_dict.get(tag_search_dict):
+        if tag_search_dict in self.temp_dict:
             data[tag_search_dict] = self.temp_dict[tag_search_dict]
         if tag_title in self.temp_dict:
             data[tag_title] = self.temp_dict[tag_title]
@@ -172,7 +173,7 @@ class DataProcess:
         del self.headers['Content-Type']
         return res.json()
 
-    def update(self, dp_id: str, update_files: List) -> Dict:
+    def update(self, dp_id: str, update_files: List):
         """ Update dataprocess where dp_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
@@ -187,14 +188,15 @@ class DataProcess:
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
 
-    def clone(self, dp_id: str) -> Dict:
+    def clone(self, dp_id: str):
         """ Update dataprocess where dp_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
         if not isinstance(dp_id, str):
             raise QtArgumentError("Argument type error: String is expected as dp_id")
-        else:
-            data = {tag_files: self.temp_dict[tag_files]}
+        if not self.temp_dict[tag_files]:
+            raise QtDataProcessError("Dataprocess: You have to add files using with_document method and Document class")
+        data = {tag_files: self.temp_dict[tag_files]}
         res = connect("post", f"{self.url}search/new/{dp_id}", self.headers, "data", json.dumps(data))
         self.id = res.json()['id']
         del self.headers['Content-Type']
@@ -208,7 +210,7 @@ class DataProcess:
         res = connect("delete", f"{self.url}search/{dp_id}", self.headers)
         return res.ok
 
-    def progress(self, dp_id: str = None) -> Dict:
+    def progress(self, dp_id: str = None):
         """Show progress for submitted data mining job"""
 
         url_path = "progress"
@@ -220,7 +222,7 @@ class DataProcess:
         res = connect("get", f"{self.url}search/{url_path}", self.headers)
         return json_to_tuple(res.json())
 
-    def wait_for_completion(self):
+    def wait_for_completion(self) -> None:
         percentage = 0
         while percentage < 100:
             result = self.progress(self.id)
@@ -253,9 +255,9 @@ class DataProcess:
             raise QtArgumentError("Argument error: Query filters must be used in pairs")
         res = connect("get", f"{self.url}search/{dp_id}", self.headers, "params", parameters)
 
-        return json_to_tuple(res.json())
+        return res.json()
 
-    def read(self):
+    def read(self) -> List:
         """ Fetch dataprocess where dp_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
@@ -272,7 +274,7 @@ class DataProcess:
                         document = Document()
                         document.set_id(f)
                         document_list.append(document)
-                dataprocess.with_documents(document_list)
+                    dataprocess.with_documents(document_list)
                 dataprocess.set_id(i["id"])
                 dataprocess.set_description(i["title"])
                 dataprocess.set_workers(i["numWorkers"])

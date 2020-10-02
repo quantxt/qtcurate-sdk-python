@@ -2,7 +2,7 @@ from __future__ import annotations
 from qtcurate.qt import Qt
 import json
 import os.path
-from typing import Dict, List, Union, Tuple
+from typing import Dict, NamedTuple, Union, Tuple
 from qtcurate.exceptions import QtArgumentError, QtVocabularyError
 from qtcurate.utilities import connect, json_to_tuple
 
@@ -78,12 +78,12 @@ class Vocabulary(Qt):
                 self.temp_vocabulary[vocabulary_entries].append({'str': str_key})
         return self
 
-    def read(self) -> List:
+    def read(self) -> Dict:
         """List all dictionaries"""
         res = connect("get", self.url, self.headers)
         return res.json()
 
-    def fetch(self, qt_id: str) -> Dict:
+    def fetch(self, qt_id: str):
         """Fetch dictionary by ID"""
 
         if not isinstance(qt_id, str):
@@ -112,7 +112,7 @@ class Vocabulary(Qt):
         self.input_stream = file
         return self
 
-    def create(self) -> Dict:
+    def create(self):
         """Create dictionary data"""
 
         if self.temp_vocabulary[vocabulary_name] is None:
@@ -120,7 +120,7 @@ class Vocabulary(Qt):
 
         if self.input_stream is None:
             self.headers['Content-Type'] = 'application/json'
-            if not self.temp_vocabulary.get(vocabulary_entries):
+            if not self.temp_vocabulary[vocabulary_entries]:
                 raise QtVocabularyError("Vocabulary error: Please add dictionary using add_entry function")
             data = {'name': self.temp_vocabulary[vocabulary_name], 'entries': self.temp_vocabulary[vocabulary_entries]}
             res = connect("post", self.url, self.headers, "data", json.dumps(data))
@@ -135,7 +135,7 @@ class Vocabulary(Qt):
             self.id = res.json()["id"]
             return json_to_tuple(res.json())
 
-    def update(self, qt_id: str) -> Tuple:
+    def update(self, qt_id: str):
         """Update existing dictionary"""
         self.headers['Content-Type'] = 'application/json'
         if not isinstance(qt_id, str):

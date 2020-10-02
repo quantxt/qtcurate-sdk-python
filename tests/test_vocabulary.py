@@ -1,15 +1,18 @@
 from unittest import TestCase, main
-from qtcurate.vocabulary import Vocabulary
+from qtcurate.vocabulary import Vocabulary, json_to_tuple
 from qtcurate.exceptions import *
+from unittest.mock import Mock, patch
 
 
 class TestQtDict(TestCase):
 
+    # Testing get_id method:
     def test_get_id(self):
         vocabulary = Vocabulary()
         some_id = None
         self.assertEqual(vocabulary.get_id(), str(some_id))
 
+    # Testing name method
     def test_name_name(self):
         name = "some name"
         vocabulary = Vocabulary()
@@ -22,6 +25,7 @@ class TestQtDict(TestCase):
         with self.assertRaises(QtArgumentError):
             vocabulary.name(name)
 
+    # Testing entries method
     def test_entries_type(self):
         test_vocabulary = "string"
         vocabulary = Vocabulary()
@@ -52,18 +56,19 @@ class TestQtDict(TestCase):
         with self.assertRaises(QtArgumentError):
             vocabulary.entries(test_vocabulary)
 
-    def test_entries(self):
+    def test_entries_category_str(self):
         test_vocabulary = {"str": "str", "category": "category"}
         vocabulary = Vocabulary()
         vocabulary.entries(test_vocabulary)
         self.assertEqual([test_vocabulary], vocabulary.temp_vocabulary['entries'])
 
-    def test_entries_1(self):
+    def test_entries_category(self):
         test_vocabulary = {"str": "str"}
         vocabulary = Vocabulary()
         vocabulary.entries(test_vocabulary)
         self.assertEqual([test_vocabulary], vocabulary.temp_vocabulary['entries'])
 
+    # Testing add_entry method
     def test_add_entry(self):
         key = "New York"
         value = "Knicks"
@@ -94,18 +99,91 @@ class TestQtDict(TestCase):
         vocabulary.add_entry(key, value)
         self.assertEqual(list_entries, vocabulary.temp_vocabulary['entries'])
 
+    # Testing read method
+    @patch("qtcurate.vocabulary.connect")
+    def test_read(self, con):
+        voc = Vocabulary()
+        some_json = [{"key": "value"}]
+        response = Mock()
+        response.status_code = 200
+        response.json.return_value = some_json
+        con.return_value = response
+
+        res = voc.read()
+        self.assertEqual(res, some_json)
+
+    # Testing fetch method
     def test_fetch_arg(self):
         vocabulary_id = 123
         vocabulary = Vocabulary()
         with self.assertRaises(QtArgumentError):
             vocabulary.fetch(vocabulary_id)
 
+    @patch("qtcurate.vocabulary.connect")
+    def test_fetch(self, con):
+        some_id = 'some id'
+        some_json = {"key": "value"}
+        some_object = json_to_tuple(some_json)
+        voc = Vocabulary()
+        response = Mock()
+        response.status_code = 200
+        response.json.return_value = some_json
+        con.return_value = response
+
+        res = voc.fetch(some_id)
+        self.assertEqual(res, some_object)
+
+    # Testing delete method
     def test_delete_arg(self):
         vocabulary_id = 123
         vocabulary = Vocabulary()
         with self.assertRaises(QtArgumentError):
             vocabulary.delete(vocabulary_id)
 
+    @patch("qtcurate.vocabulary.connect")
+    def test_delete_true(self, con):
+        some_id = 'some id'
+        voc = Vocabulary()
+        response = Mock()
+        response.status_code = 200
+        response.ok = True
+        con.return_value = response
+
+        res = voc.delete(some_id)
+        self.assertEqual(res, True)
+
+    @patch("qtcurate.vocabulary.connect")
+    def test_delete_false(self, con):
+        some_id = 'some id'
+        voc = Vocabulary()
+        response = Mock()
+        response.status_code = 200
+        response.ok = False
+        con.return_value = response
+
+        res = voc.delete(some_id)
+        self.assertEqual(res, False)
+
+    # Testing source method
+    def test_source_arg_file_type(self):
+        file = 123
+        vocabulary = Vocabulary()
+        with self.assertRaises(QtArgumentError):
+            vocabulary.source(file)
+
+    def test_source_file_extension(self):
+        file = "path"
+        vocabulary = Vocabulary()
+        with self.assertRaises(QtArgumentError):
+            vocabulary.source(file)
+
+    def test_source_file_exist(self):
+        file = "path.tsv"
+        vocabulary = Vocabulary()
+        with self.assertRaises(QtArgumentError):
+            vocabulary.source(file)
+
+    # Testing create method
     def test_create_miss_name(self):
         entries = {"str": "str", "category": "category"}
         vocabulary = Vocabulary()
@@ -115,11 +193,15 @@ class TestQtDict(TestCase):
 
     def test_create_miss_entry(self):
         name = "some name"
-        vocabulary = Vocabulary()
-        vocabulary.name(name)
+        voc = Vocabulary()
+        voc.name(name)
         with self.assertRaises(QtVocabularyError):
-            vocabulary.create()
+            voc.create()
 
+    def test_create(self):
+        pass
+
+    # Testing update method
     def test_update_arg_type(self):
         vocabulary_id = 123
         vocabulary = Vocabulary()
@@ -142,24 +224,22 @@ class TestQtDict(TestCase):
         with self.assertRaises(QtVocabularyError):
             vocabulary.update(vocabulary_id)
 
-    def test_source_arg_file_type(self):
-        file = 123
-        vocabulary = Vocabulary()
-        with self.assertRaises(QtArgumentError):
-            vocabulary.source(file)
+    @patch("qtcurate.vocabulary.connect")
+    def test_update(self, con):
+        some_id = 'some id'
+        some_name = 'some name'
+        some_key = 'some key'
+        some_dict = {"key": "value"}
+        voc = Vocabulary()
+        voc.name(some_name)
+        voc.add_entry(some_key)
+        response = Mock()
+        response.status_code = 200
+        response.json.return_value = some_dict
+        con.return_value = response
 
-
-    def test_source_file_extension(self):
-        file = "path"
-        vocabulary = Vocabulary()
-        with self.assertRaises(QtArgumentError):
-            vocabulary.source(file)
-
-    def test_source_file_exist(self):
-        file = "path.tsv"
-        vocabulary = Vocabulary()
-        with self.assertRaises(QtArgumentError):
-            vocabulary.source(file)
+        res = voc.update(some_id)
+        self.assertEqual(res, json_to_tuple(some_dict))
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, main
 from qtcurate.exceptions import *
 from qtcurate.extractor import Extractor, SearchMode, AnalyzeMode, Mode, Type
 
@@ -159,3 +159,6 @@ class TestExtractor(TestCase):
     def test_get_validator(self):
         ex = Extractor()
         self.assertEqual(ex.get_validator(), None)
+
+if __name__ == '__main__':
+    main()
