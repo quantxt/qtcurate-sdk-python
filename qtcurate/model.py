@@ -29,7 +29,7 @@ data_type = "dataType"
 language = "language"
 
 
-class DataProcess:
+class Model:
     def __init__(self):
         self.headers = {"X-API-Key": Qt.api_key}
         self.temp_dict = dict()
@@ -87,7 +87,7 @@ class DataProcess:
         else:
             raise QtArgumentError("Argument type error: Expected list of file IDs")
 
-    def add_extractor(self, extractor: Extractor) -> DataProcess:
+    def add_extractor(self, extractor: Extractor) -> Model:
         """Prepare dictionary for searching"""
         vocab_dict = dict()
         if extractor.get_vocab_id() is not None:
@@ -129,7 +129,7 @@ class DataProcess:
         self.temp_dict[tag_search_dict].append(vocab_dict)
         return self
 
-    def get_extractor(self, dictionary: Dict) -> DataProcess:
+    def get_extractor(self, dictionary: Dict) -> Model:
         if tag_search_dict in dictionary:
             for i in dictionary[tag_search_dict]:
                 self.temp_dict[tag_search_dict].append(i)
@@ -164,59 +164,59 @@ class DataProcess:
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
 
-    def fetch(self, dp_id: str) -> Dict:
-        """ Fetch dataprocess where dp_id is existing ID"""
+    def fetch(self, model_id: str) -> Dict:
+        """ Fetch dataprocess where model_id is existing ID"""
         self.headers["Content-Type"] = "application/json"
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
-        res = connect("get", f"{self.url}search/config/{dp_id}", self.headers)
+        if not isinstance(model_id, str):
+            raise QtArgumentError("Argument type error: String is expected as model_id")
+        res = connect("get", f"{self.url}search/config/{model_id}", self.headers)
         del self.headers['Content-Type']
         return res.json()
 
-    def update(self, dp_id: str, update_files: List):
-        """ Update dataprocess where dp_id is existing ID"""
+    def update(self, model_id: str, update_files: List):
+        """ Update dataprocess where model_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
+        if not isinstance(model_id, str):
+            raise QtArgumentError("Argument type error: String is expected as model_id")
         if not isinstance(update_files, List):
             raise QtArgumentError("Argument type error: List is expected as update file")
         else:
             self.clear()
             data = {tag_files: update_files}
-        res = connect("post", f"{self.url}search/update/{dp_id}", self.headers, "data", json.dumps(data))
+        res = connect("post", f"{self.url}search/update/{model_id}", self.headers, "data", json.dumps(data))
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
 
-    def clone(self, dp_id: str):
-        """ Update dataprocess where dp_id is existing ID"""
+    def clone(self, model_id: str):
+        """ Update dataprocess where model_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
-        if not self.temp_dict[tag_files]:
+        if not isinstance(model_id, str):
+            raise QtArgumentError("Argument type error: String is expected as model_id")
+        if tag_files not in self.temp_dict:
             raise QtDataProcessError("Dataprocess: You have to add files using with_document method and Document class")
         data = {tag_files: self.temp_dict[tag_files]}
-        res = connect("post", f"{self.url}search/new/{dp_id}", self.headers, "data", json.dumps(data))
+        res = connect("post", f"{self.url}search/new/{model_id}", self.headers, "data", json.dumps(data))
         self.id = res.json()['id']
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
 
-    def delete(self, dp_id: str) -> bool:
+    def delete(self, model_id: str) -> bool:
         """Delete data container"""
 
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
-        res = connect("delete", f"{self.url}search/{dp_id}", self.headers)
+        if not isinstance(model_id, str):
+            raise QtArgumentError("Argument type error: String is expected as model_id")
+        res = connect("delete", f"{self.url}search/{model_id}", self.headers)
         return res.ok
 
-    def progress(self, dp_id: str = None):
+    def progress(self, model_id: str = None):
         """Show progress for submitted data mining job"""
 
         url_path = "progress"
-        if dp_id is not None:
-            if isinstance(dp_id, str):
-                url_path = f"{url_path}/{dp_id}"
+        if model_id is not None:
+            if isinstance(model_id, str):
+                url_path = f"{url_path}/{model_id}"
             else:
                 raise QtArgumentError("Expected string")
         res = connect("get", f"{self.url}search/{url_path}", self.headers)
@@ -232,11 +232,11 @@ class DataProcess:
                 sleep(1)
         sleep(3)
 
-    def search(self, dp_id: str, param_from: int = 0, size: int = None, f1: int = None, f2: int = None) -> Dict:
+    def search(self, model_id: str, param_from: int = 0, size: int = None, f1: int = None, f2: int = None) -> Dict:
         """Search full-text and faceted search"""
 
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
+        if not isinstance(model_id, str):
+            raise QtArgumentError("Argument type error: String is expected as model_id")
         if isinstance(param_from, int):
             parameters = [('from', param_from)]
         else:
@@ -253,12 +253,12 @@ class DataProcess:
             pass
         else:
             raise QtArgumentError("Argument error: Query filters must be used in pairs")
-        res = connect("get", f"{self.url}search/{dp_id}", self.headers, "params", parameters)
+        res = connect("get", f"{self.url}search/{model_id}", self.headers, "params", parameters)
 
         return res.json()
 
     def read(self) -> List:
-        """ Fetch dataprocess where dp_id is existing ID"""
+        """ Fetch dataprocess where model_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
         res = connect("get", f"{self.url}users/profile", self.headers)
@@ -267,7 +267,7 @@ class DataProcess:
         if "settings" in re_dict:
             dataprocess_list = []
             for i in re_dict["settings"]:
-                dataprocess = DataProcess()
+                dataprocess = Model()
                 if "files" in i:
                     document_list = []
                     for f in i["files"]:

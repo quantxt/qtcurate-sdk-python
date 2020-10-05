@@ -22,7 +22,6 @@ try:
 except Exception as e:
     print(e)
 print(entry_voc)
-print("1111*****************************")
 
 # Fetch from current object
 print(vocabulary.fetch(vocabulary.get_id()))
@@ -38,7 +37,6 @@ try:
 except Exception as e:
     print(e)
 print(tsv_voc)
-print("2222*****************************")
 # Fetch from known vocabulary
 print(vocabulary.fetch(entry_voc.id))
 

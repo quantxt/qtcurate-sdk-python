@@ -128,6 +128,7 @@ class TestResult(TestCase):
     # Testing Result
     # ***************************************************
 
+    # Test raw_exporter method
     def test_result_raw_exporter_arg_err(self):
         some_id = 'some id'
         result = Result(some_id)
@@ -142,16 +143,17 @@ class TestResult(TestCase):
             result.raw_exporter(path)
 
     def test_result_raw_exporter_no_json(self):
-        path = "path.txt"
+        path = "path.tsv"
         some_id = 'some id'
         result = Result(some_id)
         with self.assertRaises(QtFileTypeError):
             result.raw_exporter(path)
 
-    # @patch("qtcurate.utilities.connect")
-    # def test_result_raw_exporter(self):
-    #     pass
+    @patch("qtcurate.result.connect")
+    def test_result_raw_exporter(self, con):
+        pass
 
+    # Test result_xlsx_exporter method
     def test_result_xlsx_exporter_arg_err(self):
         some_id = 'some id'
         result = Result(some_id)
@@ -172,11 +174,22 @@ class TestResult(TestCase):
         with self.assertRaises(QtFileTypeError):
             result.result_xlsx_exporter(path)
 
-    # def test_result_result_xlsx_exporter(self):
-    #     pass
-    #
-    # def test_result_read(self):
-    #     pass
+    @patch("qtcurate.result.connect")
+    def test_result_xlsx_exporter(self, con):
+        pass
+
+    # Test read method
+    @patch("qtcurate.result.connect")
+    def test_read(self, con):
+        some_id = 'some id'
+        some_dict = {"key": "value"}
+        result = Result(some_id)
+        response = Mock()
+        response.json.return_value = some_dict
+        con.return_value = response
+        res = result.read()
+        self.assertEqual(res, [])
+
 
 if __name__ == '__main__':
     main()

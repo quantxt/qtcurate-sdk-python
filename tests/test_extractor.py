@@ -5,6 +5,7 @@ from qtcurate.extractor import Extractor, SearchMode, AnalyzeMode, Mode, Type
 
 class TestExtractor(TestCase):
 
+    # Test create_mode method
     def test_create_mode_unordered(self):
         ex = Extractor()
         some_analyze_mode = AnalyzeMode.SIMPLE
@@ -45,17 +46,20 @@ class TestExtractor(TestCase):
         ex.create_mode(some_analyze_mode, some_search_mode)
         self.assertEqual(ex.mode, some_mode)
 
+    # Test set_mode method
     def test_set_mode(self):
         ex = Extractor()
         some_mode = Mode.SIMPLE
         ex.set_mode(some_mode)
         self.assertEqual(ex.get_mode(), some_mode)
 
+    # Test get_mode method
     def test_get_mode(self):
         ex = Extractor()
         some_mode = Mode.SIMPLE
         self.assertEqual(ex.get_mode(), some_mode)
 
+    # Test set_vocabulary method
     def test_set_vocabulary(self):
         some_vocab_id = 'some_id'
         ex = Extractor()
@@ -68,16 +72,19 @@ class TestExtractor(TestCase):
         with self.assertRaises(QtArgumentError):
             ex.set_vocabulary(some_vocab_id)
 
+    # Test get_vocab_id method
     def test_get_vocab_id(self):
         ex = Extractor()
         some_vocab_id = None
         self.assertEqual(ex.get_vocab_id(), some_vocab_id)
 
+    # Test get_vocab_value_type method
     def test_get_vocab_value_type(self):
         ex = Extractor()
         some_vocab_value_type = None
         self.assertEqual(ex.get_vocab_value_type(), some_vocab_value_type)
 
+    # Test set_between_values method
     def test_set_between_values_arg_err(self):
         be_value = 123
         ex = Extractor()
@@ -89,11 +96,13 @@ class TestExtractor(TestCase):
         ex = Extractor()
         self.assertEqual(ex.set_between_values(be_value).between_values, be_value)
 
+    # Test get_between_values method
     def test_get_between_values(self):
         be_value = None
         ex = Extractor()
         self.assertEqual(ex.get_between_values(), be_value)
 
+    # Test set_type method
     def test_set_type_arg_err(self):
         some_type = '123'
         ex = Extractor()
@@ -105,11 +114,13 @@ class TestExtractor(TestCase):
         ex = Extractor()
         self.assertEqual(ex.set_type(some_type).type, some_type)
 
+    # Test get_type method
     def test_get_type(self):
         ex = Extractor()
         some_type = None
         self.assertEqual(ex.get_type(), some_type)
 
+    # Test set_stop_word_list method
     def test_set_stop_word_list(self):
         some_swl = [1, 2, 3]
         ex = Extractor()
@@ -121,10 +132,12 @@ class TestExtractor(TestCase):
         with self.assertRaises(QtArgumentError):
             ex.set_stop_word_list(some_swl)
 
+    # Test get_stop_word_list method
     def test_get_stop_word_list(self):
         ex = Extractor()
         self.assertEqual(ex.get_stop_word_list(), None)
 
+    # Test set_synonym_list method
     def test_set_synonym_list_arg_err(self):
         some_sl = '123'
         ex = Extractor()
@@ -136,19 +149,16 @@ class TestExtractor(TestCase):
         ex = Extractor()
         self.assertEqual(ex.set_synonym_list(some_sl).synonym_list, some_sl)
 
+    # Test get_synonym_list method
     def test_get_synonym_list(self):
         ex = Extractor()
         self.assertEqual(ex.get_synonym_list(), None)
 
+    # Test set_validator method
     def test_set_validator(self):
         some_validator = '123'
         ex = Extractor()
         self.assertEqual(ex.set_validator(some_validator).validator, some_validator)
-
-    def test_set_validator_re(self):
-        some_validator = '123'
-        ex = Extractor()
-        self.assertEqual(ex.set_validator(some_validator).vocab_value_type, 'REGEX')
 
     def test_set_validator_arg_err(self):
         some_validator = [1, 2, 3]
@@ -156,9 +166,16 @@ class TestExtractor(TestCase):
         with self.assertRaises(QtArgumentError):
             ex.set_validator(some_validator)
 
+    def test_set_validator_re(self):
+        some_validator = '123'
+        ex = Extractor()
+        self.assertEqual(ex.set_validator(some_validator).vocab_value_type, 'REGEX')
+
+    # Test get_validator method
     def test_get_validator(self):
         ex = Extractor()
         self.assertEqual(ex.get_validator(), None)
+
 
 if __name__ == '__main__':
     main()

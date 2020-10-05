@@ -6,9 +6,9 @@ API_KEY = "YOUR-API-KEY"
 
 Qt.init(API_KEY)
 
-dataprocess_id = "__jobid__"
+model_id = "__jobid__"
 
-result = Result(dataprocess_id)
+result = Result(model_id)
 
 result.result_xlsx_exporter("name of file example export.xlsx")
 

@@ -69,7 +69,7 @@ class Field:
     def __repr__(self):
         return f"{self.vocab_id}, {self.str}"
 
-    def set_values(self, val : List) -> None:
+    def set_values(self, val: List) -> None:
         self.values = val
 
     def get_values(self) -> List:
@@ -79,17 +79,29 @@ class Field:
         self.str = str_value
         return self
 
+    def get_str(self) -> str:
+        return self.str
+
     def set_type(self, type_value: str) -> Field:
         self.type = type_value
         return self
+
+    def get_type(self) -> str:
+        return self.type
 
     def set_vocab_name(self, name: str) -> Field:
         self.vocab_name = name
         return self
 
+    def get_vocab_name(self) -> str:
+        return self.vocab_name
+
     def set_category(self, cat: str) -> Field:
         self.category = cat
         return self
+
+    def get_category(self) -> str:
+        return self.category
 
     def set_vocab_id(self, voc_id: str) -> Field:
         self.vocab_id = voc_id
@@ -97,18 +109,6 @@ class Field:
 
     def get_vocab_id(self) -> str:
         return self.vocab_id
-
-    def get_vocab_name(self) -> str:
-        return self.vocab_name
-
-    def get_category(self) -> str:
-        return self.category
-
-    def get_str(self) -> str:
-        return self.str
-
-    def get_type(self) -> str:
-        return self.type
 
 
 class Result:
@@ -171,8 +171,8 @@ class Result:
                         field.set_vocab_name(i[vocab_name])
                     if vocab_id in i:
                         field.set_vocab_id(i[vocab_id])
+                    list_field_ext = []
                     if "extIntervalSimples" in i:
-                        list_field_ext = []
                         for ext_int_item in i["extIntervalSimples"]:
                             field_value = FieldValue()
                             if str_field in ext_int_item:
@@ -187,4 +187,4 @@ class Result:
                     field.set_values(list_field_ext)
                     result_list.append(field)
         return result_list
-
+#
