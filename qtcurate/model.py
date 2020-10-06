@@ -60,7 +60,7 @@ class Model:
         return str(self.uuid)
 
     def set_description(self, title: str) -> Model:
-        """Create title for mining data"""
+        """Create title for Model"""
 
         if isinstance(title, str):
             self.temp_dictionary[description] = title
@@ -151,7 +151,7 @@ class Model:
         self.index = None
 
     def create(self):
-        """Mine data via dictionaries"""
+        """Creating a new model"""
         self.headers["Content-Type"] = "application/json"
         data = {}
         if not self.temp_dictionary[search_vocabulary]:

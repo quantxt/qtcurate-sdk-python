@@ -25,7 +25,7 @@ class TestModel(TestCase):
         model = Model()
         some_chunk = ChunkMode.SENTENCE
         model.set_chunk(some_chunk)
-        self.assertEqual(model.temp_dict["chunk"], some_chunk.value)
+        self.assertEqual(model.temp_dictionary["chunk"], some_chunk.value)
 
     # Test get_uuid method
     def test_get_uuid(self):
@@ -38,7 +38,7 @@ class TestModel(TestCase):
         title = "some title"
         model = Model()
         model.set_description(title)
-        self.assertEqual(title, model.temp_dict["title"])
+        self.assertEqual(title, model.temp_dictionary["title"])
 
     def test_set_description_arg_error(self):
         title = 12
@@ -51,7 +51,7 @@ class TestModel(TestCase):
         value = True
         model = Model()
         model.exclude_utt_without_entities(value)
-        self.assertEqual(value, model.temp_dict["excludeUttWithoutEntities"])
+        self.assertEqual(value, model.temp_dictionary["excludeUttWithoutEntities"])
 
     def test_exclude_utt_arg_error(self):
         value = 12
@@ -70,14 +70,14 @@ class TestModel(TestCase):
         value = 123
         model = Model()
         model.set_workers(value)
-        self.assertEqual(model.temp_dict["numWorkers"], value)
+        self.assertEqual(model.temp_dictionary["numWorkers"], value)
 
     # Test with_documents method
     def test_with_documents(self):
         list_files = ["file1", "file2"]
         model = Model()
         model.with_documents(list_files)
-        self.assertEqual(list_files, model.temp_dict['files'])
+        self.assertEqual(list_files, model.temp_dictionary['files'])
 
     def test_with_documents_arg_error(self):
         list_files = "string"
@@ -105,7 +105,7 @@ class TestModel(TestCase):
 
         model = Model()
         model.add_extractor(ex)
-        self.assertEqual(model.temp_dict["searchDictionaries"], some_list)
+        self.assertEqual(model.temp_dictionary["searchDictionaries"], some_list)
 
     def test_add_extractor_regex_err(self):
         ex = Extractor()
@@ -120,11 +120,11 @@ class TestModel(TestCase):
         some_list = ['a', 'b']
         model = Model()
         model.get_extractor(some_dict)
-        self.assertEqual(model.temp_dict['searchDictionaries'], some_list)
+        self.assertEqual(model.temp_dictionary['searchDictionaries'], some_list)
 
     def test_create_empty_search_dict(self):
         model = Model()
-        with self.assertRaises(QtDataProcessError):
+        with self.assertRaises(QtModelError):
             model.create()
 
     # Test create method
@@ -148,7 +148,7 @@ class TestModel(TestCase):
         response.json.return_value = some_dict
         con.return_value = response
         res = model.fetch(some_id)
-        self.assertEqual(res, some_dict)
+        self.assertEqual(res, json_to_tuple(some_dict))
 
     # Test update method
     def test_update_model_id_arg_error(self):
@@ -184,7 +184,7 @@ class TestModel(TestCase):
     def test_clone_tag_files_empty(self):
         model = Model()
         mod_id = 'some id'
-        with self.assertRaises(QtDataProcessError):
+        with self.assertRaises(QtModelError):
             model.clone(mod_id)
 
     @patch("qtcurate.model.connect")

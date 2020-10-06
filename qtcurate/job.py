@@ -25,7 +25,7 @@ class Job:
         return str(self.id)
 
     def set_description(self, title: str) -> Job:
-        """Create title for mining data"""
+        """Create title for Job"""
 
         if isinstance(title, str):
             self.temp_dict[description] = title
@@ -43,16 +43,20 @@ class Job:
         return self
 
     def with_model(self, model_id: str) -> Job:
-        self.model_id = model_id
+        """Add model to Job"""
+        if isinstance(model_id, str):
+            self.model_id = model_id
+        else:
+            raise QtArgumentError("Argument type error: Expected string as model ID")
         return self
 
     def create(self):
+        """Creating a new Job"""
         self.headers["Content-Type"] = "application/json"
         if description not in self.temp_dict:
             raise QtJobError("Job error: Description is mandatory. Please add description with set_description method")
         if files not in self.temp_dict:
-            raise QtJobError("Job error: Description is mandatory. "
-                             "Please add list of documents with with_documents method ")
+            raise QtJobError("Job error: Please add list of documents with with_documents method ")
 
         res = connect("post", f"{self.url}search/new/{self.model_id}", self.headers,  "data", json.dumps(self.temp_dict))
         self.id = res.json()['id']
@@ -61,9 +65,10 @@ class Job:
 
     def fetch(self, job_id: str):
         """ Fetch job where job_id is existing ID"""
+
         self.headers["Content-Type"] = "application/json"
         if not isinstance(job_id, str):
-            raise QtArgumentError("Argument type error: String is expected as model_id")
+            raise QtArgumentError("Argument type error: String is expected as job_id")
         res = connect("get", f"{self.url}search/config/{job_id}", self.headers)
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
@@ -72,7 +77,7 @@ class Job:
         """Delete data container"""
 
         if not isinstance(job_id, str):
-            raise QtArgumentError("Argument type error: String is expected as model_id")
+            raise QtArgumentError("Argument type error: String is expected as job_id")
         res = connect("delete", f"{self.url}search/{job_id}", self.headers)
         return res.ok
 
