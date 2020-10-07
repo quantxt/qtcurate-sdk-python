@@ -44,6 +44,7 @@ class Job:
 
     def with_model(self, model_id: str) -> Job:
         """Add model to Job"""
+
         if isinstance(model_id, str):
             self.model_id = model_id
         else:

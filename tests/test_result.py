@@ -1,4 +1,4 @@
-from qtcurate.result import Field, FieldValue, Result
+from qtcurate.result import Field, FieldValue, Result, Position
 from unittest import TestCase, main
 from unittest.mock import Mock, patch
 from qtcurate.exceptions import *
@@ -17,6 +17,18 @@ datetime_value = "datetimeValue"
 class TestResult(TestCase):
 
     # ***************************************************
+    # Testing Position class
+    # ***************************************************
+    def test_set_start(self):
+        position = Position()
+        some_val = 123
+        position.set_start(some_val)
+        self.assertEqual(position.start, some_val)
+
+    def test_get_start(self):
+        position = Position()
+        self.assertEqual(position.get_start(), None)
+    # ***************************************************
     # Testing FieldValue class
     # ***************************************************
 
@@ -30,35 +42,8 @@ class TestResult(TestCase):
         fv = FieldValue()
         self.assertEqual(fv.get_str(), None)
 
-    def test_field_value_set_double_value(self):
-        fv = FieldValue()
-        some_val = 123.23
-        fv.set_double_value(some_val)
-        self.assertEqual(fv.double_value, some_val)
 
-    def test_field_value_get_double_value(self):
-        fv = FieldValue()
-        self.assertEqual(fv.get_double_value(), None)
 
-    def test_field_value_set_int_value(self):
-        fv = FieldValue()
-        some_val = 123
-        fv.set_int_value(some_val)
-        self.assertEqual(fv.int_value, some_val)
-
-    def test_field_value_get_int_value(self):
-        fv = FieldValue()
-        self.assertEqual(fv.get_int_value(), None)
-
-    def test_field_value_set_datetime_value(self):
-        fv = FieldValue()
-        some_val = 123
-        fv.set_datetime_value(some_val)
-        self.assertEqual(fv.datetime_value, some_val)
-
-    def test_field_value_get_datetime_value(self):
-        fv = FieldValue()
-        self.assertEqual(fv.get_datetime_value(), None)
 
     # ***************************************************
     # Testing Field

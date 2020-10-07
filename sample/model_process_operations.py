@@ -7,7 +7,6 @@ from qtcurate.result import Result
 
 
 API_KEY = "YOUR-API-KEY"
-
 DOCUMENT = "resources/sample.pdf"
 
 # Initialise with api key

@@ -14,46 +14,56 @@ type_field = "type"
 str_field = "str"
 double_value = "doubleValue"
 int_value = "intValue"
-datetime_value = "datetimeValue"
+line = "line"
+start = "start"
+end = "end"
+
+
+class Position:
+    def __init__(self):
+        self.start = None
+        self.end = None
+        self.line = None
+
+    def set_start(self, pos_start: int) -> Position:
+        if isinstance(pos_start, int):
+            self.start = pos_start
+        return self
+
+    def get_start(self) -> int:
+        return self.start
+
+    def set_end(self, pos_end: int) -> Position:
+        if isinstance(pos_end, int):
+            self.end = pos_end
+        return self
+
+    def get_end(self) -> int:
+        return self.end
+
+    def set_line(self, pos_line: int) -> Position:
+        if isinstance(pos_line, int):
+            self.line = pos_line
+        return self
+
+    def get_int_value(self) -> int:
+        return self.line
 
 
 class FieldValue:
     def __init__(self):
         self.str_value = None
-        self.double_value = None
-        self.int_value = None
-        self.datetime_value = None
 
     def __repr__(self):
-        return f"{self.double_value}, {self.str_value}"
+        return f"{self.str_value}"
 
     def set_str(self, str_val: str) -> FieldValue:
-        self.str_value = str_val
+        if isinstance(str_val, str):
+            self.str_value = str_val
         return self
 
     def get_str(self) -> str:
         return self.str_value
-
-    def set_double_value(self, double: float) -> FieldValue:
-        self.double_value = double
-        return self
-
-    def get_double_value(self) -> float:
-        return self.double_value
-
-    def set_int_value(self, int_val: int) -> FieldValue:
-        self.int_value = int_val
-        return self
-
-    def get_int_value(self) -> int:
-        return self.int_value
-
-    def set_datetime_value(self, date_time: str) -> FieldValue:
-        self.datetime_value = date_time
-        return self
-
-    def get_datetime_value(self) -> str:
-        return self.datetime_value
 
 
 class Field:
@@ -65,50 +75,66 @@ class Field:
         self.type = None
         self.str = None
         self.values = None
+        self.position = None
 
     def __repr__(self):
         return f"{self.vocab_id}, {self.str}"
 
-    def set_values(self, val: List) -> None:
-        self.values = val
+    def set_values(self, val: List) -> Field:
+        if isinstance(val, list):
+            self.values = val
+        return self
 
     def get_values(self) -> List:
         return self.values
 
     def set_str(self, str_value: str) -> Field:
-        self.str = str_value
+        if isinstance(str_value, str):
+            self.str = str_value
         return self
 
     def get_str(self) -> str:
         return self.str
 
     def set_type(self, type_value: str) -> Field:
-        self.type = type_value
+        if isinstance(type_value, str):
+            self.type = type_value
         return self
 
     def get_type(self) -> str:
         return self.type
 
     def set_vocab_name(self, name: str) -> Field:
-        self.vocab_name = name
+        if isinstance(name, str):
+            self.vocab_name = name
         return self
 
     def get_vocab_name(self) -> str:
         return self.vocab_name
 
     def set_category(self, cat: str) -> Field:
-        self.category = cat
+        if isinstance(cat, str):
+            self.category = cat
         return self
 
     def get_category(self) -> str:
         return self.category
 
     def set_vocab_id(self, voc_id: str) -> Field:
-        self.vocab_id = voc_id
+        if isinstance(voc_id, str):
+            self.vocab_id = voc_id
         return self
 
     def get_vocab_id(self) -> str:
         return self.vocab_id
+
+    def set_position(self, position: Position) -> Field:
+        if isinstance(position, Position):
+            self.position = position
+        return self
+
+    def get_position(self) -> Position:
+        return self.position
 
 
 class Result:
@@ -161,6 +187,14 @@ class Result:
             if "values" in item:
                 for i in item["values"]:
                     field = Field()
+                    position = Position()
+                    if start in i:
+                        position.set_start(i[start])
+                    if end in i:
+                        position.set_end(i[end])
+                    if line in i:
+                        position.set_line(i[line])
+                    field.set_position(position)
                     if str_field in i:
                         field.set_str(i[str_field])
                     if type_field in i:
@@ -177,14 +211,7 @@ class Result:
                             field_value = FieldValue()
                             if str_field in ext_int_item:
                                 field_value.set_str(ext_int_item[str_field])
-                            if int_value in ext_int_item:
-                                field_value.set_int_value(ext_int_item[int_value])
-                            if datetime_value in ext_int_item:
-                                field_value.set_datetime_value(ext_int_item[datetime_value])
-                            if double_value in ext_int_item:
-                                field_value.set_double_value(ext_int_item[double_value])
                             list_field_ext.append(field_value)
                     field.set_values(list_field_ext)
                     result_list.append(field)
         return result_list
-#
