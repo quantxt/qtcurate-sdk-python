@@ -28,6 +28,8 @@ class Position:
     def set_start(self, pos_start: int) -> Position:
         if isinstance(pos_start, int):
             self.start = pos_start
+        else:
+            raise QtArgumentError("Argument type error: Int is expected as pos_start")
         return self
 
     def get_start(self) -> int:
@@ -36,6 +38,8 @@ class Position:
     def set_end(self, pos_end: int) -> Position:
         if isinstance(pos_end, int):
             self.end = pos_end
+        else:
+            raise QtArgumentError("Argument type error: Int is expected as pos_end")
         return self
 
     def get_end(self) -> int:
@@ -44,6 +48,8 @@ class Position:
     def set_line(self, pos_line: int) -> Position:
         if isinstance(pos_line, int):
             self.line = pos_line
+        else:
+            raise QtArgumentError("Argument type error: Int is expected as pos_line")
         return self
 
     def get_int_value(self) -> int:
@@ -60,6 +66,8 @@ class FieldValue:
     def set_str(self, str_val: str) -> FieldValue:
         if isinstance(str_val, str):
             self.str_value = str_val
+        else:
+            raise QtArgumentError("Argument type error: String is expected as str_val")
         return self
 
     def get_str(self) -> str:
@@ -83,6 +91,8 @@ class Field:
     def set_values(self, val: List) -> Field:
         if isinstance(val, list):
             self.values = val
+        else:
+            raise QtArgumentError("Argument type error: List is expected as val")
         return self
 
     def get_values(self) -> List:
@@ -91,6 +101,8 @@ class Field:
     def set_str(self, str_value: str) -> Field:
         if isinstance(str_value, str):
             self.str = str_value
+        else:
+            raise QtArgumentError("Argument type error: String is expected as str_val")
         return self
 
     def get_str(self) -> str:
@@ -99,6 +111,8 @@ class Field:
     def set_type(self, type_value: str) -> Field:
         if isinstance(type_value, str):
             self.type = type_value
+        else:
+            raise QtArgumentError("Argument type error: String is expected as type_value")
         return self
 
     def get_type(self) -> str:
@@ -107,6 +121,8 @@ class Field:
     def set_vocab_name(self, name: str) -> Field:
         if isinstance(name, str):
             self.vocab_name = name
+        else:
+            raise QtArgumentError("Argument type error: String is expected as name")
         return self
 
     def get_vocab_name(self) -> str:
@@ -115,6 +131,8 @@ class Field:
     def set_category(self, cat: str) -> Field:
         if isinstance(cat, str):
             self.category = cat
+        else:
+            raise QtArgumentError("Argument type error: String is expected as cat")
         return self
 
     def get_category(self) -> str:
@@ -123,6 +141,8 @@ class Field:
     def set_vocab_id(self, voc_id: str) -> Field:
         if isinstance(voc_id, str):
             self.vocab_id = voc_id
+        else:
+            raise QtArgumentError("Argument type error: String is expected as voc_id")
         return self
 
     def get_vocab_id(self) -> str:
@@ -131,6 +151,8 @@ class Field:
     def set_position(self, position: Position) -> Field:
         if isinstance(position, Position):
             self.position = position
+        else:
+            raise QtArgumentError("Argument type error: Position is expected as position")
         return self
 
     def get_position(self) -> Position:

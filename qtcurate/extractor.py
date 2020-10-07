@@ -73,7 +73,10 @@ class Extractor:
         return self
 
     def set_mode(self, mode: Mode) -> None:
-        self.mode = mode
+        if isinstance(mode, Mode):
+            self.mode = mode
+        else:
+            raise QtArgumentError("Argument type error: Mode is expected as mode")
 
     def get_mode(self) -> Mode:
         return self.mode

@@ -49,11 +49,17 @@ class Model:
         return str(self.id)
 
     def set_id(self, model_id: str) -> Model:
-        self.id = model_id
+        if isinstance(model_id, str):
+            self.id = model_id
+        else:
+            raise QtArgumentError("Argument type error: String is expected as model_id")
         return self
 
     def set_chunk(self, value: ChunkMode) -> Model:
-        self.temp_dictionary[chunk] = value.value
+        if isinstance(value, ChunkMode):
+            self.temp_dictionary[chunk] = value.value
+        else:
+            raise QtArgumentError("Argument type error: ChunkMode is expected as value")
         return self
 
     def get_uuid(self) -> str:

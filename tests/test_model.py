@@ -15,12 +15,24 @@ class TestModel(TestCase):
         self.assertEqual(model.get_id(), str(some_id))
 
     # Test set_id method
+    def test_set_id_arg_err(self):
+        model = Model()
+        some_id = 123
+        with self.assertRaises(QtArgumentError):
+            model.set_id(some_id)
+
     def test_set_id(self):
         model = Model()
         model.set_id('some id')
         self.assertEqual(model.id, 'some id')
 
     # Test set_chunk method
+    def test_set_chunk_arg_err(self):
+        model = Model()
+        some_value = 'some value'
+        with self.assertRaises(QtArgumentError):
+            model.set_chunk(some_value)
+
     def test_set_chunk(self):
         model = Model()
         some_chunk = ChunkMode.SENTENCE

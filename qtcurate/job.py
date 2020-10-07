@@ -53,6 +53,7 @@ class Job:
 
     def create(self):
         """Creating a new Job"""
+
         self.headers["Content-Type"] = "application/json"
         if description not in self.temp_dict:
             raise QtJobError("Job error: Description is mandatory. Please add description with set_description method")

@@ -16,7 +16,10 @@ class Document:
         return f"{self.id}"
 
     def set_id(self, uuid: str) -> None:
-        self.id = uuid
+        if isinstance(uuid, str):
+            self.id = uuid
+        else:
+            raise QtArgumentError("Argument type error: String is expected as uuid")
 
     def get_id(self) -> str:
         return self.id

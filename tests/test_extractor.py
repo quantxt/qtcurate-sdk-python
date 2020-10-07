@@ -47,6 +47,12 @@ class TestExtractor(TestCase):
         self.assertEqual(ex.mode, some_mode)
 
     # Test set_mode method
+    def test_set_mode_arg_err(self):
+        ex = Extractor()
+        some_mode = 'some mode'
+        with self.assertRaises(QtArgumentError):
+            ex.set_mode(some_mode)
+
     def test_set_mode(self):
         ex = Extractor()
         some_mode = Mode.SIMPLE

@@ -8,6 +8,12 @@ from qtcurate.exceptions import *
 class TestDocument(TestCase):
 
     # Test set_id method
+    def test_set_id_arg_err(self):
+        doc = Document()
+        some_val = 123
+        with self.assertRaises(QtArgumentError):
+            doc.set_id(some_val)
+
     def test_set_id(self):
         doc = Document()
         some_id = '123'

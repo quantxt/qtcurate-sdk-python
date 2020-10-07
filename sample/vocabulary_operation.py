@@ -3,7 +3,6 @@ from qtcurate.qt import Qt
 
 
 API_KEY = "YOUR-API-KEY"
-
 FILE_NAME = "resources/revenue.tsv"
 
 # Initialise with api key
