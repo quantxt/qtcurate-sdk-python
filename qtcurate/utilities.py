@@ -10,7 +10,7 @@ def json_to_tuple(data:  Dict):
         raise QtArgumentError("This is not valid type of object")
     if "global" in data:
         data["Global"] = data.pop("global")
-    return json.loads(json.dumps(data), object_hook=lambda d: namedtuple('Object', d.keys())(*d.values()))
+    return json.loads(json.dumps(data), object_hook=lambda d: namedtuple('QtReturnObject', d.keys())(*d.values()))
 
 
 def connect(method: str, uri: str, headers: str, data_type: str = None, data=None) -> requests.Response:

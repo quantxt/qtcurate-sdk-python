@@ -86,7 +86,7 @@ class Vocabulary(Qt):
         res = connect("get", self.url, self.headers)
         return res.json()
 
-    def fetch(self, vocabulary_id: str):
+    def fetch(self, vocabulary_id: str) -> "QtReturnObject":
         """Fetch vocabulary by ID"""
 
         if not isinstance(vocabulary_id, str):
@@ -138,7 +138,7 @@ class Vocabulary(Qt):
             self.id = res.json()["id"]
             return json_to_tuple(res.json())
 
-    def update(self, qt_id: str):
+    def update(self, qt_id: str) -> "QtReturnObject":
         """Update existing vocabulary"""
         
         self.headers['Content-Type'] = 'application/json'

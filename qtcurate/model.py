@@ -156,7 +156,7 @@ class Model:
         self.temp_dictionary.pop(search_vocabulary, None)
         self.index = None
 
-    def create(self):
+    def create(self) -> "QtReturnObject":
         """Creating a new model"""
         self.headers["Content-Type"] = "application/json"
         data = {}
@@ -176,7 +176,7 @@ class Model:
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
 
-    def fetch(self, model_id: str) -> Dict:
+    def fetch(self, model_id: str) -> "QtReturnObject":
         """ Fetch model where model_id is existing ID"""
         self.headers["Content-Type"] = "application/json"
         if not isinstance(model_id, str):
@@ -185,7 +185,7 @@ class Model:
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
 
-    def update(self, model_id: str, update_files: List):
+    def update(self, model_id: str, update_files: List) -> "QtReturnObject":
         """ Update model where model_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
@@ -200,7 +200,7 @@ class Model:
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
 
-    def clone(self, model_id: str):
+    def clone(self, model_id: str) -> "QtReturnObject":
         """ Update model where model_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
@@ -222,7 +222,7 @@ class Model:
         res = connect("delete", f"{self.url}search/{model_id}", self.headers)
         return res.ok
 
-    def progress(self, model_id: str = None):
+    def progress(self, model_id: str = None) -> "QtReturnObject":
         """Show progress for submitted data mining job"""
 
         url_path = "progress"
