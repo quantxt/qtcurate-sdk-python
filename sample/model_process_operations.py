@@ -10,7 +10,7 @@ API_KEY = "YOUR-API-KEY"
 DOCUMENT = "resources/sample.pdf"
 
 # Initialise with api key
-Qt.init(API_KEY, "test")
+Qt.init(API_KEY)
 
 # 1- Upload the sample document for processing
 list_of_documents = []
