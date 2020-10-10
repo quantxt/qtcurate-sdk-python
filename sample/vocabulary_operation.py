@@ -26,28 +26,28 @@ print(entry_voc)
 # Fetch from current object
 print(type(vocabulary.fetch(vocabulary.get_id())))
 vocabulary.clear()
-#
-# # Create list of vocabulary from tsv file
-# # Name the project
-# vocabulary.name("revenue")
-# vocabulary.source(FILE_NAME)
-# # Create QtDict
-# try:
-#     tsv_voc = vocabulary.create()
-# except Exception as e:
-#     print(e)
-# print(tsv_voc)
-# # Fetch from known vocabulary
-# print(vocabulary.fetch(entry_voc.id))
-#
-# # Update vocabulary, name and entries are mandatory options
-# new_dic = Vocabulary()
-# new_dic.add_entry("Lenovo", "Thinkpad")
-# new_dic.name("updated name")
-# res = new_dic.update(entry_voc.id)
-# print(res.id)
-#
-# # List all existing vocabularies
-# print(vocabulary.read())
-# # Delete vocabulary
-# print(vocabulary.delete(entry_voc.id))
+
+# Create list of vocabulary from tsv file
+# Name the project
+vocabulary.name("revenue")
+vocabulary.source(FILE_NAME)
+# Create QtDict
+try:
+    tsv_voc = vocabulary.create()
+except Exception as e:
+    print(e)
+print(tsv_voc)
+# Fetch from known vocabulary
+print(vocabulary.fetch(entry_voc.id))
+
+# Update vocabulary, name and entries are mandatory options
+new_dic = Vocabulary()
+new_dic.add_entry("Lenovo", "Thinkpad")
+new_dic.name("updated name")
+res = new_dic.update(entry_voc.id)
+print(res.id)
+
+# List all existing vocabularies
+print(vocabulary.read())
+# Delete vocabulary
+print(vocabulary.delete(entry_voc.id))
