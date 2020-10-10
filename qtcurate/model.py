@@ -7,36 +7,36 @@ import re
 import json
 from typing import Dict, List
 from qtcurate.qt import Qt
-from qtcurate.exceptions import QtArgumentError, QtDataProcessError
+from qtcurate.exceptions import QtArgumentError, QtModelError
 
 
 tag_files = "files"
 chunk = "chunk"
 num_workers = "numWorkers"
-tag_title = "title"
+description = "title"
 vocab_id = "vocabId"
 vocab_value_type = "vocabValueType"
 validator = "phraseMatchingPattern"
 phrase_groups = "phraseMatchingGroups"
-tag_exclude_utt = "excludeUttWithoutEntities"
-tag_search_dict = "searchDictionaries"
+exclude_utt = "excludeUttWithoutEntities"
+search_vocabulary = "searchDictionaries"
 between_values = "skipPatternBetweenValuess"
 search_mod = "searchMode"
 analyze_strategy = "analyzeStrategy"
 stop_word_list = "stopwordList"
 synonym_l = "synonymList"
-type = "dataType"
+data_type = "dataType"
 language = "language"
 
 
-class DataProcess:
+class Model:
     def __init__(self):
         self.headers = {"X-API-Key": Qt.api_key}
-        self.temp_dict = dict()
-        self.temp_dict[tag_exclude_utt] = True
-        self.temp_dict[num_workers] = 8
-        self.temp_dict[chunk] = ChunkMode.PAGE.value
-        self.temp_dict[tag_search_dict] = []
+        self.temp_dictionary = dict()
+        self.temp_dictionary[exclude_utt] = True
+        self.temp_dictionary[num_workers] = 8
+        self.temp_dictionary[chunk] = ChunkMode.PAGE.value
+        self.temp_dictionary[search_vocabulary] = []
         self.index = None
         self.uuid = None
         self.id = None
@@ -45,49 +45,61 @@ class DataProcess:
     def __repr__(self):
         return f"{self.id}"
 
-    def get_id(self):
+    def get_id(self) -> str:
         return str(self.id)
 
-    def set_id(self, vocabulary_id: str) -> None:
-        self.id = vocabulary_id
+    def set_id(self, model_id: str) -> Model:
+        if isinstance(model_id, str):
+            self.id = model_id
+        else:
+            raise QtArgumentError("Argument type error: String is expected as model_id")
+        return self
 
-    def set_chunk(self, value: ChunkMode) -> None:
-        self.temp_dict[chunk] = value.value
+    def set_chunk(self, value: ChunkMode) -> Model:
+        if isinstance(value, ChunkMode):
+            self.temp_dictionary[chunk] = value.value
+        else:
+            raise QtArgumentError("Argument type error: ChunkMode is expected as value")
+        return self
 
-    def get_uuid(self):
+    def get_uuid(self) -> str:
         return str(self.uuid)
 
-    def set_description(self, title: str) -> None:
-        """Create title for mining data"""
+    def set_description(self, title: str) -> Model:
+        """Create title for Model"""
 
         if isinstance(title, str):
-            self.temp_dict[tag_title] = title
+            self.temp_dictionary[description] = title
         else:
             raise QtArgumentError("Argument type error: String is expected as description")
+        return self
 
-    def exclude_utt_without_entities(self, value: bool) -> None:
+    def exclude_utt_without_entities(self, value: bool) -> Model:
         """Set exclude utt for mining data, this is optional parameter"""
 
         if isinstance(value, bool):
-            self.temp_dict[tag_exclude_utt] = value
+            self.temp_dictionary[exclude_utt] = value
         else:
             raise QtArgumentError("Argument type error: Boolean is expected as exclude utt without entities")
+        return self
 
-    def set_workers(self, value: int) -> None:
+    def set_workers(self, value: int) -> Model:
         if isinstance(value, int):
-            self.temp_dict[num_workers] = value
+            self.temp_dictionary[num_workers] = value
         else:
             raise QtArgumentError("Argument type error: Integer is expected as num_workers")
+        return self
 
-    def with_documents(self, list_of_files: list) -> None:
+    def with_documents(self, list_of_files: List) -> Model:
         """Create a list of existing files"""
 
         if isinstance(list_of_files, list):
-            self.temp_dict[tag_files] = list_of_files
+            self.temp_dictionary[tag_files] = list_of_files
         else:
             raise QtArgumentError("Argument type error: Expected list of file IDs")
+        return self
 
-    def add_extractor(self, extractor: Extractor) -> DataProcess:
+    def add_extractor(self, extractor: Extractor) -> Model:
         """Prepare dictionary for searching"""
         vocab_dict = dict()
         if extractor.get_vocab_id() is not None:
@@ -95,7 +107,7 @@ class DataProcess:
         if extractor.get_vocab_value_type() is not None:
             vocab_dict[vocab_value_type] = extractor.get_vocab_value_type()
         if extractor.get_type() is not None:
-            vocab_dict[type] = extractor.get_type().value
+            vocab_dict[data_type] = extractor.get_type().value
         if extractor.get_mode() == Mode.SIMPLE:
             vocab_dict[search_mod] = SearchMode.ORDERED_SPAN.value
             vocab_dict[analyze_strategy] = AnalyzeMode.SIMPLE.value
@@ -126,105 +138,103 @@ class DataProcess:
             else:
                 vocab_dict[validator] = extractor.get_validator()
                 vocab_dict[vocab_value_type] = extractor.get_vocab_value_type()
-        self.temp_dict[tag_search_dict].append(vocab_dict)
+        self.temp_dictionary[search_vocabulary].append(vocab_dict)
         return self
 
-    def get_extractor(self, dictionary: Dict) -> DataProcess:
-        if tag_search_dict in dictionary:
-            for i in dictionary[tag_search_dict]:
-                self.temp_dict[tag_search_dict].append(i)
+    def get_extractor(self, dictionary: Dict) -> Model:
+        if search_vocabulary in dictionary:
+            for i in dictionary[search_vocabulary]:
+                self.temp_dictionary[search_vocabulary].append(i)
         return self
 
     def clear(self) -> None:
         """Remove all temporary data"""
-        self.temp_dict.pop(tag_files, None)
-        self.temp_dict.pop(tag_title, None)
-        self.temp_dict[tag_exclude_utt] = True
-        self.temp_dict[num_workers] = 4
-        self.temp_dict.pop(tag_search_dict, None)
+        self.temp_dictionary.pop(tag_files, None)
+        self.temp_dictionary.pop(description, None)
+        self.temp_dictionary[exclude_utt] = True
+        self.temp_dictionary[num_workers] = 4
+        self.temp_dictionary.pop(search_vocabulary, None)
         self.index = None
 
-    def create(self) -> Dict:
-        """Mine data via dictionaries"""
-
+    def create(self) -> "QtReturnObject":
+        """Creating a new model"""
         self.headers["Content-Type"] = "application/json"
-        correct = 0
-        if len(self.temp_dict[tag_search_dict]) == 0:
-            raise QtDataProcessError("DataProcess error: Please add parameters using with_extractor function")
-        if tag_files in self.temp_dict and len(self.temp_dict[tag_files]) > 0:
-            data = {tag_files: self.temp_dict[tag_files]}
-        data[tag_exclude_utt] = self.temp_dict[tag_exclude_utt]
-        data[num_workers] = self.temp_dict[num_workers]
-        data[chunk] = self.temp_dict[chunk]
-        if len(self.temp_dict[tag_search_dict]) != 0:
-            data[tag_search_dict] = self.temp_dict[tag_search_dict]
-        if tag_title in self.temp_dict:
-            data[tag_title] = self.temp_dict[tag_title]
+        data = {}
+        if not self.temp_dictionary[search_vocabulary]:
+            raise QtModelError("Model error: Please add parameters using add_extractor function")
+        if tag_files in self.temp_dictionary and search_vocabulary in self.temp_dictionary:
+            data[tag_files] = self.temp_dictionary[tag_files]
+        data[exclude_utt] = self.temp_dictionary[exclude_utt]
+        data[num_workers] = self.temp_dictionary[num_workers]
+        data[chunk] = self.temp_dictionary[chunk]
+        if search_vocabulary in self.temp_dictionary:
+            data[search_vocabulary] = self.temp_dictionary[search_vocabulary]
+        if description in self.temp_dictionary:
+            data[description] = self.temp_dictionary[description]
         res = connect("post", f"{self.url}search/new", self.headers, "data", json.dumps(data))
-
         self.id = res.json()['id']
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
 
-    def fetch(self, dp_id: str) -> Dict:
-        """ Fetch dataprocess where dp_id is existing ID"""
-
+    def fetch(self, model_id: str) -> "QtReturnObject":
+        """ Fetch model where model_id is existing ID"""
         self.headers["Content-Type"] = "application/json"
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
-        res = connect("get", f"{self.url}search/config/{dp_id}", self.headers)
+        if not isinstance(model_id, str):
+            raise QtArgumentError("Argument type error: String is expected as model_id")
+        res = connect("get", f"{self.url}search/config/{model_id}", self.headers)
         del self.headers['Content-Type']
-        return res.json()
+        return json_to_tuple(res.json())
 
-    def update(self, dp_id: str, update_files: List) -> Dict:
-        """ Update dataprocess where dp_id is existing ID"""
+    def update(self, model_id: str, update_files: List) -> "QtReturnObject":
+        """ Update model where model_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
+        if not isinstance(model_id, str):
+            raise QtArgumentError("Argument type error: String is expected as model_id")
         if not isinstance(update_files, List):
             raise QtArgumentError("Argument type error: List is expected as update file")
         else:
             self.clear()
             data = {tag_files: update_files}
-        res = connect("post", f"{self.url}search/update/{dp_id}", self.headers, "data", json.dumps(data))
+        res = connect("post", f"{self.url}search/update/{model_id}", self.headers, "data", json.dumps(data))
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
 
-    def clone(self, dp_id: str) -> Dict:
-        """ Update dataprocess where dp_id is existing ID"""
+    def clone(self, model_id: str) -> "QtReturnObject":
+        """ Update model where model_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
-        else:
-            data = {tag_files: self.temp_dict[tag_files]}
-        res = connect("post", f"{self.url}search/new/{dp_id}", self.headers, "data", json.dumps(data))
+        if not isinstance(model_id, str):
+            raise QtArgumentError("Argument type error: String is expected as model_id")
+        if tag_files not in self.temp_dictionary:
+            raise QtModelError("Dataprocess: You have to add files using with_document method and Document class")
+        data = {tag_files: self.temp_dictionary[tag_files]}
+        res = connect("post", f"{self.url}search/new/{model_id}", self.headers, "data", json.dumps(data))
         self.id = res.json()['id']
         del self.headers['Content-Type']
         return json_to_tuple(res.json())
 
-    def delete(self, dp_id: str) -> bool:
+    def delete(self, model_id: str) -> bool:
         """Delete data container"""
 
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
-        res = connect("delete", f"{self.url}search/{dp_id}", self.headers)
+        if not isinstance(model_id, str):
+            raise QtArgumentError("Argument type error: String is expected as model_id")
+        res = connect("delete", f"{self.url}search/{model_id}", self.headers)
         return res.ok
 
-    def progress(self, dp_id: str = None) -> Dict:
+    def progress(self, model_id: str = None) -> "QtReturnObject":
         """Show progress for submitted data mining job"""
 
         url_path = "progress"
-        if dp_id is not None:
-            if isinstance(dp_id, str):
-                url_path = f"{url_path}/{dp_id}"
+        if model_id is not None:
+            if isinstance(model_id, str):
+                url_path = f"{url_path}/{model_id}"
             else:
                 raise QtArgumentError("Expected string")
         res = connect("get", f"{self.url}search/{url_path}", self.headers)
         return json_to_tuple(res.json())
 
-    def wait_for_completion(self):
+    def wait_for_completion(self) -> None:
         percentage = 0
         while percentage < 100:
             result = self.progress(self.id)
@@ -234,11 +244,11 @@ class DataProcess:
                 sleep(1)
         sleep(3)
 
-    def search(self, dp_id: str, param_from: int = 0, size: int = None, f1: int = None, f2: int = None) -> Dict:
+    def search(self, model_id: str, param_from: int = 0, size: int = None, f1: int = None, f2: int = None) -> Dict:
         """Search full-text and faceted search"""
 
-        if not isinstance(dp_id, str):
-            raise QtArgumentError("Argument type error: String is expected as dp_id")
+        if not isinstance(model_id, str):
+            raise QtArgumentError("Argument type error: String is expected as model_id")
         if isinstance(param_from, int):
             parameters = [('from', param_from)]
         else:
@@ -255,36 +265,35 @@ class DataProcess:
             pass
         else:
             raise QtArgumentError("Argument error: Query filters must be used in pairs")
-        res = connect("get", f"{self.url}search/{dp_id}", self.headers, "params", parameters)
+        res = connect("get", f"{self.url}search/{model_id}", self.headers, "params", parameters)
 
-        return json_to_tuple(res.json())
+        return res.json()
 
-    def read(self):
-        """ Fetch dataprocess where dp_id is existing ID"""
+    def read(self) -> List:
+        """ Fetch model where model_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
         res = connect("get", f"{self.url}users/profile", self.headers)
         re_dict = res.json()
         del self.headers['Content-Type']
         if "settings" in re_dict:
-
-            dataprocess_list = []
+            model_list = []
             for i in re_dict["settings"]:
-                dataprocess = DataProcess()
+                model = Model()
                 if "files" in i:
                     document_list = []
                     for f in i["files"]:
                         document = Document()
                         document.set_id(f)
                         document_list.append(document)
-                dataprocess.with_documents(document_list)
-                dataprocess.set_id(i["id"])
-                dataprocess.set_description(i["title"])
-                dataprocess.set_workers(i["numWorkers"])
-                extractor_list = []
+                    model.with_documents(document_list)
+                model.set_id(i["id"])
+                model.set_description(i["title"])
+                model.set_workers(i["numWorkers"])
                 if "searchDictionaries" in i:
                     for ex in i["searchDictionaries"]:
-                        dataprocess.get_extractor(ex)
-                dataprocess_list.append(dataprocess)
-
-        return dataprocess_list
+                        model.get_extractor(ex)
+                model_list.append(model)
+        else:
+            model_list = []
+        return model_list

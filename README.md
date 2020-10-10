@@ -1,7 +1,7 @@
 # Quantxt Theia Python client library
 
 
-The official [Quantxt][quantxt] Java client library.
+The official [Quantxt][quantxt] Python client library.
 
 Theia is a fully managed document extraction software. User needs to first configure the fields that they want to extract. Theia guarantees correct extraction of content if the fields are configured properly. Fields can be embedded in plain text, within tables or within form documents.
 
@@ -12,7 +12,7 @@ Theia can process documents in various formats including PDF, TIFF, PNG, TXT and
 
 ### Requirements
 
-- Python 3.5 or later
+- Python 3.6 or later
 
 
 ### PyPi users

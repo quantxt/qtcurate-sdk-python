@@ -20,5 +20,8 @@ class QtArgumentError(Exception):
 class QtVocabularyError(Exception):
     pass
 
-class QtDataProcessError(Exception):
+class QtModelError(Exception):
+    pass
+
+class QtJobError(Exception):
     pass

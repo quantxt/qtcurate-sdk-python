@@ -1,7 +1,7 @@
 from __future__ import annotations
 from enum import Enum
 from qtcurate.exceptions import QtArgumentError
-from typing import List, Dict
+from typing import List
 
 
 class ChunkMode(Enum):
@@ -60,20 +60,23 @@ class Extractor:
         return f"{self.validator} {self.mode}, {self.type}, {self.vocab_id}, {self.vocab_value_type} {self.data_type}"
 
     def create_mode(self, analyze_mode: AnalyzeMode, search_mode: SearchMode) -> Extractor:
-        if analyze_mode == "SIMPLE" and search_mode == "SPAN":
+        if analyze_mode.value == "SIMPLE" and search_mode.value == "SPAN":
             self.mode = Mode.UNORDERED
-        elif analyze_mode == "STEM" and search_mode == "ORDERED_SPAN":
-            self.mode = Mode.STEM.value
-        elif analyze_mode == "STEM" and search_mode == "SPAN":
-            self.mode - Mode.UNORDERED_STEM
-        elif analyze_mode == "STEM" and search_mode == "FUZZY_SPAN":
+        elif analyze_mode.value == "STEM" and search_mode.value == "ORDERED_SPAN":
+            self.mode = Mode.STEM
+        elif analyze_mode.value == "STEM" and search_mode.value == "SPAN":
+            self.mode = Mode.UNORDERED_STEM
+        elif analyze_mode.value == "STEM" and search_mode.value == "FUZZY_SPAN":
             self.mode = Mode.FUZZY_UNORDERED_STEM
         else:
             self.mode = Mode.SIMPLE
         return self
 
     def set_mode(self, mode: Mode) -> None:
-        self.mode = mode
+        if isinstance(mode, Mode):
+            self.mode = mode
+        else:
+            raise QtArgumentError("Argument type error: Mode is expected as mode")
 
     def get_mode(self) -> Mode:
         return self.mode
@@ -105,7 +108,7 @@ class Extractor:
         if isinstance(data_type, Type):
             self.type = data_type
         else:
-            raise QtArgumentError("Argument type error: String is expected as qt_type")
+            raise QtArgumentError("Argument type error: String is expected as DataType")
         return self
 
     def get_type(self) -> Type:
