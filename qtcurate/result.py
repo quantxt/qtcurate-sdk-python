@@ -53,7 +53,7 @@ class Position:
             raise QtArgumentError("Argument type error: Int is expected as pos_line")
         return self
 
-    def get_int_value(self) -> Optional[int]:
+    def get_line(self) -> Optional[int]:
         return self.line
 
 
