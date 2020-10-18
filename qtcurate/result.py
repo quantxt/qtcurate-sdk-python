@@ -1,12 +1,13 @@
 from __future__ import annotations
 import json
 import os
-from typing import List
+from typing import List, Optional
 from qtcurate.exceptions import QtArgumentError, QtFileTypeError
 from qtcurate.qt import Qt
 from qtcurate.utilities import connect
 
 
+NoneType = type(None)
 category = "category"
 vocab_name = "dict_name"
 vocab_id = "dict_id"
@@ -25,34 +26,34 @@ class Position:
         self.end = None
         self.line = None
 
-    def set_start(self, pos_start: int) -> Position:
-        if isinstance(pos_start, int):
+    def set_start(self, pos_start: Optional[int]) -> Position:
+        if isinstance(pos_start, (int, NoneType)):
             self.start = pos_start
         else:
             raise QtArgumentError("Argument type error: Int is expected as pos_start")
         return self
 
-    def get_start(self) -> int:
+    def get_start(self) -> Optional[int]:
         return self.start
 
-    def set_end(self, pos_end: int) -> Position:
-        if isinstance(pos_end, int):
+    def set_end(self, pos_end: Optional[int]) -> Position:
+        if isinstance(pos_end, (int, NoneType)):
             self.end = pos_end
         else:
             raise QtArgumentError("Argument type error: Int is expected as pos_end")
         return self
 
-    def get_end(self) -> int:
+    def get_end(self) -> Optional[int]:
         return self.end
 
-    def set_line(self, pos_line: int) -> Position:
-        if isinstance(pos_line, int):
+    def set_line(self, pos_line: Optional[int]) -> Position:
+        if isinstance(pos_line, (int, NoneType)):
             self.line = pos_line
         else:
             raise QtArgumentError("Argument type error: Int is expected as pos_line")
         return self
 
-    def get_int_value(self) -> int:
+    def get_int_value(self) -> Optional[int]:
         return self.line
 
 
@@ -63,14 +64,14 @@ class FieldValue:
     def __repr__(self):
         return f"{self.str_value}"
 
-    def set_str(self, str_val: str) -> FieldValue:
-        if isinstance(str_val, str):
+    def set_str(self, str_val: Optional[str]) -> FieldValue:
+        if isinstance(str_val, (str, NoneType)):
             self.str_value = str_val
         else:
             raise QtArgumentError("Argument type error: String is expected as str_val")
         return self
 
-    def get_str(self) -> str:
+    def get_str(self) -> Optional[str]:
         return self.str_value
 
 
@@ -88,74 +89,74 @@ class Field:
     def __repr__(self):
         return f"{self.vocab_id}, {self.str}"
 
-    def set_values(self, val: List) -> Field:
-        if isinstance(val, list):
+    def set_values(self, val: Optional[List]) -> Field:
+        if isinstance(val, (list, NoneType)):
             self.values = val
         else:
             raise QtArgumentError("Argument type error: List is expected as val")
         return self
 
-    def get_values(self) -> List:
+    def get_values(self) -> Optional[List]:
         return self.values
 
-    def set_str(self, str_value: str) -> Field:
-        if isinstance(str_value, str):
+    def set_str(self, str_value: Optional[str]) -> Field:
+        if isinstance(str_value, (str, NoneType)):
             self.str = str_value
         else:
             raise QtArgumentError("Argument type error: String is expected as str_val")
         return self
 
-    def get_str(self) -> str:
+    def get_str(self) -> Optional[str]:
         return self.str
 
-    def set_type(self, type_value: str) -> Field:
-        if isinstance(type_value, str):
+    def set_type(self, type_value: Optional[str]) -> Field:
+        if isinstance(type_value, (str, NoneType)):
             self.type = type_value
         else:
             raise QtArgumentError("Argument type error: String is expected as type_value")
         return self
 
-    def get_type(self) -> str:
+    def get_type(self) -> Optional[str]:
         return self.type
 
-    def set_vocab_name(self, name: str) -> Field:
-        if isinstance(name, str):
+    def set_vocab_name(self, name: Optional[str]) -> Field:
+        if isinstance(name, (str, NoneType)):
             self.vocab_name = name
         else:
             raise QtArgumentError("Argument type error: String is expected as name")
         return self
 
-    def get_vocab_name(self) -> str:
+    def get_vocab_name(self) -> Optional[str]:
         return self.vocab_name
 
-    def set_category(self, cat: str) -> Field:
-        if isinstance(cat, str):
+    def set_category(self, cat: Optional[str]) -> Field:
+        if isinstance(cat, (str, NoneType)):
             self.category = cat
         else:
             raise QtArgumentError("Argument type error: String is expected as cat")
         return self
 
-    def get_category(self) -> str:
+    def get_category(self) -> Optional[str]:
         return self.category
 
-    def set_vocab_id(self, voc_id: str) -> Field:
-        if isinstance(voc_id, str):
+    def set_vocab_id(self, voc_id: Optional[str]) -> Field:
+        if isinstance(voc_id, (str, NoneType)):
             self.vocab_id = voc_id
         else:
             raise QtArgumentError("Argument type error: String is expected as voc_id")
         return self
 
-    def get_vocab_id(self) -> str:
+    def get_vocab_id(self) -> Optional[str]:
         return self.vocab_id
 
-    def set_position(self, position: Position) -> Field:
-        if isinstance(position, Position):
+    def set_position(self, position: Optional[Position]) -> Field:
+        if isinstance(position, (Position, NoneType)):
             self.position = position
         else:
             raise QtArgumentError("Argument type error: Position is expected as position")
         return self
 
-    def get_position(self) -> Position:
+    def get_position(self) -> Optional[Position]:
         return self.position
 
 
@@ -206,7 +207,7 @@ class Result:
         result_list = []
         res = connect("get", f"{self.url}reports/{self.id}/json", self.headers)
         for item in res.json():
-            if "values" in item:
+            if "values" in item and item["values"]:
                 for i in item["values"]:
                     field = Field()
                     position = Position()
@@ -228,7 +229,7 @@ class Result:
                     if vocab_id in i:
                         field.set_vocab_id(i[vocab_id])
                     list_field_ext = []
-                    if "extIntervalSimples" in i:
+                    if "extIntervalSimples" in i and i["extIntervalSimples"]:
                         for ext_int_item in i["extIntervalSimples"]:
                             field_value = FieldValue()
                             if str_field in ext_int_item:
