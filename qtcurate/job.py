@@ -1,10 +1,10 @@
 from __future__ import annotations
 import json
 from time import sleep
-from typing import Dict, List
+from typing import List, Dict
 from qtcurate.qt import Qt
 from qtcurate.exceptions import QtArgumentError, QtJobError
-from qtcurate.utilities import connect, json_to_tuple
+from qtcurate.connect import connect
 
 description = "title"
 files = "files"
@@ -22,6 +22,8 @@ class Job:
         return f"{self.id}"
 
     def get_id(self) -> str:
+        """Get job id"""
+
         return str(self.id)
 
     def set_description(self, title: str) -> Job:
@@ -51,7 +53,7 @@ class Job:
             raise QtArgumentError("Argument type error: Expected string as model ID")
         return self
 
-    def create(self):
+    def create(self) -> Dict:
         """Creating a new Job"""
 
         self.headers["Content-Type"] = "application/json"
@@ -63,17 +65,18 @@ class Job:
         res = connect("post", f"{self.url}search/new/{self.model_id}", self.headers,  "data", json.dumps(self.temp_dict))
         self.id = res.json()['id']
         del self.headers['Content-Type']
-        return json_to_tuple(res.json())
+        return res.json()
 
-    def fetch(self, job_id: str):
+    def fetch(self, job_id: str) -> Dict:
         """ Fetch job where job_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
         if not isinstance(job_id, str):
             raise QtArgumentError("Argument type error: String is expected as job_id")
         res = connect("get", f"{self.url}search/config/{job_id}", self.headers)
+        self.id = res.json()['id']
         del self.headers['Content-Type']
-        return json_to_tuple(res.json())
+        return res.json()
 
     def delete(self, job_id: str) -> bool:
         """Delete data container"""
@@ -83,8 +86,8 @@ class Job:
         res = connect("delete", f"{self.url}search/{job_id}", self.headers)
         return res.ok
 
-    def progress(self, job_id: str = None):
-        """Show progress for submitted data mining job"""
+    def progress(self, job_id: str = None) -> Dict:
+        """Show progress for submitted for job"""
 
         url_path = "progress"
         if job_id is not None:
@@ -93,13 +96,15 @@ class Job:
             else:
                 raise QtArgumentError("Expected string")
         res = connect("get", f"{self.url}search/{url_path}", self.headers)
-        return json_to_tuple(res.json())
+        return res.json()
 
     def wait_for_completion(self) -> None:
+        """Wait for completion job"""
+
         percentage = 0
         while percentage < 100:
             result = self.progress(self.id)
-            percentage = result.progress
+            percentage = result["progress"]
             print(f"Search progress {percentage}%")
             if percentage < 100:
                 sleep(1)

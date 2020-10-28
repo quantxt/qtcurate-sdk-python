@@ -2,9 +2,9 @@ from __future__ import annotations
 from qtcurate.qt import Qt
 import json
 import os.path
-from typing import Dict, Union
+from typing import Dict, Union, List
 from qtcurate.exceptions import QtArgumentError, QtVocabularyError
-from qtcurate.utilities import connect, json_to_tuple
+from qtcurate.connect import connect
 
 vocabulary_entries = "entries"
 vocabulary_name = "name"
@@ -21,10 +21,22 @@ class Vocabulary(Qt):
         self.url = f"{Qt.url}dictionaries/"
 
     def __repr__(self):
-        return str({'name': self.temp_vocabulary[vocabulary_name], 'entries': self.temp_vocabulary[vocabulary_entries]})
+        return str({'id': self.id, 'name': self.temp_vocabulary[vocabulary_name],
+                    'entries': self.temp_vocabulary[vocabulary_entries]})
 
     def get_id(self) -> str:
+        """Get vocabulary id"""
+
         return str(self.id)
+
+    def set_id(self, voc_id: str) -> Vocabulary:
+        """Set vocabulary id"""
+
+        if isinstance(voc_id, str):
+            self.id = voc_id
+        else:
+            raise QtArgumentError("Argument type error: String is expected as id")
+        return self
 
     def name(self, voc_name: str) -> Vocabulary:
         """Create a new name for vocabulary"""
@@ -35,11 +47,16 @@ class Vocabulary(Qt):
             raise QtArgumentError("Argument type error: String is expected as name")
         return self
 
+    def get_name(self) -> str:
+        """Get vocabulary name"""
+
+        return self.temp_vocabulary[vocabulary_name]
+
     def entries(self, entry: Dict) -> Vocabulary:
         """Create vocabulary data"""
         
         if not isinstance(entry, Dict):
-            raise QtArgumentError("Argument type error: Vocabulary is expected as entry")
+            raise QtArgumentError("Argument type error: Dictionary is expected as entry")
         elif len(entry) > 2 or len(entry) == 0:
             raise QtArgumentError("Argument error: Vocabulary must have 1 or 2 elements where keys are 'str' and "
                                   "optional 'category'."
@@ -64,7 +81,7 @@ class Vocabulary(Qt):
         self.id = None
         self.input_stream = None
 
-    def add_entry(self, str_key: Union[str, int, float], category: Union[str, int, float] = None) -> None:
+    def add_entry(self, str_key: Union[str, int, float], category: Union[str, int, float] = None) -> Vocabulary:
         """Create vocabulary data"""
         
         has_category = False
@@ -81,19 +98,29 @@ class Vocabulary(Qt):
                 self.temp_vocabulary[vocabulary_entries].append({'str': str_key})
         return self
 
+    def get_entries(self) -> List:
+        """Get entries"""
+
+        return self.temp_vocabulary[vocabulary_entries]
+
     def read(self) -> Dict:
         """List all vocabularies"""
+
         res = connect("get", self.url, self.headers)
         return res.json()
 
-    def fetch(self, vocabulary_id: str) -> "QtReturnObject":
+    def fetch(self, vocabulary_id: str) -> Vocabulary:
         """Fetch vocabulary by ID"""
 
         if not isinstance(vocabulary_id, str):
             raise QtArgumentError("Argument type error: String is expected as qt_id")
 
         res = connect("get", f"{self.url}{vocabulary_id}", self.headers)
-        return json_to_tuple(res.json())
+        result = res.json()
+        self.temp_vocabulary[vocabulary_name] = result[vocabulary_name]
+        self.id = result['id']
+        self.temp_vocabulary[vocabulary_entries] = result[vocabulary_entries]
+        return self
 
     def delete(self, vocabulary_id: str) -> bool:
         """Delete existing vocabulary"""
@@ -105,6 +132,8 @@ class Vocabulary(Qt):
         return res.ok
 
     def source(self, file: str) -> Vocabulary:
+        """Set source"""
+
         if not isinstance(file, str):
             raise QtArgumentError("Argument type error: String is expected as file")
         extension = os.path.splitext(file)[1].lower()
@@ -115,7 +144,7 @@ class Vocabulary(Qt):
         self.input_stream = file
         return self
 
-    def create(self):
+    def create(self) -> Vocabulary:
         """Create vocabulary data"""
 
         if self.temp_vocabulary[vocabulary_name] is None:
@@ -128,17 +157,19 @@ class Vocabulary(Qt):
             data = {'name': self.temp_vocabulary[vocabulary_name], 'entries': self.temp_vocabulary[vocabulary_entries]}
             res = connect("post", self.url, self.headers, "data", json.dumps(data))
             self.id = res.json()["id"]
-            return json_to_tuple(res.json())
+            return self
         else:
             files = {
                 'name': (None, self.temp_vocabulary[vocabulary_name]),
                 'file': open(self.input_stream, 'rb')
             }
             res = connect("post", f"{self.url}upload", self.headers, "files", files)
-            self.id = res.json()["id"]
-            return json_to_tuple(res.json())
+            result = res.json()
+            self.id = result["id"]
+            self.temp_vocabulary[vocabulary_entries] = result[vocabulary_entries]
+            return self
 
-    def update(self, qt_id: str) -> "QtReturnObject":
+    def update(self, qt_id: str) -> Vocabulary:
         """Update existing vocabulary"""
         
         self.headers['Content-Type'] = 'application/json'
@@ -150,6 +181,6 @@ class Vocabulary(Qt):
             raise QtVocabularyError("Vocabulary error: Please add vocabulary using add_entry function")
         data = {'name': self.temp_vocabulary[vocabulary_name], 'entries': self.temp_vocabulary[vocabulary_entries]}
         res = connect("put", f"{self.url}{qt_id}", self.headers, "data", json.dumps(data))
+        self.temp_vocabulary[vocabulary_entries] = res.json()[vocabulary_entries]
         del self.headers['Content-Type']
-
-        return json_to_tuple(res.json())
+        return self

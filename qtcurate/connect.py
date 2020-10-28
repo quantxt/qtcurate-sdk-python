@@ -1,20 +1,10 @@
-from qtcurate.exceptions import QtConnectionError, QtRestApiError, QtArgumentError
 import requests
-from typing import Dict
-import json
-from collections import namedtuple
-
-
-def json_to_tuple(data:  Dict):
-    if not isinstance(data, Dict):
-        raise QtArgumentError("This is not valid type of object")
-    if "global" in data:
-        data["Global"] = data.pop("global")
-    return json.loads(json.dumps(data), object_hook=lambda d: namedtuple('QtReturnObject', d.keys())(*d.values()))
+from qtcurate.exceptions import QtConnectionError, QtRestApiError, QtArgumentError
 
 
 def connect(method: str, uri: str, headers: str, data_type: str = None, data=None) -> requests.Response:
     s = requests.Session()
+    res = None
     if data_type not in [None, "data", "files", "params"]:
         raise QtArgumentError("Unknown data type. params, data and files are allowed")
     if method.lower() == 'get':

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from qtcurate.document import Document
 from qtcurate.extractor import Extractor, Mode, ChunkMode, SearchMode, AnalyzeMode
-from qtcurate.utilities import connect, json_to_tuple
+from qtcurate.connect import connect
 from time import sleep
 import re
 import json
@@ -20,7 +20,7 @@ validator = "phraseMatchingPattern"
 phrase_groups = "phraseMatchingGroups"
 exclude_utt = "excludeUttWithoutEntities"
 search_vocabulary = "searchDictionaries"
-between_values = "skipPatternBetweenValuess"
+between_values = "skipPatternBetweenValues"
 search_mod = "searchMode"
 analyze_strategy = "analyzeStrategy"
 stop_word_list = "stopwordList"
@@ -33,6 +33,7 @@ class Model:
     def __init__(self):
         self.headers = {"X-API-Key": Qt.api_key}
         self.temp_dictionary = dict()
+        self.temp_dictionary[description] = None
         self.temp_dictionary[exclude_utt] = True
         self.temp_dictionary[num_workers] = 8
         self.temp_dictionary[chunk] = ChunkMode.PAGE.value
@@ -43,12 +44,16 @@ class Model:
         self.url = Qt.url
 
     def __repr__(self):
-        return f"{self.id}"
+        return f"{self.id}, {self.temp_dictionary}"
 
     def get_id(self) -> str:
+        """Get model id"""
+
         return str(self.id)
 
     def set_id(self, model_id: str) -> Model:
+        """Set model id"""
+
         if isinstance(model_id, str):
             self.id = model_id
         else:
@@ -56,6 +61,8 @@ class Model:
         return self
 
     def set_chunk(self, value: ChunkMode) -> Model:
+        """Set chunk mode"""
+
         if isinstance(value, ChunkMode):
             self.temp_dictionary[chunk] = value.value
         else:
@@ -63,10 +70,12 @@ class Model:
         return self
 
     def get_uuid(self) -> str:
+        """Get uuid"""
+
         return str(self.uuid)
 
     def set_description(self, title: str) -> Model:
-        """Create title for Model"""
+        """Create title for model"""
 
         if isinstance(title, str):
             self.temp_dictionary[description] = title
@@ -84,6 +93,8 @@ class Model:
         return self
 
     def set_workers(self, value: int) -> Model:
+        """Set workers"""
+
         if isinstance(value, int):
             self.temp_dictionary[num_workers] = value
         else:
@@ -101,6 +112,7 @@ class Model:
 
     def add_extractor(self, extractor: Extractor) -> Model:
         """Prepare dictionary for searching"""
+
         vocab_dict = dict()
         if extractor.get_vocab_id() is not None:
             vocab_dict[vocab_id] = extractor.get_vocab_id()
@@ -142,6 +154,8 @@ class Model:
         return self
 
     def get_extractor(self, dictionary: Dict) -> Model:
+        """Get extractor"""
+
         if search_vocabulary in dictionary:
             for i in dictionary[search_vocabulary]:
                 self.temp_dictionary[search_vocabulary].append(i)
@@ -149,6 +163,7 @@ class Model:
 
     def clear(self) -> None:
         """Remove all temporary data"""
+
         self.temp_dictionary.pop(tag_files, None)
         self.temp_dictionary.pop(description, None)
         self.temp_dictionary[exclude_utt] = True
@@ -156,8 +171,9 @@ class Model:
         self.temp_dictionary.pop(search_vocabulary, None)
         self.index = None
 
-    def create(self) -> "QtReturnObject":
+    def create(self) -> Model:
         """Creating a new model"""
+
         self.headers["Content-Type"] = "application/json"
         data = {}
         if not self.temp_dictionary[search_vocabulary]:
@@ -174,18 +190,32 @@ class Model:
         res = connect("post", f"{self.url}search/new", self.headers, "data", json.dumps(data))
         self.id = res.json()['id']
         del self.headers['Content-Type']
-        return json_to_tuple(res.json())
+        return self
 
-    def fetch(self, model_id: str) -> "QtReturnObject":
+    def set_returned_data(self, result: Dict) -> None:
+        """Set returned data from server"""
+
+        self.temp_dictionary[description] = result[description]
+        self.temp_dictionary[exclude_utt] = result[exclude_utt]
+        self.temp_dictionary[search_vocabulary] = result[search_vocabulary]
+        self.temp_dictionary[tag_files] = result[tag_files]
+        self.temp_dictionary[chunk] = result[chunk]
+        self.temp_dictionary[num_workers] = result[num_workers]
+
+    def fetch(self, model_id: str) -> Model:
         """ Fetch model where model_id is existing ID"""
+
         self.headers["Content-Type"] = "application/json"
         if not isinstance(model_id, str):
             raise QtArgumentError("Argument type error: String is expected as model_id")
         res = connect("get", f"{self.url}search/config/{model_id}", self.headers)
+        result = res.json()
         del self.headers['Content-Type']
-        return json_to_tuple(res.json())
+        self.id = model_id
+        self.set_returned_data(result)
+        return self
 
-    def update(self, model_id: str, update_files: List) -> "QtReturnObject":
+    def update(self, model_id: str, update_files: List) -> Model:
         """ Update model where model_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
@@ -197,22 +227,27 @@ class Model:
             self.clear()
             data = {tag_files: update_files}
         res = connect("post", f"{self.url}search/update/{model_id}", self.headers, "data", json.dumps(data))
+        result = res.json()
         del self.headers['Content-Type']
-        return json_to_tuple(res.json())
+        self.id = model_id
+        self.set_returned_data(result)
+        return self
 
-    def clone(self, model_id: str) -> "QtReturnObject":
+    def clone(self, model_id: str) -> Model:
         """ Update model where model_id is existing ID"""
 
         self.headers["Content-Type"] = "application/json"
         if not isinstance(model_id, str):
             raise QtArgumentError("Argument type error: String is expected as model_id")
         if tag_files not in self.temp_dictionary:
-            raise QtModelError("Dataprocess: You have to add files using with_document method and Document class")
+            raise QtModelError("Model: You have to add files using with_document method and Document class")
         data = {tag_files: self.temp_dictionary[tag_files]}
         res = connect("post", f"{self.url}search/new/{model_id}", self.headers, "data", json.dumps(data))
-        self.id = res.json()['id']
+        result = res.json()
+        self.id = model_id
+        self.set_returned_data(result)
         del self.headers['Content-Type']
-        return json_to_tuple(res.json())
+        return self
 
     def delete(self, model_id: str) -> bool:
         """Delete data container"""
@@ -222,8 +257,8 @@ class Model:
         res = connect("delete", f"{self.url}search/{model_id}", self.headers)
         return res.ok
 
-    def progress(self, model_id: str = None) -> "QtReturnObject":
-        """Show progress for submitted data mining job"""
+    def progress(self, model_id: str = None) -> Dict:
+        """Show progress for submitted process"""
 
         url_path = "progress"
         if model_id is not None:
@@ -232,13 +267,15 @@ class Model:
             else:
                 raise QtArgumentError("Expected string")
         res = connect("get", f"{self.url}search/{url_path}", self.headers)
-        return json_to_tuple(res.json())
+        return res.json()
 
     def wait_for_completion(self) -> None:
+        """Wait for completion processes"""
+
         percentage = 0
         while percentage < 100:
             result = self.progress(self.id)
-            percentage = result.progress
+            percentage = result["progress"]
             print(f"Search progress {percentage}%")
             if percentage < 100:
                 sleep(1)

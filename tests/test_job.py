@@ -2,7 +2,6 @@ from unittest import TestCase, main
 from unittest.mock import Mock, patch
 from qtcurate.exceptions import *
 from qtcurate.job import Job
-from qtcurate.utilities import json_to_tuple
 
 
 class TestJob(TestCase):
@@ -76,7 +75,7 @@ class TestJob(TestCase):
         response.json.return_value = some_json
         con.return_value = response
         res = job.create()
-        self.assertEqual(res, json_to_tuple(some_json))
+        self.assertEqual(res, some_json)
 
     # Test fetch method
     def test_fetch_arg_err(self):
@@ -94,7 +93,7 @@ class TestJob(TestCase):
         response.json.return_value = some_json
         con.return_value = response
         res = job.fetch(some_id)
-        self.assertEqual(res, json_to_tuple(some_json))
+        self.assertEqual(res, some_json)
 
     # Test delete method
     def test_delete_arg_err(self):
@@ -123,13 +122,13 @@ class TestJob(TestCase):
     @patch("qtcurate.job.connect")
     def test_progress(self, con):
         some_id = 'some id'
-        some_dict = {"key": "value"}
+        some_json = {"key": "value"}
         job = Job()
         response = Mock()
-        response.json.return_value = some_dict
+        response.json.return_value = some_json
         con.return_value = response
         res = job.progress(some_id)
-        self.assertEqual(res, json_to_tuple(some_dict))
+        self.assertEqual(res, some_json)
 
 
 if __name__ == '__main__':
