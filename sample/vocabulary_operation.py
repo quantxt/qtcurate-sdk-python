@@ -1,13 +1,8 @@
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 from qtcurate.vocabulary import Vocabulary
 from qtcurate.qt import Qt
 
 
 API_KEY = "YOUR-API-KEY"
-API_KEY = "a5334f7d-2aac-44b3-aefc-a25cd9dd7bec"
-
 FILE_NAME = "resources/revenue.tsv"
 
 # Initialise with api key
