@@ -4,7 +4,7 @@ import os
 from typing import List, Optional
 from qtcurate.exceptions import QtArgumentError, QtFileTypeError
 from qtcurate.qt import Qt
-from qtcurate.utilities import connect
+from qtcurate.connect import connect
 
 
 NoneType = type(None)
@@ -27,6 +27,8 @@ class Position:
         self.line = None
 
     def set_start(self, pos_start: Optional[int]) -> Position:
+        """ Set start position"""
+
         if isinstance(pos_start, (int, NoneType)):
             self.start = pos_start
         else:
@@ -34,9 +36,13 @@ class Position:
         return self
 
     def get_start(self) -> Optional[int]:
+        """Get start position"""
+
         return self.start
 
     def set_end(self, pos_end: Optional[int]) -> Position:
+        """ Set end position"""
+
         if isinstance(pos_end, (int, NoneType)):
             self.end = pos_end
         else:
@@ -44,9 +50,13 @@ class Position:
         return self
 
     def get_end(self) -> Optional[int]:
+        """Get end position"""
+
         return self.end
 
     def set_line(self, pos_line: Optional[int]) -> Position:
+        """Set line position"""
+
         if isinstance(pos_line, (int, NoneType)):
             self.line = pos_line
         else:
@@ -54,6 +64,8 @@ class Position:
         return self
 
     def get_line(self) -> Optional[int]:
+        """Get line position"""
+
         return self.line
 
 
@@ -65,6 +77,8 @@ class FieldValue:
         return f"{self.str_value}"
 
     def set_str(self, str_val: Optional[str]) -> FieldValue:
+        """Set str in FieldValue"""
+
         if isinstance(str_val, (str, NoneType)):
             self.str_value = str_val
         else:
@@ -72,6 +86,8 @@ class FieldValue:
         return self
 
     def get_str(self) -> Optional[str]:
+        """Get str in FieldValue"""
+
         return self.str_value
 
 
@@ -90,6 +106,8 @@ class Field:
         return f"{self.vocab_id}, {self.str}"
 
     def set_values(self, val: Optional[List]) -> Field:
+        """Set values in Field"""
+
         if isinstance(val, (list, NoneType)):
             self.values = val
         else:
@@ -97,9 +115,13 @@ class Field:
         return self
 
     def get_values(self) -> Optional[List]:
+        """Set values in Field"""
+
         return self.values
 
     def set_str(self, str_value: Optional[str]) -> Field:
+        """Set str in Field"""
+
         if isinstance(str_value, (str, NoneType)):
             self.str = str_value
         else:
@@ -107,9 +129,13 @@ class Field:
         return self
 
     def get_str(self) -> Optional[str]:
+        """Get str in Field"""
+
         return self.str
 
     def set_type(self, type_value: Optional[str]) -> Field:
+        """Set type in Field"""
+
         if isinstance(type_value, (str, NoneType)):
             self.type = type_value
         else:
@@ -117,9 +143,13 @@ class Field:
         return self
 
     def get_type(self) -> Optional[str]:
+        """Get type in Field"""
+
         return self.type
 
     def set_vocab_name(self, name: Optional[str]) -> Field:
+        """Set vocabulary name"""
+
         if isinstance(name, (str, NoneType)):
             self.vocab_name = name
         else:
@@ -127,9 +157,13 @@ class Field:
         return self
 
     def get_vocab_name(self) -> Optional[str]:
+        """Get vocabulary name"""
+
         return self.vocab_name
 
     def set_category(self, cat: Optional[str]) -> Field:
+        """Set category"""
+
         if isinstance(cat, (str, NoneType)):
             self.category = cat
         else:
@@ -137,9 +171,13 @@ class Field:
         return self
 
     def get_category(self) -> Optional[str]:
+        """Get category"""
+
         return self.category
 
     def set_vocab_id(self, voc_id: Optional[str]) -> Field:
+        """Set vocabulary id"""
+
         if isinstance(voc_id, (str, NoneType)):
             self.vocab_id = voc_id
         else:
@@ -147,9 +185,13 @@ class Field:
         return self
 
     def get_vocab_id(self) -> Optional[str]:
+        """Get vocabulary id"""
+
         return self.vocab_id
 
     def set_position(self, position: Optional[Position]) -> Field:
+        """Set position"""
+
         if isinstance(position, (Position, NoneType)):
             self.position = position
         else:
@@ -157,6 +199,8 @@ class Field:
         return self
 
     def get_position(self) -> Optional[Position]:
+        """Get position"""
+
         return self.position
 
 
@@ -203,7 +247,8 @@ class Result:
             excel_file.write(res.content)
 
     def read(self) -> List:
-        """Convert to Object namedtuple"""
+        """Convert to easy readable list"""
+
         result_list = []
         res = connect("get", f"{self.url}reports/{self.id}/json", self.headers)
         for item in res.json():

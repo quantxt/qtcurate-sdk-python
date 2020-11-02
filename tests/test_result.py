@@ -32,6 +32,12 @@ class TestResult(TestCase):
         position.set_start(some_val)
         self.assertEqual(position.start, some_val)
 
+    def test_position_set_start_none(self):
+        position = Position()
+        some_val = None
+        position.set_start(some_val)
+        self.assertEqual(position.start, some_val)
+
     # Test get_start method
     def test_position_get_start(self):
         position = Position()
@@ -47,6 +53,12 @@ class TestResult(TestCase):
     def test_position_set_end(self):
         position = Position()
         some_val = 123
+        position.set_end(some_val)
+        self.assertEqual(position.end, some_val)
+
+    def test_position_set_end_none(self):
+        position = Position()
+        some_val = None
         position.set_end(some_val)
         self.assertEqual(position.end, some_val)
 
@@ -68,10 +80,16 @@ class TestResult(TestCase):
         position.set_line(some_val)
         self.assertEqual(position.line, some_val)
 
-    # Test get_int method
-    def test_position_get_int_value(self):
+    def test_position_set_line_none(self):
         position = Position()
-        self.assertEqual(position.get_int_value(), None)
+        some_val = None
+        position.set_line(some_val)
+        self.assertEqual(position.line, some_val)
+
+    # Test get_line method
+    def test_position_get_line(self):
+        position = Position()
+        self.assertEqual(position.get_line(), None)
 
     # ***************************************************
     # Testing FieldValue class
@@ -88,6 +106,13 @@ class TestResult(TestCase):
         some_val = '123'
         fv.set_str(some_val)
         self.assertEqual(fv.str_value, some_val)
+
+    def test_field_value_set_str_none(self):
+        fv = FieldValue()
+        some_val = None
+        fv.set_str(some_val)
+        self.assertEqual(fv.str_value, some_val)
+
     # Test get_str method
     def test_field_value_get_str(self):
         fv = FieldValue()
@@ -109,6 +134,12 @@ class TestResult(TestCase):
         field.set_values(some_val)
         self.assertEqual(field.values, some_val)
 
+    def test_field_set_values_none(self):
+        field = Field()
+        some_val = None
+        field.set_values(some_val)
+        self.assertEqual(field.values, some_val)
+
     # Test get_str method
     def test_field_get_values(self):
         field = Field()
@@ -124,6 +155,12 @@ class TestResult(TestCase):
     def test_field_set_str(self):
         field = Field()
         some_val = '123'
+        field.set_str(some_val)
+        self.assertEqual(field.str, some_val)
+
+    def test_field_set_str_none(self):
+        field = Field()
+        some_val = None
         field.set_str(some_val)
         self.assertEqual(field.str, some_val)
 
@@ -145,6 +182,12 @@ class TestResult(TestCase):
         field.set_type(some_val)
         self.assertEqual(field.type, some_val)
 
+    def test_field_set_type_none(self):
+        field = Field()
+        some_val = None
+        field.set_type(some_val)
+        self.assertEqual(field.type, some_val)
+
     # Test get_type method
     def test_get_type(self):
         field = Field()
@@ -160,6 +203,12 @@ class TestResult(TestCase):
     def test_field_set_vocab_name(self):
         field = Field()
         some_val = '123'
+        field.set_vocab_name(some_val)
+        self.assertEqual(field.vocab_name, some_val)
+
+    def test_field_set_vocab_name_none(self):
+        field = Field()
+        some_val = None
         field.set_vocab_name(some_val)
         self.assertEqual(field.vocab_name, some_val)
 
@@ -181,6 +230,12 @@ class TestResult(TestCase):
         field.set_category(some_val)
         self.assertEqual(field.category, some_val)
 
+    def test_field_set_category_none(self):
+        field = Field()
+        some_val = None
+        field.set_category(some_val)
+        self.assertEqual(field.category, some_val)
+
     # Test get_category method
     def test_field_get_category(self):
         field = Field()
@@ -199,6 +254,12 @@ class TestResult(TestCase):
         field.set_vocab_id(some_val)
         self.assertEqual(field.vocab_id, some_val)
 
+    def test_field_set_vocab_id_none(self):
+        field = Field()
+        some_val = None
+        field.set_vocab_id(some_val)
+        self.assertEqual(field.vocab_id, some_val)
+
     # Test get_vocab_id method
     def test_field_get_vocab_id(self):
         field = Field()
@@ -214,6 +275,12 @@ class TestResult(TestCase):
     def test_set_position(self):
         field = Field()
         position = Position()
+        field.set_position(position)
+        self.assertEqual(field.position, position)
+
+    def test_set_position_none(self):
+        field = Field()
+        position = None
         field.set_position(position)
         self.assertEqual(field.position, position)
 

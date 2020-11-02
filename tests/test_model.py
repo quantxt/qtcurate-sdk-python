@@ -3,7 +3,6 @@ from qtcurate.model import Model
 from qtcurate.exceptions import *
 from qtcurate.extractor import ChunkMode, Extractor, Type, Mode
 from unittest.mock import patch, Mock
-from qtcurate.vocabulary import json_to_tuple, connect
 
 
 class TestModel(TestCase):
@@ -134,15 +133,38 @@ class TestModel(TestCase):
         model.get_extractor(some_dict)
         self.assertEqual(model.temp_dictionary['searchDictionaries'], some_list)
 
+    # Test create method
     def test_create_empty_search_dict(self):
         model = Model()
         with self.assertRaises(QtModelError):
             model.create()
 
-    # Test create method
     @patch("qtcurate.model.connect")
     def test_create(self, con):
-        pass
+        some_dict = {"id": "value"}
+        some_response = "value, " \
+                        "{'title': None, 'excludeUttWithoutEntities': True, 'numWorkers': 8, 'chunk': 'PAGE', " \
+                        "'searchDictionaries': [{'searchMode': 'ORDERED_SPAN', 'analyzeStrategy': 'SIMPLE'}]}"
+        model = Model()
+        extractor = Extractor()
+        model.add_extractor(extractor)
+        response = Mock()
+        response.json.return_value = some_dict
+        con.return_value = response
+        res = model.create()
+        self.assertEqual(str(res), some_response)
+
+    # Test set_returned_data
+    def test_set_returned_data(self):
+        model = Model()
+        some_dict = {'title': "some title",
+                     'excludeUttWithoutEntities': True,
+                     'searchDictionaries': [],
+                     'files': 'some files',
+                     'chunk': 'PAGE',
+                     'numWorkers': 8}
+        model.set_returned_data(some_dict)
+        self.assertEqual(model.temp_dictionary, some_dict)
 
     # Test fetch method
     def test_fetch_model_id_arg_err(self):
@@ -153,14 +175,20 @@ class TestModel(TestCase):
     @patch("qtcurate.model.connect")
     def test_fetch(self, con):
         some_id = 'some id'
-        some_dict = {"key": "value"}
+        some_dict = {'title': "some title",
+                     'excludeUttWithoutEntities': True,
+                     'searchDictionaries': [],
+                     'files': 'some files',
+                     'chunk': 'PAGE',
+                     'numWorkers': 8}
+        some_response = "some id, {'title': 'some title', 'excludeUttWithoutEntities': True, 'numWorkers': 8, " \
+                        "'chunk': 'PAGE', 'searchDictionaries': [], 'files': 'some files'}"
         model = Model()
         response = Mock()
-        response.status_code = 200
         response.json.return_value = some_dict
         con.return_value = response
         res = model.fetch(some_id)
-        self.assertEqual(res, json_to_tuple(some_dict))
+        self.assertEqual(str(res), some_response)
 
     # Test update method
     def test_update_model_id_arg_error(self):
@@ -176,16 +204,21 @@ class TestModel(TestCase):
     @patch("qtcurate.model.connect")
     def test_update(self, con):
         some_id = 'some id'
-        some_dict = {"key": "value"}
+        some_dict = {'title': "some title",
+                     'excludeUttWithoutEntities': True,
+                     'searchDictionaries': [],
+                     'files': 'some files',
+                     'chunk': 'PAGE',
+                     'numWorkers': 8}
+        some_response = "some id, {'excludeUttWithoutEntities': True, 'numWorkers': 8, 'chunk': 'PAGE', " \
+                        "'title': 'some title', 'searchDictionaries': [], 'files': 'some files'}"
         some_list = ["test.txt"]
         model = Model()
         response = Mock()
-        response.status_code = 200
         response.json.return_value = some_dict
         con.return_value = response
-
         res = model.update(some_id, some_list)
-        self.assertEqual(res, json_to_tuple(some_dict))
+        self.assertEqual(str(res), some_response)
 
     # Test connect method
     def test_clone_model_id_arg_err(self):
@@ -202,16 +235,22 @@ class TestModel(TestCase):
     @patch("qtcurate.model.connect")
     def test_clone(self, con):
         some_id = 'some id'
-        some_dict = {"id": "value"}
+        some_dict = {'title': "some title",
+                     'excludeUttWithoutEntities': True,
+                     'searchDictionaries': [],
+                     'files': 'some files',
+                     'chunk': 'PAGE',
+                     'numWorkers': 8}
+        some_response = "some id, {'title': 'some title', 'excludeUttWithoutEntities': True, 'numWorkers': 8, " \
+                        "'chunk': 'PAGE', 'searchDictionaries': [], 'files': 'some files'}"
         some_list = ['123']
         model = Model()
         model.with_documents(some_list)
         response = Mock()
-        response.status_code = 200
         response.json.return_value = some_dict
         con.return_value = response
         res = model.clone(some_id)
-        self.assertEqual(res, json_to_tuple(some_dict))
+        self.assertEqual(str(res), some_response)
 
     # Test delete method
     def test_delete_argument_type_error(self):
@@ -224,7 +263,6 @@ class TestModel(TestCase):
         some_id = 'some id'
         model = Model()
         response = Mock()
-        response.status_code = 200
         response.ok = True
         con.return_value = response
         res = model.delete(some_id)
@@ -235,7 +273,6 @@ class TestModel(TestCase):
         some_id = 'some id'
         model = Model()
         response = Mock()
-        response.status_code = 200
         response.ok = False
         con.return_value = response
         res = model.delete(some_id)
@@ -253,12 +290,10 @@ class TestModel(TestCase):
         some_dict = {"key": "value"}
         model = Model()
         response = Mock()
-        response.status_code = 200
         response.json.return_value = some_dict
         con.return_value = response
-
         res = model.progress(some_id)
-        self.assertEqual(res, json_to_tuple(some_dict))
+        self.assertEqual(res, some_dict)
 
     def test_search_model_id_arg(self):
         model = Model()
@@ -298,7 +333,6 @@ class TestModel(TestCase):
         some_dict = {"key": "value"}
         model = Model()
         response = Mock()
-        response.status_code = 200
         response.json.return_value = some_dict
         con.return_value = response
         res = model.search(some_id)
@@ -310,7 +344,6 @@ class TestModel(TestCase):
         some_list = []
         model = Model()
         response = Mock()
-        response.status_code = 200
         response.json.return_value = some_list
         con.return_value = response
         res = model.read()

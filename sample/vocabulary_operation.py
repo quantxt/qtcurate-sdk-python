@@ -9,45 +9,45 @@ FILE_NAME = "resources/revenue.tsv"
 Qt.init(API_KEY)
 
 vocabulary = Vocabulary()
+
 # Create entries of vocabulary
 vocabulary.add_entry("Apple Inc.", "AAPL")
 vocabulary.add_entry("Amazon.com", "AMZN")
 vocabulary.entries({"str": "Alphabet Inc.", "category": "GOOG"})
 
-entry_voc = None
-tsv_voc = None
 # Create Vocabulary
 try:
-    entry_voc = vocabulary.name("some name").add_entry("Apple Inc.", "AAPL").create()
+    vocabulary.name("some name").add_entry("Apple Inc.", "AAPL").create()
 except Exception as e:
     print(e)
-print(entry_voc)
 
 # Fetch from current object
-print(type(vocabulary.fetch(vocabulary.get_id())))
-vocabulary.clear()
+print("Fetch vocabulary")
+print(vocabulary.fetch(vocabulary.get_id()))
 
-# Create list of vocabulary from tsv file
-# Name the project
-vocabulary.name("revenue")
-vocabulary.source(FILE_NAME)
-# Create QtDict
+# Create list of vocabularies from tsv file
+print("Create list of the vocabularies from TSV file")
+tsv_voc = Vocabulary()
+tsv_voc.name("revenue")
+tsv_voc.source(FILE_NAME)
 try:
-    tsv_voc = vocabulary.create()
+    tsv_voc.create()
 except Exception as e:
     print(e)
 print(tsv_voc)
-# Fetch from known vocabulary
-print(vocabulary.fetch(entry_voc.id))
 
 # Update vocabulary, name and entries are mandatory options
-new_dic = Vocabulary()
-new_dic.add_entry("Lenovo", "Thinkpad")
-new_dic.name("updated name")
-res = new_dic.update(entry_voc.id)
-print(res.id)
+print("Update vocabulary")
+vocabulary.add_entry("Lenovo", "Thinkpad")
+vocabulary.name("updated name")
+print(vocabulary.get_id())
+vocabulary.update(vocabulary.get_id())
+print(vocabulary)
 
 # List all existing vocabularies
+print("List all vocabularies")
 print(vocabulary.read())
+
 # Delete vocabulary
-print(vocabulary.delete(entry_voc.id))
+print("Is vocabulary deleted?")
+print(vocabulary.delete(vocabulary.get_id()))

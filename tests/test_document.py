@@ -40,7 +40,6 @@ class TestDocument(TestCase):
         with open(some_file, "w") as f:
             f.write("Delete me!")
         response = Mock()
-        response.status_code = 200
         response.json.return_value = some_json
         con.return_value = response
         res = doc.create(some_file)

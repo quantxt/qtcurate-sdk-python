@@ -1,17 +1,30 @@
 import os
 from unittest import TestCase, main
-from qtcurate.vocabulary import Vocabulary, json_to_tuple
+from qtcurate.vocabulary import Vocabulary
 from qtcurate.exceptions import *
 from unittest.mock import Mock, patch
 
 
-class TestQtDict(TestCase):
+class TestVocabulary(TestCase):
 
-    # Testing get_id method:
+    # Testing get_id method
     def test_get_id(self):
         vocabulary = Vocabulary()
         some_id = None
         self.assertEqual(vocabulary.get_id(), str(some_id))
+
+    # Testing set_id method
+    def test_set_id_arg_err(self):
+        vocabulary = Vocabulary()
+        some_id = 123
+        with self.assertRaises(QtArgumentError):
+            vocabulary.set_id(some_id)
+
+    def test_set_id(self):
+        vocabulary = Vocabulary()
+        some_id = 'some id'
+        vocabulary.set_id(some_id)
+        self.assertEqual(vocabulary.id, some_id)
 
     # Testing name method
     def test_name_name(self):
@@ -21,10 +34,16 @@ class TestQtDict(TestCase):
         self.assertEqual(name, vocabulary.temp_vocabulary["name"])
 
     def test_name_type(self):
-        name = 12345
+        name = 123
         vocabulary = Vocabulary()
         with self.assertRaises(QtArgumentError):
             vocabulary.name(name)
+
+    # Testing get_name method
+    def test_get_name(self):
+        vocabulary = Vocabulary()
+        some_name = None
+        self.assertEqual(vocabulary.temp_vocabulary["name"], some_name)
 
     # Testing entries method
     def test_entries_type(self):
@@ -100,6 +119,12 @@ class TestQtDict(TestCase):
         vocabulary.add_entry(key, value)
         self.assertEqual(list_entries, vocabulary.temp_vocabulary['entries'])
 
+    # Testing get_entries method
+    def test_get_entries(self):
+        vocabulary = Vocabulary()
+        some_entry = []
+        self.assertEqual(vocabulary.temp_vocabulary["entries"], some_entry)
+
     # Testing read method
     @patch("qtcurate.vocabulary.connect")
     def test_read(self, con):
@@ -122,14 +147,13 @@ class TestQtDict(TestCase):
     @patch("qtcurate.vocabulary.connect")
     def test_fetch(self, con):
         some_id = 'some id'
-        some_json = {"key": "value"}
-        some_object = json_to_tuple(some_json)
+        some_json = {"id": "some id", "name": "some name", "entries": "some entries"}
         voc = Vocabulary()
         response = Mock()
         response.json.return_value = some_json
         con.return_value = response
         res = voc.fetch(some_id)
-        self.assertEqual(res, some_object)
+        self.assertEqual(str(res), str(some_json))
 
     # Testing delete method
     def test_delete_arg(self):
@@ -179,6 +203,9 @@ class TestQtDict(TestCase):
         with self.assertRaises(QtArgumentError):
             vocabulary.source(file)
 
+    def test_source(self):
+        pass
+
     # Testing create method
     def test_create_miss_name(self):
         entries = {"str": "str", "category": "category"}
@@ -197,8 +224,7 @@ class TestQtDict(TestCase):
     @patch('qtcurate.vocabulary.connect')
     def test_create_input_stream_none(self, con):
         name = "some name"
-        some_dict = {"id": "some value"}
-        some_object = json_to_tuple(some_dict)
+        some_dict = {"id": "some value", 'name': 'some name', 'entries': [{'str': 'some entry'}]}
         some_entry = "some entry"
         voc = Vocabulary()
         voc.name(name)
@@ -207,17 +233,16 @@ class TestQtDict(TestCase):
         response.json.return_value = some_dict
         con.return_value = response
         res = voc.create()
-        self.assertEqual(res, some_object)
+        self.assertEqual(str(res), str(some_dict))
 
     @patch('qtcurate.vocabulary.connect')
     def test_create_input_stream(self, con):
         name = "some name"
-        with open("test.tsv", "w") as f:
-            f.write("Delete me!")
-        some_dict = {"id": "some value"}
-        some_object = json_to_tuple(some_dict)
-        some_entry = "some entry"
         some_tsv_file = 'test.tsv'
+        with open(some_tsv_file, "w") as f:
+            f.write("Delete me!")
+        some_dict = {"id": "some value", 'name': 'some name', 'entries': [{'str': 'some entry'}]}
+        some_entry = "some entry"
         voc = Vocabulary()
         voc.name(name)
         voc.add_entry(some_entry)
@@ -226,7 +251,7 @@ class TestQtDict(TestCase):
         response.json.return_value = some_dict
         con.return_value = response
         res = voc.create()
-        self.assertEqual(res, some_object)
+        self.assertEqual(str(res), str(some_dict))
         os.remove("test.tsv")
 
     # Testing update method
@@ -254,19 +279,18 @@ class TestQtDict(TestCase):
 
     @patch("qtcurate.vocabulary.connect")
     def test_update(self, con):
-        some_id = 'some id'
+        some_id = "some id"
         some_name = 'some name'
         some_key = 'some key'
-        some_dict = {"key": "value"}
+        some_dict = {"id": None, 'name': 'some name', 'entries': [{'str': 'some entry'}]}
         voc = Vocabulary()
         voc.name(some_name)
         voc.add_entry(some_key)
         response = Mock()
-        response.status_code = 200
         response.json.return_value = some_dict
         con.return_value = response
         res = voc.update(some_id)
-        self.assertEqual(res, json_to_tuple(some_dict))
+        self.assertEqual(str(res), str(some_dict))
 
 
 if __name__ == '__main__':
