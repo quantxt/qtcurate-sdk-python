@@ -9,5 +9,6 @@ class Qt:
     def init(key: str, environment: str = "") -> None:
         Qt.api_key = key
         if environment != "":
-            environment = f"{environment}."
-        Qt.url = f"http://{environment}{BASE_URL}"
+            Qt.url = f"http://{environment}.{BASE_URL}"
+        else:
+            Qt.url = f"https://{BASE_URL}"
