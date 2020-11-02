@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="qtcurate",
-    version="2.2.3",
+    version="2.2.4",
     description="Theia SDK Search and Data Extraction",
     long_description=long_description,
     long_description_content_type="text/markdown",
