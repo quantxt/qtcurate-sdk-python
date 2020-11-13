@@ -267,7 +267,6 @@ class Result:
 
         result_list = []
         res = connect("get", f"{self.url}reports/{self.id}/json", self.headers)
-        print(res.json())
         for item in res.json():
             if "values" in item and item["values"]:
                 for i in item["values"]:
@@ -307,4 +306,4 @@ class Result:
                             list_field_ext.append(field_value)
                     field.set_values(list_field_ext)
                     result_list.append(field)
-        return result_list
+        return json.dumps(result_list)
