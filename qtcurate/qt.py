@@ -2,6 +2,8 @@ from qtcurate.config import BASE_URL
 
 
 class Qt:
+    """Initial connection"""
+
     api_key = None
     url = None
 

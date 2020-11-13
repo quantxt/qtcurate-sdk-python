@@ -70,8 +70,10 @@ class Position:
 
 
 class FieldValue:
+
     def __init__(self):
         self.str_value = None
+        self.position = None
 
     def __repr__(self):
         return f"{self.str_value}"
@@ -89,6 +91,20 @@ class FieldValue:
         """Get str in FieldValue"""
 
         return self.str_value
+
+    def set_position(self, position: Optional[Position]) -> FieldValue:
+        """Set position"""
+
+        if isinstance(position, (Position, NoneType)):
+            self.position = position
+        else:
+            raise QtArgumentError("Argument type error: Position is expected as position")
+        return self
+
+    def get_position(self) -> Optional[Position]:
+        """Get position"""
+
+        return self.position
 
 
 class Field:
@@ -251,6 +267,7 @@ class Result:
 
         result_list = []
         res = connect("get", f"{self.url}reports/{self.id}/json", self.headers)
+        print(res.json())
         for item in res.json():
             if "values" in item and item["values"]:
                 for i in item["values"]:
@@ -277,6 +294,14 @@ class Result:
                     if "extIntervalSimples" in i and i["extIntervalSimples"]:
                         for ext_int_item in i["extIntervalSimples"]:
                             field_value = FieldValue()
+                            position_value = Position()
+                            if start in ext_int_item:
+                                position_value.set_start(i[start])
+                            if end in ext_int_item:
+                                position_value.set_end(i[end])
+                            if line in ext_int_item:
+                                position_value.set_line(i[line])
+                            field_value.set_position(position_value)
                             if str_field in ext_int_item:
                                 field_value.set_str(ext_int_item[str_field])
                             list_field_ext.append(field_value)

@@ -118,6 +118,26 @@ class TestResult(TestCase):
         fv = FieldValue()
         self.assertEqual(fv.get_str(), None)
 
+        # Test set_position method
+
+    def test_field_value_set_position_arg_err(self):
+        field_value = FieldValue()
+        some_val = 123
+        with self.assertRaises(QtArgumentError):
+            field_value.set_position(some_val)
+
+    def test_value_set_position(self):
+        field_value = FieldValue()
+        position = Position()
+        field_value.set_position(position)
+        self.assertEqual(field_value.position, position)
+
+    def test_value_set_position_none(self):
+        field_value = FieldValue()
+        position = None
+        field_value.set_position(position)
+        self.assertEqual(field_value.position, position)
+
     # ***************************************************
     # Testing Field class
     # ***************************************************
