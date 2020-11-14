@@ -295,15 +295,15 @@ class Result:
                             field_value = FieldValue()
                             position_value = Position()
                             if start in ext_int_item:
-                                position_value.set_start(i[start])
+                                position_value.set_start(ext_int_item[start])
                             if end in ext_int_item:
-                                position_value.set_end(i[end])
+                                position_value.set_end(ext_int_item[end])
                             if line in ext_int_item:
-                                position_value.set_line(i[line])
+                                position_value.set_line(ext_int_item[line])
                             field_value.set_position(position_value)
                             if str_field in ext_int_item:
                                 field_value.set_str(ext_int_item[str_field])
                             list_field_ext.append(field_value)
                     field.set_values(list_field_ext)
                     result_list.append(field)
-        return json.dumps(result_list)
+        return result_list
