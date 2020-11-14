@@ -70,8 +70,10 @@ class Position:
 
 
 class FieldValue:
+
     def __init__(self):
         self.str_value = None
+        self.position = None
 
     def __repr__(self):
         return f"{self.str_value}"
@@ -90,9 +92,22 @@ class FieldValue:
 
         return self.str_value
 
+    def set_position(self, position: Optional[Position]) -> FieldValue:
+        """Set position"""
+
+        if isinstance(position, (Position, NoneType)):
+            self.position = position
+        else:
+            raise QtArgumentError("Argument type error: Position is expected as position")
+        return self
+
+    def get_position(self) -> Optional[Position]:
+        """Get position"""
+
+        return self.position
+
 
 class Field:
-
     def __init__(self):
         self.vocab_name = None
         self.vocab_id = None
@@ -205,7 +220,6 @@ class Field:
 
 
 class Result:
-
     def __init__(self, dp_id):
         self.id = dp_id
         self.headers = {"X-API-Key": Qt.api_key}
@@ -277,6 +291,14 @@ class Result:
                     if "extIntervalSimples" in i and i["extIntervalSimples"]:
                         for ext_int_item in i["extIntervalSimples"]:
                             field_value = FieldValue()
+                            position_value = Position()
+                            if start in ext_int_item:
+                                position_value.set_start(ext_int_item[start])
+                            if end in ext_int_item:
+                                position_value.set_end(ext_int_item[end])
+                            if line in ext_int_item:
+                                position_value.set_line(ext_int_item[line])
+                            field_value.set_position(position_value)
                             if str_field in ext_int_item:
                                 field_value.set_str(ext_int_item[str_field])
                             list_field_ext.append(field_value)

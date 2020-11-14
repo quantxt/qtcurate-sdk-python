@@ -44,7 +44,6 @@ class Mode(Enum):
 
 
 class Extractor:
-
     def __init__(self):
         self.validator = None
         self.mode = Mode.SIMPLE
