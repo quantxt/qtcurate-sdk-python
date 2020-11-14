@@ -5,7 +5,6 @@ from qtcurate.connect import connect
 
 
 class Document:
-
     def __init__(self):
         self.headers = {"X-API-Key": Qt.api_key}
         self.url = Qt.url

@@ -55,7 +55,6 @@ class Job:
 
     def create(self) -> Dict:
         """Creating a new Job"""
-
         self.headers["Content-Type"] = "application/json"
         if description not in self.temp_dict:
             raise QtJobError("Job error: Description is mandatory. Please add description with set_description method")
@@ -88,7 +87,6 @@ class Job:
 
     def progress(self, job_id: str = None) -> Dict:
         """Show progress for submitted for job"""
-
         url_path = "progress"
         if job_id is not None:
             if isinstance(job_id, str):

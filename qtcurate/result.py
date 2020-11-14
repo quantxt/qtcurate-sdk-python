@@ -108,7 +108,6 @@ class FieldValue:
 
 
 class Field:
-
     def __init__(self):
         self.vocab_name = None
         self.vocab_id = None
@@ -221,7 +220,6 @@ class Field:
 
 
 class Result:
-
     def __init__(self, dp_id):
         self.id = dp_id
         self.headers = {"X-API-Key": Qt.api_key}
