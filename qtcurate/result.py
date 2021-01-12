@@ -18,6 +18,7 @@ int_value = "intValue"
 line = "line"
 start = "start"
 end = "end"
+page_number = "position"
 
 
 class Position:
@@ -25,6 +26,7 @@ class Position:
         self.start = None
         self.end = None
         self.line = None
+        self.page_num = None
 
     def set_start(self, pos_start: Optional[int]) -> Position:
         """ Set start position"""
@@ -68,6 +70,19 @@ class Position:
 
         return self.line
 
+    def set_page_num(self, page_num: Optional[int]) -> Position:
+        """Set page number position"""
+
+        if isinstance(page_num, (int, NoneType)):
+            self.page_num = page_num
+        else:
+            raise QtArgumentError("Argument type error: Int is expected as pos_line")
+        return self
+
+    def get_page_num(self) -> Optional[int]:
+        """Get page number position"""
+
+        return self.page_num
 
 class FieldValue:
 
@@ -266,10 +281,13 @@ class Result:
         result_list = []
         res = connect("get", f"{self.url}reports/{self.id}/json", self.headers)
         for item in res.json():
+            if page_number in item and item[page_number]:
+                page_num = item[page_number]
             if "values" in item and item["values"]:
                 for i in item["values"]:
                     field = Field()
                     position = Position()
+                    position.set_page_num(page_num)
                     if start in i:
                         position.set_start(i[start])
                     if end in i:
@@ -292,6 +310,7 @@ class Result:
                         for ext_int_item in i["extIntervalSimples"]:
                             field_value = FieldValue()
                             position_value = Position()
+                            position_value.set_page_num(page_num)
                             if start in ext_int_item:
                                 position_value.set_start(ext_int_item[start])
                             if end in ext_int_item:
