@@ -84,11 +84,13 @@ class Position:
 
         return self.page_num
 
+
 class FieldValue:
 
     def __init__(self):
         self.str_value = None
         self.position = None
+
 
     def __repr__(self):
         return f"{self.str_value}"
@@ -131,6 +133,7 @@ class Field:
         self.str = None
         self.values = None
         self.position = None
+        self.source = None
 
     def __repr__(self):
         return f"{self.vocab_id}, {self.str}"
@@ -148,6 +151,20 @@ class Field:
         """Set values in Field"""
 
         return self.values
+
+    def set_source(self, source_value: str) -> Field:
+        """Set source in Field"""
+
+        if isinstance(source_value, str):
+            self.source = source_value
+        else:
+            raise QtArgumentError("Argument type error: String is expected as source")
+        return self
+
+    def get_source(self) -> str:
+        """Get source in Field"""
+
+        return self.source
 
     def set_str(self, str_value: Optional[str]) -> Field:
         """Set str in Field"""
@@ -283,9 +300,11 @@ class Result:
         for item in res.json():
             if page_number in item and item[page_number]:
                 page_num = item[page_number]
+
             if "values" in item and item["values"]:
                 for i in item["values"]:
                     field = Field()
+                    field.set_source(item["source"])
                     position = Position()
                     position.set_page_num(page_num)
                     if start in i:

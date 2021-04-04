@@ -118,7 +118,7 @@ class TestResult(TestCase):
         fv = FieldValue()
         self.assertEqual(fv.get_str(), None)
 
-        # Test set_position method
+    # Test set_position method
 
     def test_field_value_set_position_arg_err(self):
         field_value = FieldValue()
@@ -188,6 +188,25 @@ class TestResult(TestCase):
     def test_get_str(self):
         field = Field()
         self.assertEqual(field.get_str(), None)
+
+    # Test set_source method
+    def test_field_set_source_arg_err(self):
+        field = Field()
+        some_val = 123
+        with self.assertRaises(QtArgumentError):
+            field.set_source(some_val)
+
+    def test_field_set_source(self):
+        field = Field()
+        some_val = '123'
+        field.set_str(some_val)
+        self.assertEqual(field.str, some_val)
+
+    # Test get_source method
+    def test_field_get_source(self):
+        field = Field()
+        field.source = '123'
+        self.assertEqual(field.get_source(), '123')
 
     # Test set_type method
     def test_field_set_type_arg_err(self):
